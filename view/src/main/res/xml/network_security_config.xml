@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">https://staging-api.bygoodiebox.com</domain>
+        <domain includeSubdomains="true">http://tracking.bring.dk</domain>
+    </domain-config>
+
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

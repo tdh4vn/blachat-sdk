@@ -1,0 +1,5 @@
+rootProject.name='BlameoChatSdk'
+include ':app'
+include ':data'
+include ':domain'
+include ':view'
