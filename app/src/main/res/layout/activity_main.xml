@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.blameo.chatsdk.screens.MainActivity">
+    android:layout_height="match_parent">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_channels"
@@ -14,12 +13,49 @@
     <Button
         android:layout_marginBottom="8dp"
         android:layout_centerHorizontal="true"
+        android:layout_above="@id/btn_create_message"
+        android:id="@+id/btn_get_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Load Messages" />
+
+    <Button
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/btn_get_users"
+        android:id="@+id/btn_create_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Message" />
+
+    <Button
+        android:visibility="gone"
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/btn_get_users"
+        android:id="@+id/btn_create_channel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Channel" />
+
+    <Button
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/btn_get_channel"
+        android:id="@+id/btn_get_users"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Get users" />
+
+    <Button
+        android:layout_marginBottom="8dp"
+        android:layout_centerHorizontal="true"
        android:layout_alignParentBottom="true"
         android:id="@+id/btn_get_channel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Get Channel"
-        tools:layout_editor_absoluteX="166dp"
-        tools:layout_editor_absoluteY="406dp" />
+        android:text="Get Channel" />
+
+
 
 </RelativeLayout>
