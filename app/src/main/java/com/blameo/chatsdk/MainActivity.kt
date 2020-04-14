@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
-                    Log.e(TAG, "size ${channels.size}")
+//                    Log.e(TAG, "size ${channels.size}")
                     adapter = ChannelAdapter(this@MainActivity, channels)
                     rv_channels.adapter = adapter
                     rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
