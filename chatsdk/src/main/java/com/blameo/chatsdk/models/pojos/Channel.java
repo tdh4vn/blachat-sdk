@@ -1,6 +1,8 @@
 package com.blameo.chatsdk.models.pojos;
 
-public class Channel extends CustomData{
+import java.io.Serializable;
+
+public class Channel extends CustomData implements Serializable {
     private String id;
     private String name;
     private String avatar;

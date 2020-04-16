@@ -7,10 +7,14 @@ import io.reactivex.Single
 
 interface MessageRemoteRepository {
 
-    fun getMessageById(id: String): Single<GetMessageByIDResult>
+    fun getMessageById(id: String)
 
-    fun createMessage(body: CreateMessageBody): Single<GetMessageByIDResult>
+    fun createMessage(body: CreateMessageBody)
 
-    fun getMessagesRemote(channelId: String, lastId: String): Single<GetMessagesResult>
+    fun getMessages(channelId: String, lastId: String)
+
+    fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String)
+
+    fun sendReceivedMessageEvent(channelId: String, messageId: String, authorId: String)
 
 }

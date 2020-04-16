@@ -131,8 +131,9 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
     public boolean checkIfChannelIsExist(String id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        String Query = "Select * from " + Constant.CHANNEL_TABLE_NAME + " where " + Constant.CHANNEL_ID + " = " + id;
-        Cursor cursor = db.rawQuery(Query, null);
+        String query = "Select * from " + Constant.CHANNEL_TABLE_NAME + " where " + Constant.CHANNEL_ID + " = " + id;
+        Log.i("qqqqabdasdc", ""+query);
+        Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
             cursor.close();
             return false;

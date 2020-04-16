@@ -5,9 +5,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.blameo.chatsdk.models.pojos.Message;
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
 import java.util.ArrayList;
 
@@ -58,6 +60,19 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     }
 
     @Override
+    public void updateStatusMessage(String messageId, String attr) {
+
+        if(TextUtils.isEmpty(messageId))  return;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(attr, ChatSdkDateFormatUtil.getInstance().getCurrentTimeUTC());
+
+        db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
+                new String[]{messageId});
+    }
+
+    @Override
     public void addLocalMessage(Message message) {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -77,9 +92,9 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         Log.e("DB", "add local message: " + message.getId() + " author_id: " + message.getAuthor_id() + " channel_id: " + message.getChannel_id());
 
         int res = (int) db.insertWithOnConflict(Constant.MESSAGE_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        if (res == -1) {
-            this.updateMessage(message);
-        }
+//        if (res == -1) {
+//            this.updateMessage(message);
+//        }
 
         db.close();
     }
@@ -100,6 +115,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     @Override
     public int updateMessage(Message message) {
 
+        if(TextUtils.isEmpty(message.getId()))  return 0;
+
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
@@ -107,8 +124,10 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 //        values.put(Constant.CHANNEL_COLUMN_NAME, channel.getName());
 //        values.put(Constant.CHANNEL_COLUMN_AVATAR, channel.getAvatar());
 
+
+
         return db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
-                new String[]{String.valueOf(message.getId())});
+                new String[]{message.getId()});
     }
 
     @Override
@@ -139,14 +158,16 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     public boolean checkIfMessageIsExist(String id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        String Query = "Select * from " + Constant.MESSAGE_TABLE_NAME + " where " + Constant.MESSAGE_ID + " = " + id;
-        Cursor cursor = db.rawQuery(Query, null);
+        String query = "Select * from " + Constant.MESSAGE_TABLE_NAME + " where " + Constant.MESSAGE_ID + " = " + id;
+        Log.i("abdasdc", ""+query);
+
+        Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
             cursor.close();
             return false;
         }
         cursor.close();
-        return true;
+        return false;
     }
 
     @Override
@@ -160,11 +181,12 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
     @Override
     public void exportMessageDB() {
-        Log.e(MESSAGE_TAG, "ID       AUTHOR_ID           CHANNEL_ID");
+        Log.e(MESSAGE_TAG, "ID       AUTHOR_ID           CHANNEL_ID         SEEN_AT         SENT_AT");
         ArrayList<Message> messages = getAllLocalMessages();
         Log.e(MESSAGE_TAG, "total of all messages: " + messages.size());
         for (Message c : messages) {
-            Log.e(MESSAGE_TAG, "" + c.getId() + "       " + c.getAuthor_id() + "        " + c.getChannel_id());
+            Log.e(MESSAGE_TAG, "" + c.getId() + "       " + c.getAuthor_id()
+                    + "        " + c.getChannel_id() + "       " + c.getSeen_at() + "        " + c.getSent_at() );
         }
     }
 
@@ -194,12 +216,13 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     @Override
     public ArrayList<Message> getAllMessagesInChannel(String channelId) {
         ArrayList<Message> messages = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME
-                + " where " + Constant.MESSAGE_CHANNEL_ID + " = " + channelId;
+        String selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME;
+//                + " where " + Constant.MESSAGE_CHANNEL_ID + " = " + channelId;
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        cursor.moveToFirst();
+        if(cursor == null || !cursor.moveToFirst()) return null;
+//        cursor.moveToFirst();
 
         if (cursor.getCount() == 0) return messages;
 

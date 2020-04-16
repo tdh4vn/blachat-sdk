@@ -111,19 +111,20 @@ public class LocalUserRepositoryImpl extends SQLiteOpenHelper implements LocalUs
 
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(Constant.CHANNEL_TABLE_NAME, new String[]{Constant.USER_ID,
+        Cursor cursor = db.query(Constant.USER_TABLE_NAME, new String[]{Constant.USER_ID,
                         Constant.USER_NAME, Constant.USER_AVATAR,
                         Constant.USER_CONNECTION_STATUS, Constant.USER_LAST_ACTIVE_AT,
                         Constant.USER_CUSTOM_DATA}
                 , Constant.USER_ID + "=?",
                 new String[]{id}, null, null, null, null);
-        if (cursor != null)
-            cursor.moveToFirst();
+        User user = null;
 
-        User user = new User(cursor.getString(0),
-                cursor.getString(1), cursor.getString(2),
-                cursor.getString(3), cursor.getString(4));
-        user.setCustom_data(cursor.getString(5));
+        if (cursor == null && cursor.moveToFirst()){
+            user = new User(cursor.getString(0),
+                    cursor.getString(1), cursor.getString(2),
+                    cursor.getString(3), cursor.getString(4));
+            user.setCustom_data(cursor.getString(5));
+        }
 
         return user;
     }
@@ -165,7 +166,8 @@ public class LocalUserRepositoryImpl extends SQLiteOpenHelper implements LocalUs
     public ArrayList<User> getUsersByIds(ArrayList<String> ids) {
         ArrayList<User> users = new ArrayList<>();
         for(String id: ids){
-            users.add(getUserByID(id));
+            User user = getUserByID(id);
+            if(user != null)    users.add(user);
         }
         return users;
     }

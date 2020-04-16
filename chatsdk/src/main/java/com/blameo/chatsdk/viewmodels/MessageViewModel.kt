@@ -1,95 +1,81 @@
 package com.blameo.chatsdk.viewmodels
 
-import android.app.Application
+import android.text.TextUtils
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
+import com.blameo.chatsdk.local.LocalMessageRepository
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.results.GetMessageByIDResult
-import com.blameo.chatsdk.models.results.GetMessagesResult
-import com.blameo.chatsdk.net.APIProvider
-import com.blameo.chatsdk.repositories.MessageRemoteRepository
-import com.blameo.chatsdk.repositories.MessageRemoteRepositoryImpl
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.Disposable
+import com.blameo.chatsdk.sources.MessageRepository
+import com.blameo.chatsdk.sources.MessageRepositoryImpl
 
-private var shareInstance: MessageViewModel? = null
+interface MessageListener {
+    fun onGetMessagesSuccess(messages: ArrayList<Message>)
+    fun onGetMessagesError(error: String)
+    fun onGetMessageByIdSuccess(message: Message)
+    fun onCreateMessageSuccess(message: Message)
+    fun onMarkSeenMessageSuccess()
+    fun onMarkSeenMessageFail(error: String)
+    fun onMarkReceiveMessageSuccess()
+    fun onMarkReceiveMessageFail(error: String)
+}
 
-class MessageViewModel {
-
-    companion object {
-        fun getInstance(): MessageViewModel {
-            if (shareInstance == null)
-                shareInstance = MessageViewModel()
-            return shareInstance!!
-        }
-    }
+class MessageViewModel(private val listener: MessageListener,
+                       localMessageRepository: LocalMessageRepository) : MessageListener {
 
     private val TAG = "MESSAGE_VM"
+    var messageRepository: MessageRepository = MessageRepositoryImpl(this, localMessageRepository)
 
-    var messageRepository: MessageRemoteRepository =
-        MessageRemoteRepositoryImpl(APIProvider.messageAPI)
-
-    var messageRemote = MutableLiveData<Message>()
-    var createMessage = MutableLiveData<Message>()
-    var listMessages = MutableLiveData<ArrayList<Message>>()
-
-    var errorStream = MutableLiveData<String>()
-
-    private var getMessageByIdRemoteListener = object : SingleObserver<GetMessageByIDResult> {
-        override fun onSuccess(t: GetMessageByIDResult) {
-            messageRemote.value = t.message
-            Log.e(TAG, "s: ${t.message.content}")
-        }
-
-        override fun onSubscribe(d: Disposable) {
-
-        }
-
-        override fun onError(e: Throwable) {
-            errorStream.value = e.message
-            Log.e(TAG, "" + e.message + e.cause + e.stackTrace.toString())
-        }
-    }
-
-    private var createMessageListener = object : SingleObserver<GetMessageByIDResult> {
-        override fun onSuccess(t: GetMessageByIDResult) {
-            createMessage.value = t.message
-        }
-
-        override fun onSubscribe(d: Disposable) {
-        }
-
-        override fun onError(e: Throwable) {
-        }
-
-    }
-
-    private var getMessagesListener = object : SingleObserver<GetMessagesResult> {
-        override fun onSuccess(t: GetMessagesResult) {
-            listMessages.value = t.data
-        }
-
-        override fun onSubscribe(d: Disposable) {
-        }
-
-        override fun onError(e: Throwable) {
-        }
-    }
-
-    fun getMessageByIdRemote(id: String) {
+    fun getMessageById(id: String) {
+        if(TextUtils.isEmpty(id))   return
         Log.e(TAG, "get by id: $id")
-        messageRepository.getMessageById(id).subscribe(getMessageByIdRemoteListener)
+        messageRepository.getMessageById(id)
     }
 
     fun createMessage(content: String, type: Int, channelId: String) {
         messageRepository.createMessage(CreateMessageBody(content, type, channelId))
-            .subscribe(createMessageListener)
     }
 
     fun getMessages(channelId: String, lastId: String) {
-        Log.e(TAG, "load messages in channel: $channelId with lasId = $lastId")
-        messageRepository.getMessagesRemote(channelId, lastId).subscribe(getMessagesListener)
+        Log.e(TAG, "load messages in channel: $channelId with lastId = $lastId")
+        messageRepository.getMessages(channelId, lastId)
+    }
+
+    fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String){
+        messageRepository.sendSeenMessageEvent(channelId, messageId, authorId)
+    }
+
+    fun sendReceivedMessageEvent(channelId: String, messageId: String, authorId: String){
+        messageRepository.sendReceivedMessageEvent(channelId, messageId, authorId)
+    }
+
+    override fun onGetMessagesSuccess(messages: ArrayList<Message>) {
+        messages.reverse()
+        listener.onGetMessagesSuccess(messages)
+    }
+
+    override fun onGetMessagesError(error: String) {
+
+    }
+
+    override fun onGetMessageByIdSuccess(message: Message) {
+        listener.onGetMessageByIdSuccess(message)
+    }
+
+    override fun onCreateMessageSuccess(message: Message) {
+        listener.onCreateMessageSuccess(message)
+    }
+
+    override fun onMarkSeenMessageSuccess() {
+    }
+
+    override fun onMarkSeenMessageFail(error: String) {
+        listener.onMarkSeenMessageFail(error)
+    }
+
+    override fun onMarkReceiveMessageSuccess() {
+    }
+
+    override fun onMarkReceiveMessageFail(error: String) {
+        listener.onMarkReceiveMessageFail(error)
     }
 }

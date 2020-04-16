@@ -2,24 +2,21 @@ package com.blameo.chatsdk.utils;
 
 import android.util.Log;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class DateFormatUtils {
+public class ChatSdkDateFormatUtil {
 
-    private static DateFormatUtils instance;
+    private static ChatSdkDateFormatUtil instance;
 
     private SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     private SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-    private DisplayImageOptions options;
 
-    public static DateFormatUtils getInstance() {
+    public static ChatSdkDateFormatUtil getInstance() {
 
         if (instance == null)
-            instance = new DateFormatUtils();
+            instance = new ChatSdkDateFormatUtil();
         return instance;
     }
 
@@ -33,4 +30,9 @@ public class DateFormatUtils {
         }
         return outputFormat.format(date);
     }
+
+    public String getCurrentTimeUTC() {
+        return inputFormat.format(new Date());
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.blameo.chatsdk.models.pojos;
 
-public class Message extends CustomData {
+import java.io.Serializable;
+
+public class Message extends CustomData implements Serializable {
     private String id;
     private String author_id;
     private String channel_id;
@@ -23,6 +25,17 @@ public class Message extends CustomData {
         this.updated_at = updated_at;
         this.sent_at = sent_at;
         this.seen_at = seen_at;
+    }
+
+    public Message(String id, String author_id, String channel_id,
+                   String content, int type, String created_at, boolean is_system_message) {
+        this.id = id;
+        this.author_id = author_id;
+        this.channel_id = channel_id;
+        this.content = content;
+        this.type = type;
+        this.created_at = created_at;
+        this.is_system_message = is_system_message;
     }
 
     public String getChannel_id() {

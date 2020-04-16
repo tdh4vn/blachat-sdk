@@ -18,7 +18,7 @@ class SessionRepositoryImpl constructor(
         val me = UserSharedPreference.getCurrentUser()
 
         if (me != null) {
-            APIProvider.setSession(me.token)
+            APIProvider.setSession("", me.token)
             // update firebase here
         }
         return me!!
@@ -43,7 +43,7 @@ class SessionRepositoryImpl constructor(
             .observeOn(AndroidSchedulers.mainThread())
             .flatMap {
                 saveSession(it)
-                APIProvider.setSession(it.token)
+                APIProvider.setSession("", it.token)
                 Single.just(it)
             }
     }

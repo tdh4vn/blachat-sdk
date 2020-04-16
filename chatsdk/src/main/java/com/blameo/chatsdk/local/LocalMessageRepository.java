@@ -25,4 +25,6 @@ public interface LocalMessageRepository {
     boolean checkIfMessageIsExist(String id);
 
     void clearAllLocalMessages();
+
+    void updateStatusMessage(String messageId, String attr);
 }

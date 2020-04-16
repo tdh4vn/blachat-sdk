@@ -34,6 +34,14 @@ open class ChatListener {
         fun getMessagesSuccess(messages: ArrayList<Message>)
     }
 
+    interface MarkSeenMessageListener{
+        fun onError(error: String)
+    }
+
+    interface MarkReceiveMessageListener{
+        fun onError(error: String)
+    }
+
 
     // USER
 

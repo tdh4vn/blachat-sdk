@@ -1,9 +1,12 @@
 package com.blameo.chatsdk.net
 
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
+import com.blameo.chatsdk.models.results.BaseResult
 import com.blameo.chatsdk.models.results.GetMessageByIDResult
 import com.blameo.chatsdk.models.results.GetMessagesResult
+import com.blameo.chatsdk.repositories.MessageRemoteRepositoryImpl
 import io.reactivex.Single
+import retrofit2.Call
 import retrofit2.http.*
 
 interface MessageAPI {
@@ -11,18 +14,28 @@ interface MessageAPI {
     @GET("get-by-id/{id}")
     fun getMessageById(
         @Path("id") id: String
-    ): Single<GetMessageByIDResult>
+    ): Call<GetMessageByIDResult>
 
     @POST("create")
     fun createMessage(
         @Body body: CreateMessageBody
-    ): Single<GetMessageByIDResult>
+    ): Call<GetMessageByIDResult>
 
     @GET("channel/{channelId}")
     fun getMessagesInChannel(
         @Path("channelId") channelId: String,
         @Query("lastId") lastId: String
-    ): Single<GetMessagesResult>
+    ): Call<GetMessagesResult>
+
+    @POST("mark-seen")
+    fun markSeenMessage(
+        @Body body: MessageRemoteRepositoryImpl.MarkStatusMessage
+    ): Call<BaseResult>
+
+    @POST("mark-receive")
+    fun markReceiveMessage(
+        @Body body: MessageRemoteRepositoryImpl.MarkStatusMessage
+    ): Call<BaseResult>
 
 
 }

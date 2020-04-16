@@ -2,93 +2,90 @@ package com.blameo.chatsdk.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.blameo.chatsdk.local.LocalChannelRepository
+import com.blameo.chatsdk.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.results.CreateChannelResult
-import com.blameo.chatsdk.models.results.GetChannelResult
-import com.blameo.chatsdk.models.results.GetUsersInChannelResult
-import com.blameo.chatsdk.net.APIProvider
-import com.blameo.chatsdk.repositories.ChannelRemoteRepository
-import com.blameo.chatsdk.repositories.ChannelRemoteRepositoryImpl
-import io.reactivex.SingleObserver
-import io.reactivex.disposables.Disposable
+import com.blameo.chatsdk.sources.ChannelRepository
+import com.blameo.chatsdk.sources.ChannelRepositoryImpl
 
-private var shareInstance: ChannelViewModel? = null
 
-class ChannelViewModel {
+interface ChannelListener{
+    fun onGetChannelsSuccess(channels: ArrayList<Channel>)
+    fun onGetChannelError(error: String)
+    fun onCreateChannelSuccess(channel: Channel)
+    fun onCreateChannelFailed(error: String)
+    fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>)
+    fun onGetUsersInChannelFailed(error: String)
+}
 
-    companion object {
-        fun getInstance(): ChannelViewModel {
-            if (shareInstance == null)
-                shareInstance = ChannelViewModel()
-            return shareInstance!!
-        }
-    }
+class ChannelViewModel(
+    private val listener: ChannelListener,
+    localChannelRepository: LocalChannelRepository,
+    localUserInChannels: LocalUserInChannelRepository
+)
+    : ChannelListener {
 
-    var channelRepository: ChannelRemoteRepository =
-        ChannelRemoteRepositoryImpl(APIProvider.userAPI)
+    private var channelRepository: ChannelRepository =
+        ChannelRepositoryImpl(this, localChannelRepository, localUserInChannels)
 
-    var channelsRemote = MutableLiveData<ArrayList<Channel>>()
-    var usersInChannel = MutableLiveData<ArrayList<String>>()
-    var createChannel = MutableLiveData<Channel>()
-
-    var errorStream = MutableLiveData<String>()
     private val TAG = "CHANNEL_VM"
 
-    private var getChannelsRemoteListener = object : SingleObserver<GetChannelResult> {
-        override fun onSuccess(t: GetChannelResult) {
-            channelsRemote.value = t.data
-            Log.e("cccc", "s: ${t.data.size}")
-        }
-
-        override fun onSubscribe(d: Disposable) {
-
-        }
-
-        override fun onError(e: Throwable) {
-            errorStream.value = e.message
-            Log.e("aaa", "" + e.message + e.cause + e.stackTrace)
-        }
-    }
-
-    private var getUsersInChannelListener = object : SingleObserver<GetUsersInChannelResult> {
-        override fun onSuccess(t: GetUsersInChannelResult) {
-            usersInChannel.value = t.data
-        }
-
-        override fun onSubscribe(d: Disposable) {
-        }
-
-        override fun onError(e: Throwable) {
-        }
-
-    }
-
-    private var createChannelListener = object : SingleObserver<CreateChannelResult> {
-        override fun onSuccess(t: CreateChannelResult) {
-            createChannel.value = t.data
-            Log.e(TAG, "ok ${t.data.id}")
-        }
-
-        override fun onSubscribe(d: Disposable) {
-        }
-
-        override fun onError(e: Throwable) {
-            Log.e(TAG, "" + e.message + e.cause + e.stackTrace.toString())
-        }
-    }
-
-    fun getChannelsRemote() {
-        Log.e("c", "abc")
-        channelRepository.getChannels().subscribe(getChannelsRemoteListener)
+    fun getChannels() {
+        channelRepository.getChannels()
     }
 
     fun getUsersInChannel(channelId: String) {
-        channelRepository.getUsersInChannel(channelId).subscribe(getUsersInChannelListener)
+        channelRepository.getUsersInChannel(channelId)
     }
 
     fun createChannel(ids: ArrayList<String>, name: String, type: Int) {
         val body = CreateChannelBody(ids, name, type)
-        channelRepository.createChannel(body).subscribe(createChannelListener)
+        channelRepository.createChannel(body)
+    }
+
+    fun putTypingInChannel(cId: String){
+        channelRepository.putTypingInChannel(cId)
+    }
+
+    fun putStopTypingInChannel(cId: String){
+        channelRepository.putStopTypingInChannel(cId)
+    }
+
+    override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
+
+        Log.e(TAG, "result")
+//        var channelsResult = (channelRepository as ChannelRepositoryImpl).getLocalChannels()
+//        if(channels.size == 0){
+//            channelsResult = channels
+//        }
+
+        listener.onGetChannelsSuccess(channels)
+
+        channels.forEachIndexed { index, channel ->
+            Log.e(TAG, "$index: ${channel.id}")
+        }
+    }
+
+    override fun onGetChannelError(error: String) {
+//        val localChannels = (channelRepository as ChannelRepositoryImpl).getLocalChannels()
+//        listener.onGetChannelsSuccess(localChannels)
+        listener.onGetChannelError(error)
+    }
+
+    override fun onCreateChannelSuccess(channel: Channel) {
+        listener.onCreateChannelSuccess(channel)
+    }
+
+    override fun onCreateChannelFailed(error: String) {
+        listener.onCreateChannelFailed(error)
+    }
+
+    override fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>) {
+        listener.onGetUsersInChannelSuccess(channelId, ids)
+    }
+
+    override fun onGetUsersInChannelFailed(error: String) {
+        listener.onGetUsersInChannelFailed(error)
     }
 }

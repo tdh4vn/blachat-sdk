@@ -3,19 +3,31 @@ package com.blameo.chatsdk.repositories
 import com.blameo.chatsdk.models.bodies.UsersBody
 import com.blameo.chatsdk.models.results.GetUsersByIdsResult
 import com.blameo.chatsdk.net.UserAPI
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import com.blameo.chatsdk.sources.UserResultListener
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class UserRemoteRepositoryImpl constructor(private val userAPI: UserAPI) : UserRemoteRepository {
+class UserRemoteRepositoryImpl(
+    private val userAPI: UserAPI,
+    private val listener: UserResultListener
+) : UserRemoteRepository {
 
-    override fun getUsersByIds(body: UsersBody): Single<GetUsersByIdsResult> {
+    override fun getUsersByIds(body: UsersBody) {
         return userAPI.getUsersByIds(body)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .flatMap {
-                Single.just(it)
-            }
+            .enqueue(object : Callback<GetUsersByIdsResult>{
+                override fun onFailure(call: Call<GetUsersByIdsResult>, t: Throwable) {
+                    listener.onGetUsersFailed(t.message!!)
+                }
+
+                override fun onResponse(
+                    call: Call<GetUsersByIdsResult>,
+                    response: Response<GetUsersByIdsResult>
+                ) {
+                    if(response.isSuccessful)
+                        listener.onGetUsersSuccess(response.body()?.data!!)
+                }
+            })
     }
 
 }

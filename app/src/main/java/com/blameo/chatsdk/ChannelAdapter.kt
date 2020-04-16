@@ -1,6 +1,7 @@
 package com.blameo.chatsdk
 
 import android.content.Context
+import android.content.Intent
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.models.pojos.Channel
+import com.blameo.chatsdk.screens.ChatActivity
 import com.blameo.chatsdk.utils.DateFormatUtils
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
@@ -41,6 +43,10 @@ class ChannelAdapter(val context: Context, private val channels: ArrayList<Chann
 
         val channel = channels[position]
         holder.bindChannel(channel, options)
+        holder.itemView.setOnClickListener {
+            context.startActivity(Intent(context, ChatActivity::class.java)
+                .putExtra("CHANNEL", channel))
+        }
     }
 
     class ChannelVH(view: View, context: Context) : RecyclerView.ViewHolder(view) {

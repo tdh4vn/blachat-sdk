@@ -18,8 +18,10 @@ object APIProvider {
     private var retrofitMessage: Retrofit? = null
 
     private var retrofit: Retrofit? = null
+    lateinit var baseUrl: String
 
-    fun setSession(token: String) {
+    fun setSession(baseUrl: String, token: String) {
+        this.baseUrl = "$baseUrl/v1/"
         currentToken = token
     }
 
@@ -39,7 +41,7 @@ object APIProvider {
 
 
                 retrofitWithSession = Retrofit.Builder()
-                    .baseUrl(ServiceConfigs.API_URL)
+                    .baseUrl(this.baseUrl)
                     .client(httpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -63,7 +65,7 @@ object APIProvider {
 
 
                 retrofitMessage = Retrofit.Builder()
-                    .baseUrl(ServiceConfigs.API_URL_MESSAGES)
+                    .baseUrl(this.baseUrl +"messages/")
                     .client(httpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -88,7 +90,7 @@ object APIProvider {
                     .build()
 
                 retrofit = Retrofit.Builder()
-                    .baseUrl(ServiceConfigs.API_URL)
+                    .baseUrl(this.baseUrl+"/v1/")
                     .client(httpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
