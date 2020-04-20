@@ -13,7 +13,7 @@ class UserRemoteRepositoryImpl(
     private val listener: UserResultListener
 ) : UserRemoteRepository {
 
-    override fun getUsersByIds(body: UsersBody) {
+    override fun getUsersByIds(channelID: String, body: UsersBody) {
         return userAPI.getUsersByIds(body)
             .enqueue(object : Callback<GetUsersByIdsResult>{
                 override fun onFailure(call: Call<GetUsersByIdsResult>, t: Throwable) {
@@ -25,7 +25,7 @@ class UserRemoteRepositoryImpl(
                     response: Response<GetUsersByIdsResult>
                 ) {
                     if(response.isSuccessful)
-                        listener.onGetUsersSuccess(response.body()?.data!!)
+                        listener.onGetUsersSuccess(channelID, response.body()?.data!!)
                 }
             })
     }

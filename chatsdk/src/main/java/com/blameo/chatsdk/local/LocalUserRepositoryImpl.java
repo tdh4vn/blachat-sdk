@@ -119,7 +119,8 @@ public class LocalUserRepositoryImpl extends SQLiteOpenHelper implements LocalUs
                 new String[]{id}, null, null, null, null);
         User user = null;
 
-        if (cursor == null && cursor.moveToFirst()){
+        if (cursor != null && cursor.moveToFirst()){
+
             user = new User(cursor.getString(0),
                     cursor.getString(1), cursor.getString(2),
                     cursor.getString(3), cursor.getString(4));

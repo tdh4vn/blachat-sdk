@@ -8,13 +8,13 @@ public interface LocalMessageRepository {
 
     ArrayList<Message> getAllLocalMessages();
 
-    ArrayList<Message> getAllMessagesInChannel(String channelId);
+    ArrayList<Message> getAllMessagesInChannel(String channelId, String lastID);
 
     void addLocalMessage(Message message);
 
     int getTotalLocalMessages();
 
-    int updateMessage(Message message);
+    int updateMessage(String temID, Message message);
 
     Message getMessageByID(String id);
 

@@ -2,8 +2,10 @@ package com.blameo.chatsdk.viewmodels
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
+import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.local.LocalChannelRepository
 import com.blameo.chatsdk.local.LocalUserInChannelRepository
+import com.blameo.chatsdk.local.LocalUserInChannelRepositoryImpl
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.sources.ChannelRepository
@@ -29,6 +31,10 @@ class ChannelViewModel(
     private var channelRepository: ChannelRepository =
         ChannelRepositoryImpl(this, localChannelRepository, localUserInChannels)
 
+    var localChannels : ArrayList<String> = arrayListOf()
+
+
+
     private val TAG = "CHANNEL_VM"
 
     fun getChannels() {
@@ -50,6 +56,14 @@ class ChannelViewModel(
 
     fun putStopTypingInChannel(cId: String){
         channelRepository.putStopTypingInChannel(cId)
+    }
+
+    fun updateLastMessage(channelId: String, messageId: String){
+        channelRepository.updateLastMessage(channelId, messageId)
+    }
+
+    fun addNewChannel(channel: Channel){
+        channelRepository.addNewChannel(channel)
     }
 
     override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {

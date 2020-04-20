@@ -38,7 +38,7 @@ class MessageRemoteRepositoryImpl(
 
     }
 
-    override fun createMessage(body: CreateMessageBody) {
+    override fun createMessage(temID: String, body: CreateMessageBody) {
         messageAPI.createMessage(body)
             .enqueue(object : Callback<GetMessageByIDResult> {
                 override fun onFailure(call: Call<GetMessageByIDResult>, t: Throwable) {
@@ -50,7 +50,7 @@ class MessageRemoteRepositoryImpl(
                 ) {
                     Log.e(TAG, "${response.isSuccessful}")
                     if (response.isSuccessful)
-                        messageListener.onCreateMessageSuccess(response.body()?.message!!)
+                        messageListener.onCreateMessageSuccess(temID, response.body()?.message!!)
                 }
             })
     }
@@ -60,6 +60,7 @@ class MessageRemoteRepositoryImpl(
         messageAPI.getMessagesInChannel(channelId, lastId)
             .enqueue(object : Callback<GetMessagesResult> {
                 override fun onFailure(call: Call<GetMessagesResult>, t: Throwable) {
+                    messageListener.onGetRemoteMessagesFailed(t.message!!)
                 }
 
                 override fun onResponse(
@@ -67,8 +68,12 @@ class MessageRemoteRepositoryImpl(
                     response: Response<GetMessagesResult>
                 ) {
                     if (response.isSuccessful)
-                        if(response.body()?.data != null)
-                             messageListener.onGetRemoteMessagesSuccess(response.body()?.data!!)
+                        if (response.body()?.data != null)
+                            messageListener.onGetRemoteMessagesSuccess(response.body()?.data!!)
+                        else messageListener.onGetRemoteMessagesFailed("1")
+                    else
+                        messageListener.onGetRemoteMessagesFailed("2")
+
                 }
             })
     }
@@ -76,14 +81,14 @@ class MessageRemoteRepositoryImpl(
     override fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String) {
 
         messageAPI.markSeenMessage(MarkStatusMessage(messageId, channelId, authorId))
-            .enqueue(object: Callback<BaseResult>{
+            .enqueue(object : Callback<BaseResult> {
                 override fun onFailure(call: Call<BaseResult>, t: Throwable) {
                     messageListener.onMarkSeenMessageFail(t.message!!)
                 }
 
                 override fun onResponse(call: Call<BaseResult>, response: Response<BaseResult>) {
-                    if(response.isSuccessful)
-                        if(response.body()!!.success())
+                    if (response.isSuccessful)
+                        if (response.body()!!.success())
                             messageListener.onMarkSeenMessageSuccess(messageId)
                         else
                             messageListener.onMarkSeenMessageFail(response.body()!!.resultMessage)
@@ -96,14 +101,14 @@ class MessageRemoteRepositoryImpl(
     override fun sendReceivedMessageEvent(channelId: String, messageId: String, authorId: String) {
 
         messageAPI.markReceiveMessage(MarkStatusMessage(messageId, channelId, authorId))
-            .enqueue(object: Callback<BaseResult>{
+            .enqueue(object : Callback<BaseResult> {
                 override fun onFailure(call: Call<BaseResult>, t: Throwable) {
                     messageListener.onMarkReceiveMessageFail(t.message!!)
                 }
 
                 override fun onResponse(call: Call<BaseResult>, response: Response<BaseResult>) {
-                    if(response.isSuccessful)
-                        if(response.body()!!.success())
+                    if (response.isSuccessful)
+                        if (response.body()!!.success())
                             messageListener.onMarkReceiveMessageSuccess(messageId)
                         else
                             messageListener.onMarkReceiveMessageFail(response.body()!!.resultMessage)

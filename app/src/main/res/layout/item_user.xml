@@ -39,26 +39,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
-            <TextView
+            <ImageView
+                android:visibility="invisible"
+                android:tint="@color/titileColor"
+                android:src="@drawable/ic_done_black_36dp"
                 android:layout_marginStart="16dp"
                 android:layout_alignParentEnd="true"
-                android:text="2019-07-30"
-                android:textSize="12sp"
-                android:gravity="bottom"
                 android:layout_centerVertical="true"
-                android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:id="@+id/imgSelected"
+                android:layout_width="32dp"
+                android:layout_height="32dp"/>
 
         </RelativeLayout>
 
-        <TextView
-            android:text="Hello"
-            android:id="@+id/tvContent"
-            android:ellipsize="end"
-            android:textSize="14sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
 
     </LinearLayout>
 

@@ -53,7 +53,6 @@
         </RelativeLayout>
 
         <TextView
-            android:text="Hello"
             android:id="@+id/tvContent"
             android:ellipsize="end"
             android:textSize="14sp"

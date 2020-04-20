@@ -9,7 +9,7 @@ interface MessageRemoteRepository {
 
     fun getMessageById(id: String)
 
-    fun createMessage(body: CreateMessageBody)
+    fun createMessage(temID: String, body: CreateMessageBody)
 
     fun getMessages(channelId: String, lastId: String)
 

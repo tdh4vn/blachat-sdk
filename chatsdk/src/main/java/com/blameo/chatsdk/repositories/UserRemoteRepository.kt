@@ -4,6 +4,6 @@ import com.blameo.chatsdk.models.bodies.UsersBody
 
 interface UserRemoteRepository {
 
-    fun getUsersByIds(body: UsersBody)
+    fun getUsersByIds(channelID: String, body: UsersBody)
 
 }

@@ -5,7 +5,6 @@ import com.blameo.chatsdk.models.pojos.Me
 import com.blameo.chatsdk.net.APIProvider
 import com.blameo.chatsdk.net.SessionAPI
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 class SessionRepositoryImpl constructor(
@@ -40,7 +39,6 @@ class SessionRepositoryImpl constructor(
         
         return sessionAPI.login(idToken)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .flatMap {
                 saveSession(it)
                 APIProvider.setSession("", it.token)

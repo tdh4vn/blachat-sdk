@@ -3,6 +3,7 @@ package com.blameo.chatsdk
 import android.content.Context
 import android.content.Intent
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +13,15 @@ import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.screens.ChatActivity
 import com.blameo.chatsdk.utils.DateFormatUtils
+import com.blameo.chatsdk.viewmodels.ChannelVMlStore
+import com.blameo.chatsdk.viewmodels.ConversationViewModel
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 
-class ChannelAdapter(val context: Context, private val channels: ArrayList<Channel>) :
+class ChannelAdapter(val context: Context) :
     RecyclerView.Adapter<ChannelAdapter.ChannelVH>() {
+
 
     private var options: DisplayImageOptions = DisplayImageOptions.Builder()
         .cacheInMemory(true)
@@ -28,11 +32,12 @@ class ChannelAdapter(val context: Context, private val channels: ArrayList<Chann
         .cacheOnDisc(true)
         .build()
 
+    var channels: ArrayList<Channel> = arrayListOf()
+
+    private val vmStore: ChannelVMlStore = ChannelVMlStore.getInstance()
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChannelVH {
-        return ChannelVH(
-            LayoutInflater.from(context).inflate(R.layout.item_channel, parent, false),
-            context
-        )
+        return ChannelVH(LayoutInflater.from(context).inflate(R.layout.item_channel, parent, false))
     }
 
     override fun getItemCount(): Int {
@@ -41,30 +46,41 @@ class ChannelAdapter(val context: Context, private val channels: ArrayList<Chann
 
     override fun onBindViewHolder(holder: ChannelVH, position: Int) {
 
+        val channelVM = vmStore.getChannelViewModel(channels[position])
+//        channelVM.getUsersInChannel()
+
         val channel = channels[position]
-        holder.bindChannel(channel, options)
+        holder.bindChannel(channelVM, options)
         holder.itemView.setOnClickListener {
             context.startActivity(Intent(context, ChatActivity::class.java)
                 .putExtra("CHANNEL", channel))
         }
     }
 
-    class ChannelVH(view: View, context: Context) : RecyclerView.ViewHolder(view) {
+    class ChannelVH(view: View) : RecyclerView.ViewHolder(view) {
 
         var tvName: TextView = view.findViewById(R.id.tvName)
         var tvContent: TextView = view.findViewById(R.id.tvContent)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
         var tvTime: TextView = view.findViewById(R.id.tvTime)
 
-        fun bindChannel(channel: Channel, options: DisplayImageOptions) {
+        fun bindChannel(channelVM: ConversationViewModel, options: DisplayImageOptions) {
 
-            if (!TextUtils.isEmpty(channel.avatar))
-                ImageLoader.getInstance().displayImage(channel.avatar, imgAvatar, options)
-            tvName.text = channel.name
-            if (channel.last_message != null)
-                tvContent.text = channel.last_message.content
+            if (!TextUtils.isEmpty(channelVM.channel.avatar))
+                ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
+            tvName.text = channelVM.channel_name.value.toString()
+            tvContent.text = channelVM.last_message.value.toString()
 
-            tvTime.text = DateFormatUtils.getInstance().getTime(channel.updated_at)
+            tvTime.text = DateFormatUtils.getInstance().getTime(channelVM.channel.created_at)
+
+            channelVM.channel_name.observeForever {
+                tvName.text = it.toString()
+            }
+
+            channelVM.channel_avatar.observeForever {
+                if (!TextUtils.isEmpty(channelVM.channel_avatar.value))
+                    ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
+            }
         }
     }
 }

@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             app:contentInsetStart="0dp"
             app:contentInsetStartWithNavigation="0dp"
-            app:titleTextColor="@color/colorTextPrimary">
+            app:titleTextColor="@color/titileColor">
 
             <RelativeLayout
                 android:id="@+id/info_container"
@@ -25,45 +25,60 @@
                 android:layout_height="wrap_content"
                 android:layout_marginRight="8dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginStart="16dp"
-                    android:orientation="horizontal">
-
                     <de.hdodenhof.circleimageview.CircleImageView
+                        android:layout_centerVertical="true"
                         android:id="@+id/imgAvatar"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_marginRight="4dp"
                         android:src="@mipmap/ic_launcher" />
 
-                    <TextView
-                        android:layout_gravity="center"
-                        android:layout_weight="4"
-                        android:id="@+id/txtTitle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="8dp"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textColor="@color/colorTextPrimary"
-                        android:textSize="16dp" />
+                    <RelativeLayout
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/tvAdd"
+                        android:id="@+id/info_view"
+                        android:layout_toEndOf="@+id/imgAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:text="nam"
+                            android:layout_gravity="center"
+                            android:id="@+id/txtTitle"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="8dp"
+                            android:layout_marginRight="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/titileColor"
+                            android:textSize="16sp"
+                            android:layout_width="match_parent" />
+                        <TextView
+                            android:visibility="gone"
+                            android:layout_below="@+id/txtTitle"
+                            android:text="Someone is typing..."
+                            android:layout_gravity="center"
+                            android:id="@+id/txtTyping"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginLeft="8dp"
+                            android:layout_marginRight="8dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/titileColor"
+                            android:textSize="10sp" />
+                    </RelativeLayout>
 
                     <ImageView
-                        android:layout_weight="0.5"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true"
                         android:layout_gravity="center"
                         android:id="@+id/tvAdd"
-                        android:layout_width="0dp"
-                        android:layout_height="18dp"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
                         android:layout_marginRight="8dp"
-                        android:src="@drawable/baseline_add_circle_white_36dp"
+                        android:tint="@color/titileColor"
+                        android:src="@drawable/ic_info_black_36dp"
                         android:layout_marginEnd="8dp" />
-
-                </LinearLayout>
             </RelativeLayout>
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>

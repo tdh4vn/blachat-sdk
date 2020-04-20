@@ -22,4 +22,6 @@ public interface LocalChannelRepository {
     boolean checkIfChannelIsExist(String id);
 
     void clearAllLocalChannels();
+
+    void updateLastMessage(String channelId, String messageId);
 }

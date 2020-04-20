@@ -110,15 +110,17 @@ public class LocalUserInChannelRepositoryImpl extends SQLiteOpenHelper implement
     @Override
     public ArrayList<String> getAllUserIdsInChannel(String channelId) {
         ArrayList<String> uIds = new ArrayList<>();
+//        exportUicDB();
 
         String selectQuery = "SELECT * FROM " + Constant.UIC_TABLE_NAME
-                + " where " + Constant.UIC_CHANNEL_ID + " = " + channelId;
+                + " where " + Constant.UIC_CHANNEL_ID + " ='" + channelId + "'";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        cursor.moveToFirst();
 
-        if (cursor.getCount() == 0) return uIds;
+        Log.i(TAG, "count : "+ cursor.getCount());
+
+        if(cursor == null || !cursor.moveToFirst()) return uIds;
 
         do {
             uIds.add(cursor.getString(2));
@@ -145,5 +147,23 @@ public class LocalUserInChannelRepositoryImpl extends SQLiteOpenHelper implement
             users.add(user);
         } while (cursor.moveToNext());
         return users;
+    }
+
+    @Override
+    public ArrayList<String> getAllChannelIds(String id) {
+        ArrayList<String> channels = new ArrayList<>();
+        String selectQuery = "SELECT * FROM " + Constant.UIC_TABLE_NAME
+                + " where " + Constant.UIC_USER_ID + "='" + id + "'" + " order by "+Constant.UIC_CHANNEL_ID + " DESC";
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        cursor.moveToFirst();
+
+        if (cursor.getCount() == 0) return channels;
+
+        do {
+            channels.add(cursor.getString(1));
+        } while (cursor.moveToNext());
+        return channels;
     }
 }

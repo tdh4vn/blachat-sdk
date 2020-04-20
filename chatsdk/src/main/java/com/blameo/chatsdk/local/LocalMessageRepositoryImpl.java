@@ -27,7 +27,7 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         Log.i(MESSAGE_TAG, "Create MESSAGE Table ... ");
 
         String table = "CREATE TABLE " + Constant.MESSAGE_TABLE_NAME + "("
-                + Constant.MESSAGE_ID + " STRING PRIMARY KEY,"
+                + Constant.MESSAGE_ID + " TEXT,"
                 + Constant.MESSAGE_AUTHOR_ID + " TEXT,"
                 + Constant.MESSAGE_CHANNEL_ID + " TEXT,"
                 + Constant.MESSAGE_CONTENT + " TEXT,"
@@ -67,6 +67,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(attr, ChatSdkDateFormatUtil.getInstance().getCurrentTimeUTC());
+
+        exportMessageDB();
 
         db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
                 new String[]{messageId});
@@ -113,7 +115,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     }
 
     @Override
-    public int updateMessage(Message message) {
+    public int updateMessage(String temID, Message message) {
+        String mID = TextUtils.isEmpty(temID) ? message.getId() : temID;
 
         if(TextUtils.isEmpty(message.getId()))  return 0;
 
@@ -121,13 +124,18 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
         ContentValues values = new ContentValues();
 
-//        values.put(Constant.CHANNEL_COLUMN_NAME, channel.getName());
-//        values.put(Constant.CHANNEL_COLUMN_AVATAR, channel.getAvatar());
+        if(!TextUtils.isEmpty(temID))
+            values.put(Constant.MESSAGE_ID, message.getId());
+        values.put(Constant.MESSAGE_AUTHOR_ID, message.getAuthor_id());
+        values.put(Constant.MESSAGE_CHANNEL_ID, message.getChannel_id());
+        values.put(Constant.MESSAGE_CONTENT, message.getContent());
+        values.put(Constant.MESSAGE_TYPE, message.getType());
+        values.put(Constant.MESSAGE_CREATED_AT, message.getCreated_at());
 
-
+        Log.i("M_LOCAL", "update message id: "+temID + " "+message.getId() + " "+mID);
 
         return db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
-                new String[]{message.getId()});
+                new String[]{mID});
     }
 
     @Override
@@ -197,7 +205,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        cursor.moveToFirst();
+
+        if(cursor == null || !cursor.moveToFirst()) return messages;
 
         if (cursor.getCount() == 0) return messages;
 
@@ -214,15 +223,32 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     }
 
     @Override
-    public ArrayList<Message> getAllMessagesInChannel(String channelId) {
+    public ArrayList<Message> getAllMessagesInChannel(String channelId, String lastId) {
         ArrayList<Message> messages = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME;
-//                + " where " + Constant.MESSAGE_CHANNEL_ID + " = " + channelId;
+        String selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME
+                + " where " + Constant.MESSAGE_CHANNEL_ID + " = '" + channelId + "'"
+                + " order by " +Constant.MESSAGE_CREATED_AT
+                + " DESC"
+                + " limit 20";
+
+        Log.i("asdasda", "id : "+lastId);
+
+        if(lastId.length() > 0){
+            Message message = getMessageByID(lastId);
+            if(message.getCreated_at() == null)
+                message.setCreated_at(ChatSdkDateFormatUtil.getInstance().getCurrentTimeUTC());
+            Log.i("ok", "id : "+lastId);
+            selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME
+                    + " where " + Constant.MESSAGE_CHANNEL_ID + " = '" + channelId + "'"
+                    + " and " + Constant.MESSAGE_CREATED_AT + " <'" + message.getCreated_at() + "'"
+                    + " order by " +Constant.MESSAGE_CREATED_AT
+                    + " DESC"
+                    + " limit 20";
+        }
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-        if(cursor == null || !cursor.moveToFirst()) return null;
-//        cursor.moveToFirst();
+        if(cursor == null || !cursor.moveToFirst()) return messages;
 
         if (cursor.getCount() == 0) return messages;
 
@@ -235,6 +261,7 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
             messages.add(message);
         } while (cursor.moveToNext());
+
         return messages;
     }
 }

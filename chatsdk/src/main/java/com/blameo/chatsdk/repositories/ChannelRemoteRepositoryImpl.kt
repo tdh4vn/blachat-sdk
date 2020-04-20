@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.repositories
 
+import android.util.Log
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.results.BaseResult
 import com.blameo.chatsdk.models.results.CreateChannelResult
@@ -7,10 +8,6 @@ import com.blameo.chatsdk.models.results.GetChannelResult
 import com.blameo.chatsdk.models.results.GetUsersInChannelResult
 import com.blameo.chatsdk.net.UserAPI
 import com.blameo.chatsdk.sources.ChannelResultListener
-import com.blameo.chatsdk.viewmodels.ChannelListener
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -31,7 +28,11 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
                     if(response.isSuccessful){
                         if(response.body() != null){
                             channelResultListener.onGetRemoteChannelsSuccess(response.body()!!.data)
+                        }else{
+                            channelResultListener.onGetRemoteChannelsFailed("")
                         }
+                    }else{
+                        channelResultListener.onGetRemoteChannelsFailed("")
                     }
                 }
             })
@@ -48,7 +49,11 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
                 override fun onResponse(call: Call<GetUsersInChannelResult>, response: Response<GetUsersInChannelResult>) {
                     if(response.isSuccessful){
                         if(response.body() != null){
-                            channelResultListener.onGetUsersInChannelSuccess(id, response.body()!!.data)
+                            val ids = arrayListOf<String>()
+                            response.body()!!.data.forEach {
+                                ids.add(it.member_id)
+                            }
+                            channelResultListener.onGetUsersInChannelSuccess(id, ids)
                         }
                     }
                 }

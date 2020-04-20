@@ -1,7 +1,10 @@
 package com.blameo.chatsdk.sources
 
+import android.util.Log
+import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.local.LocalChannelRepository
 import com.blameo.chatsdk.local.LocalUserInChannelRepository
+import com.blameo.chatsdk.local.LocalUserInChannelRepositoryImpl
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.net.APIProvider
@@ -15,6 +18,8 @@ interface ChannelRepository {
     fun getUsersInChannel(id: String)
     fun putTypingInChannel(cId: String)
     fun putStopTypingInChannel(cId: String)
+    fun updateLastMessage(channelId: String, messageId: String)
+    fun addNewChannel(channel: Channel)
 }
 
 interface ChannelResultListener {
@@ -37,11 +42,22 @@ class ChannelRepositoryImpl(
     private val TAG = "CHANNEL_REPO"
     private var localChannels: ArrayList<Channel> = arrayListOf()
 
+    private val localUIC: LocalUserInChannelRepository
+            = LocalUserInChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
+
     override fun getChannels() {
-        localChannels = localChannelRepository.channels
-        if(localChannels.size > 0){
-            channelListener.onGetChannelsSuccess(localChannels)
-        }else
+
+       val ids = localUIC.getAllChannelIds(BlameoChatSdk.getInstance().uId)
+        Log.i(TAG, "local ids size: ${ids.size}")
+        ids.forEach {
+            val c = localChannelRepository.getChannelByID(it)
+            if(c != null)
+                localChannels.add(c)
+        }
+
+//        if(localChannels.size > 0){
+//            channelListener.onGetChannelsSuccess(localChannels)
+//        }else
             remoteChannels.getChannels()
 
     }
@@ -51,7 +67,15 @@ class ChannelRepositoryImpl(
     }
 
     override fun getUsersInChannel(id: String) {
-        remoteChannels.getUsersInChannel(id)
+        val uIds = localUserInChannels.getAllUserIdsInChannel(id)
+        if(uIds.size == 0) {
+            println("get users in channel $id - REMOTE size: ${uIds.size}")
+            remoteChannels.getUsersInChannel(id)
+        }
+        else {
+            println("get users in channel $id - LOCAL")
+            channelListener.onGetUsersInChannelSuccess(id, uIds)
+        }
     }
 
     override fun putTypingInChannel(cId: String) {
@@ -62,12 +86,21 @@ class ChannelRepositoryImpl(
         remoteChannels.putStopTypingInChannel(cId)
     }
 
+    override fun updateLastMessage(channelId: String, messageId: String) {
+        localChannelRepository.updateLastMessage(channelId, messageId)
+    }
+
+    override fun addNewChannel(channel: Channel) {
+        localChannelRepository.addLocalChannel(channel)
+    }
+
     override fun onGetRemoteChannelsSuccess(channels: ArrayList<Channel>) {
-        channelListener.onGetChannelsSuccess(localChannelRepository.channels)
+        channelListener.onGetChannelsSuccess(channels)
         channels.forEach { localChannelRepository.addLocalChannel(it) }
     }
 
     override fun onGetRemoteChannelsFailed(error: String) {
+        channelListener.onGetChannelsSuccess(localChannels)
         channelListener.onGetChannelError(error)
     }
 
@@ -87,10 +120,6 @@ class ChannelRepositoryImpl(
 
     override fun onGetUsersInChannelFailed(error: String) {
         channelListener.onGetUsersInChannelFailed(error)
-    }
-
-    fun getLocalChannels(): ArrayList<Channel> {
-        return this.localChannels
     }
 
 }

@@ -1,11 +1,12 @@
 package com.blameo.chatsdk
 
+import android.content.Context
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.local.*
+import com.blameo.chatsdk.models.events.*
 import com.blameo.chatsdk.models.pojos.*
-import com.blameo.chatsdk.models.pojos.MessageEvent
 import com.blameo.chatsdk.net.APIProvider
 import com.blameo.chatsdk.viewmodels.*
 import com.google.gson.Gson
@@ -25,6 +26,14 @@ interface OnTypingListener{
     fun onNewMessage(message: Message)
 }
 
+interface OnCursorChangeListener{
+    fun onCursorChange(type: String, cursor: CursorEvent)
+}
+
+interface OnNewChannelListener{
+    fun onNewChannel(channel: Channel)
+}
+
 class BlameoChatSdk : ChatListener() {
 
     lateinit var token: String
@@ -33,12 +42,14 @@ class BlameoChatSdk : ChatListener() {
     lateinit var uidSocket: String
     lateinit var wsURL: String
     lateinit var channel: String
+    lateinit var currentChannelID: String
+    lateinit var context: Context
 
     val TAG = "BlameoChat"
 
-    lateinit var getChannelsListener: GetChannelsListener
+    private var getChannelsListener: GetChannelsListener? = null
     lateinit var getMessagesListener: GetMessagesListener
-    lateinit var usersInChannelListener: GetUsersInChannelListener
+    private var usersInChannelListener: GetUsersInChannelListener? = null
     lateinit var createChannelListener: CreateChannelListener
     lateinit var createMessageListener: CreateMessageListener
     lateinit var markSeenMessageListener: MarkSeenMessageListener
@@ -47,6 +58,8 @@ class BlameoChatSdk : ChatListener() {
     lateinit var messageViewModel: MessageViewModel
     lateinit var userViewModel: UserViewModel
     lateinit var typingListener: OnTypingListener
+    lateinit var onCursorChangeListener: OnCursorChangeListener
+    lateinit var onNewChannelListener: OnNewChannelListener
 
     lateinit var localChannels: LocalChannelRepository
     lateinit var localMessages: LocalMessageRepository
@@ -58,14 +71,34 @@ class BlameoChatSdk : ChatListener() {
         this.typingListener = onTypingListener
     }
 
+    fun addOnCursorChangeListener(onCursorChangeListener: OnCursorChangeListener){
+        this.onCursorChangeListener = onCursorChangeListener
+    }
+
+    fun addOnNewChannelListener(onNewChannelListener: OnNewChannelListener){
+        this.onNewChannelListener = onNewChannelListener
+    }
+
     private val channelListener = object : ChannelListener {
         override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
             if (channels.size > 0) {
                 this@BlameoChatSdk.channels = channels
+//                getChannelsListener.onGetChannelsSuccess(channels)
+
                 channels.forEach { channel ->
-                    Log.i(TAG, "id ${channel.id} last_mess ${channel.last_message_id}")
-                    if (!TextUtils.isEmpty(channel.last_message_id))
-                        messageViewModel.getMessageById(channel.last_message_id)
+                    if(channel.last_message == null) {
+                        Log.i(TAG, "id ${channel.id} last_mess ${channel.last_message_id}")
+                        if (!TextUtils.isEmpty(channel.last_message_id))
+                            messageViewModel.getMessageById(channel.last_message_id)
+                    }else{
+                        channelViewModel.updateLastMessage(channel.id, channel.last_message.id)
+                    }
+                }
+
+                channels.forEach { channel ->
+                    Log.i(TAG, "get users in ${channel.id}")
+                    Log.i(TAG, "channel name: ${channel.name} ${channel.id}")
+                    channelViewModel.getUsersInChannel(channel.id)
                 }
             }
         }
@@ -84,7 +117,7 @@ class BlameoChatSdk : ChatListener() {
 
         override fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>) {
             Log.i(TAG, "get ids: ${ids.size}")
-            getUsersByIds(ids)
+            getUsersByIds(channelId, ids)
         }
 
         override fun onGetUsersInChannelFailed(error: String) {
@@ -107,7 +140,7 @@ class BlameoChatSdk : ChatListener() {
             channels.forEach { channel ->
                 if (channel.id == message.channel_id) {
                     channel.last_message = message
-                    getChannelsListener.onGetChannelsSuccess(channels)
+//                    getChannelsListener.onGetChannelsSuccess(channels)
                     return@forEach
                 }
             }
@@ -117,7 +150,8 @@ class BlameoChatSdk : ChatListener() {
             createMessageListener.createMessageSuccess(message)
         }
 
-        override fun onMarkSeenMessageSuccess() {
+        override fun onMarkSeenMessageSuccess(messageId: String) {
+            markSeenMessageListener.onSuccess(messageId)
         }
 
         override fun onMarkSeenMessageFail(error: String) {
@@ -133,9 +167,30 @@ class BlameoChatSdk : ChatListener() {
     }
 
     private val userListener = object : UserListener{
-        override fun onUsersByIdsSuccess(users: ArrayList<User>) {
+        override fun onUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
             Log.e(TAG, "success ${users.size}")
-            usersInChannelListener.onGetUsersByIdsSuccess(users)
+//            usersInChannelListener.onGetUsersByIdsSuccess(users)
+            if(users.size == 2){
+                channels.forEach { channel ->
+                    if(channelId == channel.id){
+                        users.forEach { user ->
+                            if(user.id != uId){
+                                channel.name = user.name
+                                channel.avatar = user.avatar
+                                return@forEach
+                            }
+                        }
+                        return@forEach
+                    }
+                }
+            }
+
+            if(usersInChannelListener != null)
+                usersInChannelListener?.onGetUsersByIdsSuccess(channelId, users)
+
+            if(channels[channels.size -1].id == channelId){
+                getChannelsListener?.onGetChannelsSuccess(channels)
+            }
         }
 
         override fun onGetUsersByIdsError(error: String) {
@@ -168,7 +223,7 @@ class BlameoChatSdk : ChatListener() {
 
     private fun initViewModels() {
         channelViewModel = ChannelViewModel(channelListener, this.localChannels, this.localUserInChannels)
-        messageViewModel = MessageViewModel(messageListener, this.localMessages)
+        messageViewModel = MessageViewModel(messageListener)
         userViewModel = UserViewModel(userListener, this.localUsers)
     }
 
@@ -202,22 +257,45 @@ class BlameoChatSdk : ChatListener() {
                 Log.i(TAG, "Message from " + sub.channel + ": " + data)
                 val g = Gson()
                 val p = g.fromJson(data, Event::class.java)
-                println(p.type + " " +p.payload)
                 when(p.type){
                     "typing_event" -> {
                         val typing = g.fromJson(p.payload.toString(), Payload::class.java)
+                        if(typing.channel_id != currentChannelID)   return
                         if(typing.is_typing)
                             typingListener.onTyping()
                         else
                             typingListener.onStopTyping()
                     }
                     "new_message" -> {
-                        println("convert")
                         val new_event = g.fromJson(data, NewMessageEvent::class.java)
                         val message = new_event.payload
-                        println("cast${message.type}")
-                        typingListener.onNewMessage(message)
+                        if(message.author_id != uId){
+                            typingListener.onNewMessage(message)
+                            messageViewModel.receiveEventNewMessage(message)
+                        }
 
+                    }
+
+                    "mark_seen" -> {
+                        val event = g.fromJson(data, StatusMessageEvent::class.java)
+                        println("seen")
+                        onCursorChangeListener.onCursorChange("SEEN", event.payload)
+                        messageViewModel.receiveEventSeenMessage(event.payload.message_id)
+                    }
+
+                    "mark_receive" -> {
+                        val event = g.fromJson(data, StatusMessageEvent::class.java)
+                        println("receive")
+                        messageViewModel.receiveEventReceiveMessage(event.payload.message_id)
+                    }
+
+                    "new_channel" -> {
+                        val event = g.fromJson(data, NewChannelEvent::class.java)
+                        println("new channel")
+                        val c = event.payload
+                        val channel = Channel(c.id, c.name, c.avatar, c.type, c.updated_at, c.created_at, c.last_message_id)
+                        channelViewModel.addNewChannel(channel)
+                        onNewChannelListener.onNewChannel(channel)
                     }
                 }
 
@@ -239,7 +317,6 @@ class BlameoChatSdk : ChatListener() {
         val subscription: Subscription
         subscription = try {
             client.newSubscription(channel, subListener)
-//            client.getSubscription(channel)
         } catch (e: Exception) {
             e.printStackTrace()
             return
@@ -294,15 +371,17 @@ class BlameoChatSdk : ChatListener() {
             channelViewModel.putStopTypingInChannel(channelID)
     }
 
-    private fun initDB(activity: AppCompatActivity) {
-        localChannels = LocalChannelRepositoryImpl(activity)
-        localMessages = LocalMessageRepositoryImpl(activity)
-        localUserInChannels = LocalUserInChannelRepositoryImpl(activity)
-        localUsers = LocalUserRepositoryImpl(activity)
+    private fun initDB() {
+        localChannels = LocalChannelRepositoryImpl(context)
+        localMessages = LocalMessageRepositoryImpl(context)
+        localUserInChannels = LocalUserInChannelRepositoryImpl(context)
+        localUsers = LocalUserRepositoryImpl(context)
+        exportDB()
     }
 
     fun initContext(activity: AppCompatActivity) {
-        initDB(activity)
+        context = activity
+        initDB()
     }
 
     fun getChannels(getChannelsListener: GetChannelsListener) {
@@ -310,10 +389,10 @@ class BlameoChatSdk : ChatListener() {
         channelViewModel.getChannels()
     }
 
-    fun exportChannelDB() {
+    fun exportDB() {
         localChannels.exportChannelDB()
         localMessages.exportMessageDB()
-        localChannels.checkIfChannelIsExist("123")
+        localUserInChannels.exportUicDB()
     }
 
     fun getUsersInChannel(channelId: String, usersInChannelListener: GetUsersInChannelListener) {
@@ -321,8 +400,8 @@ class BlameoChatSdk : ChatListener() {
         channelViewModel.getUsersInChannel(channelId)
     }
 
-    private fun getUsersByIds(ids: ArrayList<String>) {
-        userViewModel.getUsersByIds(ids)
+    private fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
+        userViewModel.getUsersByIds(channelId, ids)
     }
 
     fun createChannel(ids: ArrayList<String>, name: String, type: Int, listener: CreateChannelListener) {
@@ -345,6 +424,7 @@ class BlameoChatSdk : ChatListener() {
 
     fun getMessages(channelId: String, lastId: String, listener: GetMessagesListener) {
         getMessagesListener = listener
+        currentChannelID = channelId
         messageViewModel.getMessages(channelId, lastId)
     }
 

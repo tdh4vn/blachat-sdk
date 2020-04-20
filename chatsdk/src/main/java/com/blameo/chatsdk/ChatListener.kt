@@ -16,7 +16,7 @@ open class ChatListener {
     }
 
     interface GetUsersInChannelListener{
-        fun onGetUsersByIdsSuccess(users: ArrayList<User>)
+        fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>)
     }
 
     interface CreateChannelListener{
@@ -35,6 +35,7 @@ open class ChatListener {
     }
 
     interface MarkSeenMessageListener{
+        fun onSuccess(messageId: String)
         fun onError(error: String)
     }
 

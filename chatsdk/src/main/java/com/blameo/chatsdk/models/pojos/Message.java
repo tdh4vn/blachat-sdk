@@ -28,14 +28,12 @@ public class Message extends CustomData implements Serializable {
     }
 
     public Message(String id, String author_id, String channel_id,
-                   String content, int type, String created_at, boolean is_system_message) {
+                   String content, int type) {
         this.id = id;
         this.author_id = author_id;
         this.channel_id = channel_id;
         this.content = content;
         this.type = type;
-        this.created_at = created_at;
-        this.is_system_message = is_system_message;
     }
 
     public String getChannel_id() {

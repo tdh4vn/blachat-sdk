@@ -29,7 +29,7 @@ object APIProvider {
         get() {
             if (retrofitWithSession == null) {
                 val httpClient = OkHttpClient.Builder()
-                    .addInterceptor(CustomInterceptor.getInstance())
+//                    .addInterceptor(CustomInterceptor.getInstance())
                     .addInterceptor { chain ->
                         val ongoing = chain.request().newBuilder()
                         ongoing.addHeader("Authorization", currentToken)
@@ -54,7 +54,7 @@ object APIProvider {
         get() {
             if (retrofitMessage == null) {
                 val httpClient = OkHttpClient.Builder()
-                    .addInterceptor(CustomInterceptor.getInstance())
+//                    .addInterceptor(CustomInterceptor.getInstance())
                     .addInterceptor { chain ->
                         val ongoing = chain.request().newBuilder()
                         ongoing.addHeader("Authorization", currentToken)
@@ -79,7 +79,7 @@ object APIProvider {
             if (retrofit == null) {
 
                 val httpClient = OkHttpClient.Builder()
-                    .addInterceptor(CustomInterceptor.getInstance())
+//                    .addInterceptor(CustomInterceptor.getInstance())
                     .addInterceptor(object : Interceptor {
                         @Throws(IOException::class)
                         override fun intercept(chain: Interceptor.Chain): Response {

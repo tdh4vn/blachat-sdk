@@ -1,4 +1,6 @@
-package com.blameo.chatsdk.models.pojos;
+package com.blameo.chatsdk.models.events;
+
+import com.blameo.chatsdk.models.pojos.Message;
 
 public class NewMessageEvent {
     private String type;

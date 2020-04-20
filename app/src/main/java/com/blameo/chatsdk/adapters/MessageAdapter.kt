@@ -2,6 +2,7 @@ package com.blameo.chatsdk.adapters
 
 import android.content.Context
 import android.os.Build
+import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,11 +13,15 @@ import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.models.pojos.Message
+import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.utils.DateFormatUtils
 import com.nostra13.universalimageloader.core.DisplayImageOptions
+import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 class MessageAdapter(
     context: Context,
@@ -31,6 +36,8 @@ class MessageAdapter(
         .imageScaleType(ImageScaleType.IN_SAMPLE_POWER_OF_2)
         .cacheOnDisc(true)
         .build()
+
+    var users: HashMap<String, User> = hashMapOf()
 
     private var formatterDate = SimpleDateFormat("HH:mm dd-MM-yyyy", Locale.getDefault())
     var context: Context
@@ -90,16 +97,16 @@ class MessageAdapter(
         override fun fillData(m: Message) {
             tvContent.text = m.content
             tvTime.text = DateFormatUtils.getInstance().getTime(m.created_at)
+            if(!TextUtils.isEmpty(m.seen_at))
+                tvTime.text = tvTime.text.toString() + " Seen"
+            else{
+                if(!TextUtils.isEmpty(m.sent_at))
+                    tvTime.text = tvTime.text.toString() + " Sent"
+            }
 
-//            if (!TextUtils.isEmpty(m.author_id))
-//                ImageLoader.getInstance().displayImage(
-//                    Constants.url_pattern + m.senderID + Constants.prefix_url,
-//                    imgAvatar,
-//                    options
-//                )
-//            else
-//                imgAvatar.setImageResource(R.drawable.user)
-//            imgAvatar.visibility = View.VISIBLE
+
+            if (!TextUtils.isEmpty(users[m.author_id]?.avatar))
+                ImageLoader.getInstance().displayImage(users[m.author_id]?.avatar,imgAvatar, options)
         }
     }
 
@@ -113,17 +120,8 @@ class MessageAdapter(
             tvContent.text = m.content
             tvTime.text = DateFormatUtils.getInstance().getTime(m.created_at)
 
-//            if (!TextUtils.isEmpty(m.senderID))
-//                ImageLoader.getInstance().displayImage(
-//                    Constants.url_pattern + m.senderID + Constants.prefix_url,
-//                    imgAvatar,
-//                    options
-//                )
-//            else
-//                imgAvatar.setImageResource(R.drawable.user)
-//            imgAvatar.visibility = View.VISIBLE
-//
-//        }
+            if (!TextUtils.isEmpty(users[m.author_id]?.avatar))
+                ImageLoader.getInstance().displayImage(users[m.author_id]?.avatar,imgAvatar, options)
         }
     }
 }

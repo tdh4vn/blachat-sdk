@@ -9,6 +9,8 @@ public interface LocalUserInChannelRepository {
 
     ArrayList<UserInChannel> getAllUICs();
 
+    ArrayList<String> getAllChannelIds(String id);
+
     void saveUserIdsToChannel(String channelId, ArrayList<String> uIds);
 
     int getTotalLocalUIC();

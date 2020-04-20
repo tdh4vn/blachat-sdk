@@ -1,8 +1,11 @@
-package com.blameo.chatsdk.models.pojos;
+package com.blameo.chatsdk.models.events;
+
+import com.blameo.chatsdk.models.pojos.CustomData;
+import com.blameo.chatsdk.models.pojos.Message;
 
 import java.io.Serializable;
 
-public class Channel extends CustomData implements Serializable {
+public class ChannelEvent extends CustomData implements Serializable {
     private String id;
     private String name;
     private String avatar;
@@ -10,12 +13,11 @@ public class Channel extends CustomData implements Serializable {
     private String updated_at;
     private String created_at;
     private String last_message_id;
-    private Message last_message;
 
-    public Channel() {
+    public ChannelEvent() {
     }
 
-    public Channel(String id, String name, String avatar, int type, String updated_at, String created_at, String last_message_id) {
+    public ChannelEvent(String id, String name, String avatar, int type, String updated_at, String created_at, String last_message_id) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
@@ -73,14 +75,6 @@ public class Channel extends CustomData implements Serializable {
         this.created_at = created_at;
     }
 
-    public Message getLast_message() {
-        return last_message;
-    }
-
-    public void setLast_message(Message last_message) {
-        this.last_message = last_message;
-    }
-
     public String getLast_message_id() {
         return last_message_id;
     }
@@ -89,13 +83,6 @@ public class Channel extends CustomData implements Serializable {
         this.last_message_id = last_message_id;
     }
 
-    public Message getMessage() {
-        return last_message;
-    }
-
-    public void setMessage(Message last_message) {
-        this.last_message = last_message;
-    }
 
 
 }

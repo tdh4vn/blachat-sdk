@@ -30,6 +30,7 @@ public class User extends CustomData{
 
     private String connection_status;
     private String last_active_at;
+    public boolean isCheck = false;
 
     public String dobString = "";
 

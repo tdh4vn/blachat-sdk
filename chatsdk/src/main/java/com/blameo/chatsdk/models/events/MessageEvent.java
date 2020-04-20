@@ -1,4 +1,4 @@
-package com.blameo.chatsdk.models.pojos;
+package com.blameo.chatsdk.models.events;
 
 public class MessageEvent {
     public String id;

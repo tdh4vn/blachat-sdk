@@ -15,33 +15,35 @@ class MainActivity : AppCompatActivity() {
     lateinit var adapter: ChannelAdapter
     private val TAG = "MAIN"
 
-    private val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6ZTk3Y2" +
-            "FkMTktYjFhNC00MzY5LTljNDctMzhjODhkMjc2MGFhIiwiY2xpZW50IjoiZTk3Y2FkMTktYjFhNC00MzY5LTljNDctMzhjODhk" +
-            "Mjc2MGFhIiwiZXhwIjoxNTg3OTU4ODAyLCJzdWIiOiJlOTdjYWQxOS1iMWE0LTQzNjktOWM0Ny0zOGM4OGQyNzYwYWEiLCJ1c2VyS" +
-            "WQiOiJlOTdjYWQxOS1iMWE0LT" +
-            "QzNjktOWM0Ny0zOGM4OGQyNzYwYWEifQ.MUpR3vyhypT-_a3qTyUZAiB1WoNXxbhRW8wu2YMFkuk"
+    private var token = ""
 
-    private val tokenWs = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6ZTk3Y2FkMTktYjFhNC00MzY5LTljNDctMzhjODhkMjc2MGFhIiwiY2xpZW50IjoiZTk3Y2FkMTktYjFhNC00MzY5LTljNDctMzhjODhkMjc2MGFhIiwiZXhwIjoxNTg5NjUzMjY2LCJzdWIiOiJlOTdjYWQxOS1iMWE0LTQzNjktOWM0Ny0zOGM4OGQyNzYwYWEiLCJ1c2VySWQiOiJlOTdjYWQxOS1iMWE0LTQzNjktOWM0Ny0zOGM4OGQyNzYwYWEifQ.1g799Cka7FBMyflB1sEjP2WYnA99rdJEYWci8_z_a2U"
+    private var tokenWs = ""
 
-    private val channelId = "42618113-fa71-48e6-9d13-8dad2934ae59"
-    private val myId = "e97cad19-b1a4-4369-9c47-38c88d2760aa"
+    private var myId = ""
     private val userId1 = "7a7c52fe-0a3f-4123-849b-3c2bcabe4f62"
-    private val userId2 = "2fc5c3fc-b40b-4497-9772-9dd5b4df8ed7"
     private val IP = "159.65.2.104"
     private val baseUrl = "http://$IP:9000"
     private val ws = "ws://$IP:8001/connection/websocket?format=protobuf"
+    private var channels: ArrayList<Channel> = arrayListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initView()
+        getUser()
+
+        init()
 
     }
 
+    private fun getUser() {
+        myId = intent.getStringExtra("USER_ID")!!
+        token = intent.getStringExtra("TOKEN")!!
+        tokenWs = intent.getStringExtra("TOKEN_WS")!!
+    }
 
 
-    private fun initView() {
+    private fun init() {
 
 
         chatSdk = BlameoChatSdk.getInstance()
@@ -50,6 +52,10 @@ class MainActivity : AppCompatActivity() {
 
 //        chatSdk.exportChannelDB()
 
+        adapter = ChannelAdapter(this@MainActivity)
+        rv_channels.adapter = adapter
+        rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
+
         chatSdk.getChannels(object: ChatListener.GetChannelsListener{
             override fun onChannelChanged(channel: Channel) {
 
@@ -57,34 +63,28 @@ class MainActivity : AppCompatActivity() {
 
             override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
                 Log.e(TAG, "size ${channels.size}")
-                adapter = ChannelAdapter(this@MainActivity, channels)
-                rv_channels.adapter = adapter
-                rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
+
+                adapter.channels = channels
                 adapter.notifyDataSetChanged()
+
             }
 
         })
-        btn_get_channel.visibility = View.INVISIBLE
 
-
-        btn_get_channel.setOnClickListener {
-
-        }
-
-        btn_get_users.setOnClickListener {
-            chatSdk.getUsersInChannel(channelId, object: ChatListener.GetUsersInChannelListener{
-                override fun onGetUsersByIdsSuccess(users: ArrayList<User>) {
-//                    users.forEachIndexed { index, it ->
-//                        Log.e(TAG, "user: $index ${it.name}")
-//                    }
-                }
-            })
-        }
+        chatSdk.addOnNewChannelListener(object : OnNewChannelListener{
+            override fun onNewChannel(channel: Channel) {
+                Log.i(TAG, "new channel id: ${channel.id}")
+                adapter.channels.add(0, channel)
+                adapter.notifyDataSetChanged()
+            }
+        })
 
         btn_create_channel.setOnClickListener {
-            chatSdk.createChannel(arrayListOf(userId1, userId2), "BlameO General",
+            chatSdk.createChannel(arrayListOf(userId1), "BlameO General",
                 1, object: ChatListener.CreateChannelListener{
                     override fun createChannelSuccess(channel: Channel) {
+                        adapter.channels.add(0, channel)
+                        adapter.notifyDataSetChanged()
 //                        Log.e(TAG, "create channel id: ${channel.id} ${channel.name}")
                     }
                 })

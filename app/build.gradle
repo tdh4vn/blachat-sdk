@@ -43,4 +43,7 @@ dependencies {
     implementation project(":chatsdk")
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+
+    implementation libs.rxJava
+    implementation libs.rxAndroid
 }

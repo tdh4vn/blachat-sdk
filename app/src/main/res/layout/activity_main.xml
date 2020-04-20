@@ -10,44 +10,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <Button
-        android:layout_marginBottom="8dp"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@id/btn_create_message"
-        android:id="@+id/btn_get_messages"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Load Messages" />
-
-    <Button
-        android:layout_marginBottom="8dp"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@id/btn_get_users"
-        android:id="@+id/btn_create_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Message" />
 
     <Button
         android:visibility="gone"
         android:layout_marginBottom="8dp"
         android:layout_centerHorizontal="true"
-        android:layout_above="@id/btn_get_users"
+        android:layout_above="@id/btn_get_channel"
         android:id="@+id/btn_create_channel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Create Channel" />
 
     <Button
-        android:layout_marginBottom="8dp"
-        android:layout_centerHorizontal="true"
-        android:layout_above="@id/btn_get_channel"
-        android:id="@+id/btn_get_users"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Get users" />
-
-    <Button
+        android:visibility="invisible"
         android:layout_marginBottom="8dp"
         android:layout_centerHorizontal="true"
        android:layout_alignParentBottom="true"

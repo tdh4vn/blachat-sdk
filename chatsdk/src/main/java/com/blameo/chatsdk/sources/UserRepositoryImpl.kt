@@ -16,11 +16,11 @@ import com.blameo.chatsdk.viewmodels.MessageListener
 import com.blameo.chatsdk.viewmodels.UserListener
 
 interface UserRepository {
-    fun getUsersByIds(ids: ArrayList<String>)
+    fun getUsersByIds(channelId: String, ids: ArrayList<String>)
 }
 
 interface UserResultListener {
-    fun onGetUsersSuccess(users: ArrayList<User>)
+    fun onGetUsersSuccess(channelId: String, users: ArrayList<User>)
     fun onGetUsersFailed(error: String)
 }
 
@@ -34,14 +34,14 @@ class UserRepositoryImpl(
     private val TAG = "MESS_REPO"
     private var localUsers: ArrayList<User> = arrayListOf()
 
-    override fun getUsersByIds(ids: ArrayList<String>) {
-        userRemoteRepository.getUsersByIds(UsersBody(ids))
+    override fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
+        userRemoteRepository.getUsersByIds(channelId, UsersBody(ids))
         localUsers = localUserRepository.getUsersByIds(ids)
     }
 
-    override fun onGetUsersSuccess(users: ArrayList<User>) {
+    override fun onGetUsersSuccess(channelId: String, users: ArrayList<User>) {
         Log.i(TAG, "size: ${users.size} + ${localUsers.size}")
-        userListener.onUsersByIdsSuccess(users)
+        userListener.onUsersByIdsSuccess(channelId, users)
         if(users.size > 0)
         users.forEach { localUserRepository.addLocalUser(it) }
     }

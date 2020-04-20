@@ -54,9 +54,20 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
     }
 
     @Override
+    public void updateLastMessage(String channelId, String messageId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Constant.CHANNEL_LAST_MESSAGE_ID, messageId);
+
+        db.update(Constant.CHANNEL_TABLE_NAME, values, Constant.CHANNEL_ID + " = ?",
+                new String[]{String.valueOf(channelId)});
+    }
+
+    @Override
     public void addLocalChannel(Channel channel) {
 
         SQLiteDatabase db = this.getWritableDatabase();
+        String last_id = null;
 
         ContentValues values = new ContentValues();
         values.put(Constant.CHANNEL_ID, channel.getId());
@@ -65,9 +76,12 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
         values.put(Constant.CHANNEL_TYPE, channel.getType());
         values.put(Constant.CHANNEL_COLUMN_UPDATED_AT, channel.getUpdated_at());
         values.put(Constant.CHANNEL_COLUMN_CREATED_AT, channel.getCreated_at());
-        values.put(Constant.CHANNEL_LAST_MESSAGE_ID, channel.getLast_message_id());
+        if(channel.getLast_message() != null) {
+            last_id = channel.getLast_message().getId();
+            values.put(Constant.CHANNEL_LAST_MESSAGE_ID, channel.getLast_message().getId());
+        }
 
-        Log.e("DB", "add local channel: " + channel.getId() + " name: " + channel.getName() + " last_id: " + channel.getLast_message_id());
+        Log.e("DB", "add local channel: " + channel.getId() + " name: " + channel.getName() + " last_id: " + last_id);
 
         int res = (int) db.insertWithOnConflict(Constant.CHANNEL_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         if (res == -1) {
@@ -111,7 +125,7 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor = db.query(Constant.CHANNEL_TABLE_NAME, new String[]{Constant.CHANNEL_ID,
-                        Constant.CHANNEL_TABLE_NAME, Constant.CHANNEL_COLUMN_AVATAR,
+                        Constant.CHANNEL_COLUMN_NAME, Constant.CHANNEL_COLUMN_AVATAR,
                         Constant.CHANNEL_TYPE, Constant.CHANNEL_COLUMN_UPDATED_AT,
                         Constant.CHANNEL_COLUMN_CREATED_AT, Constant.CHANNEL_LAST_MESSAGE_ID}
                 , Constant.CHANNEL_ID + "=?",
@@ -119,10 +133,14 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
         if (cursor != null)
             cursor.moveToFirst();
 
+        if(cursor.getCount() == 0) return null;
+
         Channel channel = new Channel(cursor.getString(0),
                 cursor.getString(1), cursor.getString(2),
                 cursor.getInt(3), cursor.getString(4),
                 cursor.getString(5), cursor.getString(6));
+
+        Log.e("123", channel.getId() + " " + channel.getName());
 
         return channel;
     }
@@ -164,7 +182,7 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
     @Override
     public ArrayList<Channel> getChannels() {
         ArrayList<Channel> channels = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME;
+        String selectQuery = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " order by "+ Constant.CHANNEL_ID + " ASC";
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
@@ -180,6 +198,10 @@ public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements Loc
 
             channels.add(channel);
         } while (cursor.moveToNext());
+
+        for(Channel c : channels){
+            Log.e("123", ""+c.getName() + " "+c.getCreated_at());
+        }
         return channels;
     }
 }

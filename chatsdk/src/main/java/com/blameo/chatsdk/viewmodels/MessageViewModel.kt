@@ -2,6 +2,7 @@ package com.blameo.chatsdk.viewmodels
 
 import android.text.TextUtils
 import android.util.Log
+import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.local.LocalMessageRepository
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
@@ -13,17 +14,17 @@ interface MessageListener {
     fun onGetMessagesError(error: String)
     fun onGetMessageByIdSuccess(message: Message)
     fun onCreateMessageSuccess(message: Message)
-    fun onMarkSeenMessageSuccess()
+    fun onMarkSeenMessageSuccess(id: String)
     fun onMarkSeenMessageFail(error: String)
     fun onMarkReceiveMessageSuccess()
     fun onMarkReceiveMessageFail(error: String)
 }
 
-class MessageViewModel(private val listener: MessageListener,
-                       localMessageRepository: LocalMessageRepository) : MessageListener {
+class MessageViewModel(private val listener: MessageListener) : MessageListener {
 
     private val TAG = "MESSAGE_VM"
-    var messageRepository: MessageRepository = MessageRepositoryImpl(this, localMessageRepository)
+    var messageRepository: MessageRepository =
+        MessageRepositoryImpl(this, BlameoChatSdk.getInstance().uId)
 
     fun getMessageById(id: String) {
         if(TextUtils.isEmpty(id))   return
@@ -48,6 +49,18 @@ class MessageViewModel(private val listener: MessageListener,
         messageRepository.sendReceivedMessageEvent(channelId, messageId, authorId)
     }
 
+    fun receiveEventNewMessage(message: Message){
+        messageRepository.receiveEventNewMessage(message)
+    }
+
+    fun receiveEventSeenMessage(messageId: String){
+        messageRepository.receiveEventSeenMessage(messageId)
+    }
+
+    fun receiveEventReceiveMessage(messageId: String){
+        messageRepository.receiveEventReceiveMessage(messageId)
+    }
+
     override fun onGetMessagesSuccess(messages: ArrayList<Message>) {
         messages.reverse()
         listener.onGetMessagesSuccess(messages)
@@ -65,7 +78,8 @@ class MessageViewModel(private val listener: MessageListener,
         listener.onCreateMessageSuccess(message)
     }
 
-    override fun onMarkSeenMessageSuccess() {
+    override fun onMarkSeenMessageSuccess(id: String) {
+        listener.onMarkSeenMessageSuccess(id)
     }
 
     override fun onMarkSeenMessageFail(error: String) {
