@@ -79,6 +79,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
         SQLiteDatabase db = this.getWritableDatabase();
 
+        if(checkIfMessageIsExist(message.getId()))  return;
+
         ContentValues values = new ContentValues();
         values.put(Constant.MESSAGE_ID, message.getId());
         values.put(Constant.MESSAGE_AUTHOR_ID, message.getAuthor_id());
@@ -153,6 +155,8 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         if (cursor != null)
             cursor.moveToFirst();
 
+        if(cursor.getCount() == 0)  return null;
+
         Message message = new Message(cursor.getString(0),
                 cursor.getString(1), cursor.getString(2), cursor.getString(3),
                 cursor.getInt(4), cursor.getString(5),
@@ -166,8 +170,7 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     public boolean checkIfMessageIsExist(String id) {
 
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "Select * from " + Constant.MESSAGE_TABLE_NAME + " where " + Constant.MESSAGE_ID + " = " + id;
-        Log.i("abdasdc", ""+query);
+        String query = "Select * from " + Constant.MESSAGE_TABLE_NAME + " where " + Constant.MESSAGE_ID + " ='" + id + "'";
 
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
@@ -175,7 +178,7 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
             return false;
         }
         cursor.close();
-        return false;
+        return true;
     }
 
     @Override

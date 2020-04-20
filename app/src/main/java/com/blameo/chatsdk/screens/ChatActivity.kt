@@ -56,6 +56,10 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
         chatSdk.getMessages(channel.id, lastId, object : ChatListener.GetMessagesListener {
             override fun getMessagesSuccess(messages: ArrayList<Message>) {
                 Log.i(TAG, "${channel.id} has ${messages.size} in total")
+                messages.forEach {
+                    Log.i(TAG, "${it.content}")
+                }
+
                 if (messages.size > 0) {
                     val pos = allMessages.size - 1
                     isLoading = false
