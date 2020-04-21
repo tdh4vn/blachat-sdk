@@ -27,4 +27,6 @@ public interface LocalMessageRepository {
     void clearAllLocalMessages();
 
     void updateStatusMessage(String messageId, String attr);
+
+    ArrayList<Message> getUnsentMessage();
 }

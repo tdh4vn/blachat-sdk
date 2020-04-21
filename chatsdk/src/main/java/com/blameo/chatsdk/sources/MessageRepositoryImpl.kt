@@ -13,6 +13,8 @@ import com.blameo.chatsdk.repositories.MessageRemoteRepository
 import com.blameo.chatsdk.repositories.MessageRemoteRepositoryImpl
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
 import com.blameo.chatsdk.viewmodels.MessageListener
+import java.util.*
+import kotlin.collections.ArrayList
 
 interface MessageRepository {
     fun getMessages(channelId: String, lastMessageId: String)
@@ -23,6 +25,7 @@ interface MessageRepository {
     fun receiveEventNewMessage(message: Message)
     fun receiveEventSeenMessage(messageId: String)
     fun receiveEventReceiveMessage(messageId: String)
+    fun syncUnsentMessage()
 }
 
 interface MessageResultListener {
@@ -95,6 +98,23 @@ class MessageRepositoryImpl(
 
     override fun receiveEventReceiveMessage(messageId: String) {
 
+    }
+
+    override fun syncUnsentMessage() {
+        val messageUnsent = localMessageRepository.unsentMessage
+
+        for (message in messageUnsent) {
+            messageRemoteRepository.resentMessage(
+                message,
+                onSuccess = { messageSent ->
+                    localMessageRepository.updateMessage(message.id, messageSent)
+                },
+                onFailed = { throwable ->
+                    throwable.printStackTrace()
+                }
+
+            )
+        }
     }
 
     override fun onGetRemoteMessagesSuccess(messages: ArrayList<Message>) {

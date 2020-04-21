@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.local;
 
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -75,6 +76,30 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
     }
 
     @Override
+    public ArrayList<Message> getUnsentMessage() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        ArrayList<Message> messagesUnsent = new ArrayList<>();
+
+        String query = String.format("SELECT * FROM %s WHERE %s IS NULL", Constant.MESSAGE_TABLE_NAME, Constant.MESSAGE_SENT_AT);
+
+        Cursor cursor = db.rawQuery(query, null);
+        if (cursor != null) {
+            if(cursor.getCount() == 0)  return messagesUnsent;
+            do {
+                Message message = new Message(cursor.getString(0),
+                        cursor.getString(1), cursor.getString(2), cursor.getString(3),
+                        cursor.getInt(4), cursor.getString(5),
+                        cursor.getString(6), cursor.getString(7), cursor.getString(8));
+                message.setCustom_data(cursor.getString(9));
+                messagesUnsent.add(message);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return messagesUnsent;
+    }
+
+    @Override
     public void addLocalMessage(Message message) {
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -132,9 +157,17 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         values.put(Constant.MESSAGE_CHANNEL_ID, message.getChannel_id());
         values.put(Constant.MESSAGE_CONTENT, message.getContent());
         values.put(Constant.MESSAGE_TYPE, message.getType());
-        values.put(Constant.MESSAGE_CREATED_AT, message.getCreated_at());
+        values.put(Constant.MESSAGE_UPDATED_AT, message.getUpdated_at());
 
-        Log.i("M_LOCAL", "update message id: "+temID + " "+message.getId() + " "+mID);
+        if (!TextUtils.isEmpty(message.getSent_at())){
+            values.put(Constant.MESSAGE_SENT_AT, message.getSent_at());
+        }
+
+        if (!TextUtils.isEmpty(message.getSeen_at())) {
+            values.put(Constant.MESSAGE_SEEN_AT, message.getSeen_at());
+        }
+
+        values.put(Constant.MESSAGE_CUSTOM_DATA, message.getCustom_data());
 
         return db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
                 new String[]{mID});

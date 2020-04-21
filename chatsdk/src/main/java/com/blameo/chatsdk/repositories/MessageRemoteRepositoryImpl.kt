@@ -2,6 +2,7 @@ package com.blameo.chatsdk.repositories
 
 import android.util.Log
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
+import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.results.BaseResult
 import com.blameo.chatsdk.models.results.GetMessageByIDResult
 import com.blameo.chatsdk.models.results.GetMessagesResult
@@ -10,6 +11,7 @@ import com.blameo.chatsdk.sources.MessageResultListener
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.util.*
 
 class MessageRemoteRepositoryImpl(
     private val messageAPI: MessageAPI,
@@ -48,11 +50,38 @@ class MessageRemoteRepositoryImpl(
                     call: Call<GetMessageByIDResult>,
                     response: Response<GetMessageByIDResult>
                 ) {
-                    Log.e(TAG, "${response.isSuccessful}")
                     if (response.isSuccessful)
                         messageListener.onCreateMessageSuccess(temID, response.body()?.message!!)
                 }
             })
+    }
+
+
+    override fun resentMessage(message: Message, onSuccess: (m: Message) -> Unit, onFailed: (t: Throwable) -> Unit) {
+        messageAPI.createMessage(
+            CreateMessageBody(
+                1,
+                message.content,
+                Date(message.created_at),
+                message.channel_id
+            )
+        ).enqueue(object : Callback<GetMessageByIDResult> {
+            override fun onFailure(call: Call<GetMessageByIDResult>, t: Throwable) {
+                onFailed(t)
+            }
+
+            override fun onResponse(
+                call: Call<GetMessageByIDResult>,
+                response: Response<GetMessageByIDResult>
+            ) {
+                if (response.isSuccessful) {
+                    response.body()?.message?.let { onSuccess(it) }
+                } else {
+                    onFailed(Throwable(response.message()))
+                }
+            }
+
+        })
     }
 
     override fun getMessages(channelId: String, lastId: String) {

@@ -50,6 +50,9 @@ class MainActivity : AppCompatActivity() {
         chatSdk.initContext(this)
         chatSdk.initSession(baseUrl, ws, token, tokenWs, myId)
 
+        //call sync message to resent unsent message to server
+        chatSdk.syncMessage()
+
 //        chatSdk.exportChannelDB()
 
         adapter = ChannelAdapter(this@MainActivity)

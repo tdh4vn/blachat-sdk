@@ -8,6 +8,8 @@ import com.blameo.chatsdk.local.*
 import com.blameo.chatsdk.models.events.*
 import com.blameo.chatsdk.models.pojos.*
 import com.blameo.chatsdk.net.APIProvider
+import com.blameo.chatsdk.repositories.MessageRemoteRepository
+import com.blameo.chatsdk.sources.MessageRepositoryImpl
 import com.blameo.chatsdk.viewmodels.*
 import com.google.gson.Gson
 import io.github.centrifugal.centrifuge.*
@@ -67,6 +69,8 @@ class BlameoChatSdk : ChatListener() {
     lateinit var localUsers: LocalUserRepository
     private var channels = arrayListOf<Channel>()
 
+    private lateinit var messageRepository: MessageRemoteRepository
+
     fun addOnTypingListener(onTypingListener: OnTypingListener){
         this.typingListener = onTypingListener
     }
@@ -78,6 +82,11 @@ class BlameoChatSdk : ChatListener() {
     fun addOnNewChannelListener(onNewChannelListener: OnNewChannelListener){
         this.onNewChannelListener = onNewChannelListener
     }
+
+    fun syncMessage() {
+        this.messageViewModel.syncMessage()
+    }
+
 
     private val channelListener = object : ChannelListener {
         override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
@@ -376,6 +385,7 @@ class BlameoChatSdk : ChatListener() {
         localMessages = LocalMessageRepositoryImpl(context)
         localUserInChannels = LocalUserInChannelRepositoryImpl(context)
         localUsers = LocalUserRepositoryImpl(context)
+
         exportDB()
     }
 

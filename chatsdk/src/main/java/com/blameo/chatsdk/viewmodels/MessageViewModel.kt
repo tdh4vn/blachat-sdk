@@ -92,4 +92,8 @@ class MessageViewModel(private val listener: MessageListener) : MessageListener 
     override fun onMarkReceiveMessageFail(error: String) {
         listener.onMarkReceiveMessageFail(error)
     }
+
+    fun syncMessage() {
+        messageRepository.syncUnsentMessage()
+    }
 }
