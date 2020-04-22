@@ -62,7 +62,7 @@ class MessageRemoteRepositoryImpl(
             CreateMessageBody(
                 1,
                 message.content,
-                Date(message.created_at),
+                message.created_at,
                 message.channel_id
             )
         ).enqueue(object : Callback<GetMessageByIDResult> {

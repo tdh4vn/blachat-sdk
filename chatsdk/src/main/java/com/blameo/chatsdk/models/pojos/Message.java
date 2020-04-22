@@ -1,6 +1,10 @@
 package com.blameo.chatsdk.models.pojos;
 
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Message extends CustomData implements Serializable {
     private String id;
@@ -74,6 +78,15 @@ public class Message extends CustomData implements Serializable {
 
     public void setIs_system_message(boolean is_system_message) {
         this.is_system_message = is_system_message;
+    }
+
+    public Date getCreatedAt() {
+        try {
+            return ChatSdkDateFormatUtil.getInstance().parse(created_at);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public String getCreated_at() {

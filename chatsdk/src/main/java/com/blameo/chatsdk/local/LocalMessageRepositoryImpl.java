@@ -86,14 +86,14 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
         Cursor cursor = db.rawQuery(query, null);
         if (cursor != null) {
             if(cursor.getCount() == 0)  return messagesUnsent;
-            do {
+            while (cursor.moveToNext()) {
                 Message message = new Message(cursor.getString(0),
                         cursor.getString(1), cursor.getString(2), cursor.getString(3),
                         cursor.getInt(4), cursor.getString(5),
                         cursor.getString(6), cursor.getString(7), cursor.getString(8));
                 message.setCustom_data(cursor.getString(9));
                 messagesUnsent.add(message);
-            } while (cursor.moveToNext());
+            }
             cursor.close();
         }
         return messagesUnsent;

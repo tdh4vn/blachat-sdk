@@ -20,6 +20,10 @@ public class ChatSdkDateFormatUtil {
         return instance;
     }
 
+    public Date parse(String dateString) throws ParseException {
+        return inputFormat.parse(dateString);
+    }
+
     public String getTime(String time) {
         Date date = null;
         try {
