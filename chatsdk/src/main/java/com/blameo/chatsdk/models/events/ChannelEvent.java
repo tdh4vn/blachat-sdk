@@ -1,29 +1,30 @@
 package com.blameo.chatsdk.models.events;
 
 import com.blameo.chatsdk.models.pojos.CustomData;
-import com.blameo.chatsdk.models.pojos.Message;
 
 import java.io.Serializable;
 
+
+//TODO: check xem co thay ChannelEvent thanh Channel dc ko
 public class ChannelEvent extends CustomData implements Serializable {
     private String id;
     private String name;
     private String avatar;
     private int type;
-    private String updated_at;
-    private String created_at;
+    private String updatedAt;
+    private String createdAt;
     private String last_message_id;
 
     public ChannelEvent() {
     }
 
-    public ChannelEvent(String id, String name, String avatar, int type, String updated_at, String created_at, String last_message_id) {
+    public ChannelEvent(String id, String name, String avatar, int type, String updatedAt, String createdAt, String last_message_id) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
         this.type = type;
-        this.updated_at = updated_at;
-        this.created_at = created_at;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
         this.last_message_id = last_message_id;
     }
 
@@ -59,20 +60,20 @@ public class ChannelEvent extends CustomData implements Serializable {
         this.type = type;
     }
 
-    public String getUpdated_at() {
-        return updated_at;
+    public String getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(String updated_at) {
-        this.updated_at = updated_at;
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
     public String getLast_message_id() {

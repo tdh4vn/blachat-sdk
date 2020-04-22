@@ -1,9 +1,7 @@
 package com.blameo.chatsdk.adapters
 
 import android.content.Context
-import android.content.Intent
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,10 +10,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.models.pojos.User
-import com.blameo.chatsdk.screens.ChatActivity
-import com.blameo.chatsdk.utils.DateFormatUtils
-import com.blameo.chatsdk.viewmodels.ChannelVMlStore
-import com.blameo.chatsdk.viewmodels.ConversationViewModel
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType

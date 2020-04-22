@@ -4,13 +4,12 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.blameo.chatsdk.local.*
+import com.blameo.chatsdk.repositories.local.*
 import com.blameo.chatsdk.models.events.*
 import com.blameo.chatsdk.models.pojos.*
-import com.blameo.chatsdk.net.APIProvider
-import com.blameo.chatsdk.repositories.MessageRemoteRepository
-import com.blameo.chatsdk.sources.MessageRepositoryImpl
-import com.blameo.chatsdk.viewmodels.*
+import com.blameo.chatsdk.repositories.remote.net.APIProvider
+import com.blameo.chatsdk.repositories.remote.MessageRemoteRepository
+import com.blameo.chatsdk.controllers.*
 import com.google.gson.Gson
 import io.github.centrifugal.centrifuge.*
 import io.github.centrifugal.centrifuge.EventListener
@@ -56,9 +55,9 @@ class BlameoChatSdk : ChatListener() {
     lateinit var createMessageListener: CreateMessageListener
     lateinit var markSeenMessageListener: MarkSeenMessageListener
     lateinit var markReceiveMessageListener: MarkReceiveMessageListener
-    lateinit var channelViewModel: ChannelViewModel
-    lateinit var messageViewModel: MessageViewModel
-    lateinit var userViewModel: UserViewModel
+    lateinit var channelViewModel: ChannelController
+    lateinit var messageController: MessageController
+    lateinit var userController: UserController
     lateinit var typingListener: OnTypingListener
     lateinit var onCursorChangeListener: OnCursorChangeListener
     lateinit var onNewChannelListener: OnNewChannelListener
@@ -84,7 +83,7 @@ class BlameoChatSdk : ChatListener() {
     }
 
     fun syncMessage() {
-        this.messageViewModel.syncMessage()
+        this.messageController.syncMessage()
     }
 
 
@@ -95,12 +94,12 @@ class BlameoChatSdk : ChatListener() {
 //                getChannelsListener.onGetChannelsSuccess(channels)
 
                 channels.forEach { channel ->
-                    if(channel.last_message == null) {
-                        Log.i(TAG, "id ${channel.id} last_mess ${channel.last_message_id}")
-                        if (!TextUtils.isEmpty(channel.last_message_id))
-                            messageViewModel.getMessageById(channel.last_message_id)
+                    if(TextUtils.isEmpty(channel.lastMessageId)) {
+                        Log.i(TAG, "id ${channel.id} last_mess ${channel.lastMessageId}")
+                        if (!TextUtils.isEmpty(channel.lastMessageId))
+                            messageController.getMessageById(channel.lastMessageId)
                     }else{
-                        channelViewModel.updateLastMessage(channel.id, channel.last_message.id)
+                        channelViewModel.updateLastMessage(channel.id, channel.lastMessage.id)
                     }
                 }
 
@@ -147,8 +146,8 @@ class BlameoChatSdk : ChatListener() {
         override fun onGetMessageByIdSuccess(message: Message) {
             Log.i(TAG, "message : ${message.id}")
             channels.forEach { channel ->
-                if (channel.id == message.channel_id) {
-                    channel.last_message = message
+                if (channel.id == message.channelId) {
+                    channel.lastMessage = message
 //                    getChannelsListener.onGetChannelsSuccess(channels)
                     return@forEach
                 }
@@ -231,9 +230,9 @@ class BlameoChatSdk : ChatListener() {
     }
 
     private fun initViewModels() {
-        channelViewModel = ChannelViewModel(channelListener, this.localChannels, this.localUserInChannels)
-        messageViewModel = MessageViewModel(messageListener)
-        userViewModel = UserViewModel(userListener, this.localUsers)
+        channelViewModel = ChannelController(channelListener, this.localChannels, this.localUserInChannels)
+        messageController = MessageController(messageListener)
+        userController = UserController(userListener, this.localUsers)
     }
 
     private fun connectSocket() {
@@ -278,9 +277,9 @@ class BlameoChatSdk : ChatListener() {
                     "new_message" -> {
                         val new_event = g.fromJson(data, NewMessageEvent::class.java)
                         val message = new_event.payload
-                        if(message.author_id != uId){
+                        if(message.authorId != uId){
                             typingListener.onNewMessage(message)
-                            messageViewModel.receiveEventNewMessage(message)
+                            messageController.receiveEventNewMessage(message)
                         }
 
                     }
@@ -289,20 +288,20 @@ class BlameoChatSdk : ChatListener() {
                         val event = g.fromJson(data, StatusMessageEvent::class.java)
                         println("seen")
                         onCursorChangeListener.onCursorChange("SEEN", event.payload)
-                        messageViewModel.receiveEventSeenMessage(event.payload.message_id)
+                        messageController.receiveEventSeenMessage(event.payload.message_id)
                     }
 
                     "mark_receive" -> {
                         val event = g.fromJson(data, StatusMessageEvent::class.java)
                         println("receive")
-                        messageViewModel.receiveEventReceiveMessage(event.payload.message_id)
+                        messageController.receiveEventReceiveMessage(event.payload.message_id)
                     }
 
                     "new_channel" -> {
                         val event = g.fromJson(data, NewChannelEvent::class.java)
                         println("new channel")
                         val c = event.payload
-                        val channel = Channel(c.id, c.name, c.avatar, c.type, c.updated_at, c.created_at, c.last_message_id)
+                        val channel = Channel(c.id, c.name, c.avatar, c.type, c.updatedAt, c.createdAt, c.last_message_id)
                         channelViewModel.addNewChannel(channel)
                         onNewChannelListener.onNewChannel(channel)
                     }
@@ -411,7 +410,7 @@ class BlameoChatSdk : ChatListener() {
     }
 
     private fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
-        userViewModel.getUsersByIds(channelId, ids)
+        userController.getUsersByIds(channelId, ids)
     }
 
     fun createChannel(ids: ArrayList<String>, name: String, type: Int, listener: CreateChannelListener) {
@@ -429,25 +428,25 @@ class BlameoChatSdk : ChatListener() {
 
     fun createMessage(content: String, type: Int, channelId: String, listener: CreateMessageListener) {
         createMessageListener = listener
-        messageViewModel.createMessage(content, type, channelId)
+        messageController.createMessage(content, type, channelId)
     }
 
     fun getMessages(channelId: String, lastId: String, listener: GetMessagesListener) {
         getMessagesListener = listener
         currentChannelID = channelId
-        messageViewModel.getMessages(channelId, lastId)
+        messageController.getMessages(channelId, lastId)
     }
 
     fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String,
                              listener: MarkSeenMessageListener){
         markSeenMessageListener = listener
-        messageViewModel.sendSeenMessageEvent(channelId, messageId, authorId)
+        messageController.sendSeenMessageEvent(channelId, messageId, authorId)
     }
 
     fun sendReceiveMessageEvent(channelId: String, messageId: String, authorId: String,
                                  listener: MarkReceiveMessageListener){
         markReceiveMessageListener = listener
-        messageViewModel.sendReceivedMessageEvent(channelId, messageId, authorId)
+        messageController.sendReceivedMessageEvent(channelId, messageId, authorId)
     }
 
     private fun connectPresence() {

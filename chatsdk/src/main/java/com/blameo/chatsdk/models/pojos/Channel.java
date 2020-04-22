@@ -1,28 +1,69 @@
 package com.blameo.chatsdk.models.pojos;
 
+import android.database.Cursor;
+
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Date;
 
 public class Channel extends CustomData implements Serializable {
+    @SerializedName("id")
     private String id;
-    private String name;
-    private String avatar;
-    private int type;
-    private String updated_at;
-    private String created_at;
-    private String last_message_id;
-    private Message last_message;
 
-    public Channel() {
+    @SerializedName("name")
+    private String name;
+
+    @SerializedName("avatar")
+    private String avatar;
+
+    @SerializedName("type")
+    private int type;
+
+    @SerializedName("updated_at")
+    private Date updatedAt;
+
+    @SerializedName("created_at")
+    private Date createdAt;
+
+    @SerializedName("last_message_id")
+    private String lastMessageId;
+
+    @Expose(serialize = false, deserialize = false)
+    private Message lastMessage;
+
+    public Channel(Cursor cursor) throws ParseException {
+        this.id = cursor.getString(0);
+         this.name = cursor.getString(1);
+         this.avatar = cursor.getString(2);
+         this.type = cursor.getInt(3);
+         this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
+         this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
+         this.lastMessageId = cursor.getString(6);
     }
 
-    public Channel(String id, String name, String avatar, int type, String updated_at, String created_at, String last_message_id) {
+    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
         this.type = type;
-        this.updated_at = updated_at;
-        this.created_at = created_at;
-        this.last_message_id = last_message_id;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
+        this.lastMessageId = lastMessageId;
+    }
+
+    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, Message lastMessage) {
+        this.id = id;
+        this.name = name;
+        this.avatar = avatar;
+        this.type = type;
+        this.updatedAt = updatedAt;
+        this.createdAt = createdAt;
+        this.lastMessageId = lastMessageId;
+        this.lastMessage = lastMessage;
     }
 
     public String getId() {
@@ -57,45 +98,43 @@ public class Channel extends CustomData implements Serializable {
         this.type = type;
     }
 
-    public String getUpdated_at() {
-        return updated_at;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setUpdated_at(String updated_at) {
-        this.updated_at = updated_at;
+    public String getUpdatedAtString() {
+        return ChatSdkDateFormatUtil.parse(updatedAt);
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getCreatedAtString() {
+        return ChatSdkDateFormatUtil.parse(createdAt);
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public Message getLast_message() {
-        return last_message;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setLast_message(Message last_message) {
-        this.last_message = last_message;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getLast_message_id() {
-        return last_message_id;
+    public String getLastMessageId() {
+        return lastMessageId;
     }
 
-    public void setLast_message_id(String last_message_id) {
-        this.last_message_id = last_message_id;
+    public void setLastMessageId(String lastMessageId) {
+        this.lastMessageId = lastMessageId;
     }
 
-    public Message getMessage() {
-        return last_message;
+    public Message getLastMessage() {
+        return lastMessage;
     }
 
-    public void setMessage(Message last_message) {
-        this.last_message = last_message;
+    public void setLastMessage(Message lastMessage) {
+        this.lastMessage = lastMessage;
     }
-
-
 }

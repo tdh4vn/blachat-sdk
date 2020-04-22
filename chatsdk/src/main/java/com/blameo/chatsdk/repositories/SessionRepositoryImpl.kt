@@ -1,9 +1,9 @@
 package com.blameo.chatsdk.repositories
 
-import com.blameo.chatsdk.local.UserSharedPreference
+import com.blameo.chatsdk.repositories.local.UserSharedPreference
 import com.blameo.chatsdk.models.pojos.Me
-import com.blameo.chatsdk.net.APIProvider
-import com.blameo.chatsdk.net.SessionAPI
+import com.blameo.chatsdk.repositories.remote.net.APIProvider
+import com.blameo.chatsdk.repositories.remote.net.SessionAPI
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 

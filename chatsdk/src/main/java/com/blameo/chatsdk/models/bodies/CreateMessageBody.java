@@ -2,7 +2,6 @@ package com.blameo.chatsdk.models.bodies;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Date;
 
 public class CreateMessageBody {
 
@@ -15,21 +14,22 @@ public class CreateMessageBody {
     @SerializedName("sent_at")
     private String sentAt;
 
-    public CreateMessageBody(String content, int type, String channel_id) {
+    @SerializedName("channel_id")
+    private String channelId;
+
+    public CreateMessageBody(String content, int type, String channelId) {
         this.type = type;
         this.content = content;
-        this.channel_id = channel_id;
+        this.channelId = channelId;
     }
 
-    public CreateMessageBody(int type, String content, String sentAt, String channel_id) {
+    public CreateMessageBody(int type, String content, String sentAt, String channelId) {
         this.type = type;
         this.content = content;
         this.sentAt = sentAt;
-        this.channel_id = channel_id;
+        this.channelId = channelId;
     }
 
-    @SerializedName("channel_id")
-    private String channel_id;
 
     public int getType() {
         return type;
@@ -47,12 +47,12 @@ public class CreateMessageBody {
         this.content = content;
     }
 
-    public String getChannel_id() {
-        return channel_id;
+    public String getChannelId() {
+        return channelId;
     }
 
-    public void setChannel_id(String channel_id) {
-        this.channel_id = channel_id;
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
     public String getSentAt() {

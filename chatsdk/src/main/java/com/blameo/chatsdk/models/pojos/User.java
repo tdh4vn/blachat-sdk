@@ -1,8 +1,16 @@
 package com.blameo.chatsdk.models.pojos;
 
+import android.database.Cursor;
+
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.blameo.chatsdk.utils.GsonUtil;
 import com.google.gson.annotations.SerializedName;
 
-public class User extends CustomData{
+import java.text.ParseException;
+import java.util.Date;
+import java.util.HashMap;
+
+public class User {
 
     @SerializedName("id")
     private String id;
@@ -14,10 +22,10 @@ public class User extends CustomData{
     private String avatar;
 
     @SerializedName("created_at")
-    private String created_at;
+    private Date createdAt;
 
     @SerializedName("updated_at")
-    private String updated_at;
+    private Date updatedAt;
 
     @SerializedName("email")
     private String email = "";
@@ -28,21 +36,59 @@ public class User extends CustomData{
     @SerializedName("gender")
     private String gender = "";
 
-    private String connection_status;
-    private String last_active_at;
+    @SerializedName("connection_status")
+    private String connectionStatus;
+
+    @SerializedName("last_active_at")
+    private Date lastActiveAt;
+
+    @SerializedName("custom_data")
+    private HashMap<String, Object> customData;
+
     public boolean isCheck = false;
 
     public String dobString = "";
 
-    public User(String id, String name, String avatar, String connection_status, String last_active_at) {
+    public User(String id, String name, String avatar, String connection_status, Date last_active_at) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
-        this.connection_status = connection_status;
-        this.last_active_at = last_active_at;
+        this.connectionStatus = connection_status;
+        this.lastActiveAt = last_active_at;
+    }
+
+    public User(Cursor cursor) throws ParseException {
+        this.id = cursor.getString(0);
+        this.name =        cursor.getString(1);
+        this.avatar =        cursor.getString(2);
+        this.connectionStatus = cursor.getString(3);
+        this.lastActiveAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
+        this.customData = GsonUtil.jsonToMap(cursor.getString(5));
+    }
+
+    public User(String id, String name, String avatar, Date createdAt, Date updatedAt, String email, Role role, String gender, String connectionStatus, Date lastActiveAt, HashMap<String, Object> customData) {
+        this.id = id;
+        this.name = name;
+        this.avatar = avatar;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.email = email;
+        this.role = role;
+        this.gender = gender;
+        this.connectionStatus = connectionStatus;
+        this.lastActiveAt = lastActiveAt;
+        this.customData = customData;
     }
 
     public User() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -54,44 +100,27 @@ public class User extends CustomData{
     }
 
     public String getAvatar() {
-        if (avatar == null) avatar = "";
         return avatar;
-    }
-
-    public String getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
-    }
-
-    public String getUpdated_at() {
-        return updated_at;
-    }
-
-    public void setUpdated_at(String updated_at) {
-        this.updated_at = updated_at;
     }
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
     }
 
-    public Role getRole() {
-        return role;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getId() {
-        return id;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public String getEmail() {
@@ -102,8 +131,15 @@ public class User extends CustomData{
         this.email = email;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
     public String getGender() {
-        if (gender == null) gender = "";
         return gender;
     }
 
@@ -111,20 +147,52 @@ public class User extends CustomData{
         this.gender = gender;
     }
 
-    public String getConnection_status() {
-        return connection_status;
+    public String getConnectionStatus() {
+        return connectionStatus;
     }
 
-    public void setConnection_status(String connection_status) {
-        this.connection_status = connection_status;
+    public void setConnectionStatus(String connectionStatus) {
+        this.connectionStatus = connectionStatus;
     }
 
-    public String getLast_active_at() {
-        return last_active_at;
+    public Date getLastActiveAt() {
+        return lastActiveAt;
     }
 
-    public void setLast_active_at(String last_active_at) {
-        this.last_active_at = last_active_at;
+    public void setLastActiveAt(Date lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
+    }
+
+    public boolean isCheck() {
+        return isCheck;
+    }
+
+    public void setCheck(boolean check) {
+        isCheck = check;
+    }
+
+    public String getDobString() {
+        return dobString;
+    }
+
+    public void setDobString(String dobString) {
+        this.dobString = dobString;
+    }
+
+    public HashMap<String, Object> getCustomData() {
+        return customData;
+    }
+
+    public String getLastActiveAtString() {
+        return ChatSdkDateFormatUtil.parse(lastActiveAt);
+    }
+
+    public void setCustomData(HashMap<String, Object> customData) {
+        this.customData = customData;
+    }
+
+    public String getCustomDataString() {
+        return GsonUtil.mapToJSON(customData);
     }
 
     public enum Role {

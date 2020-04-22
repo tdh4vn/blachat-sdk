@@ -2,31 +2,40 @@ package com.blameo.chatsdk.models.pojos;
 
 public class RemoteUserChannel {
 
-    private String member_id;
-    private String last_seen;
-    private String last_receive;
+    private String memberId;
+    private String lastSeen;
+    private String lastReceive;
 
-    public String getMember_id() {
-        return member_id;
+    public RemoteUserChannel() {
     }
 
-    public void setMember_id(String member_id) {
-        this.member_id = member_id;
+    public RemoteUserChannel(String memberId, String lastSeen, String lastReceive) {
+        this.memberId = memberId;
+        this.lastSeen = lastSeen;
+        this.lastReceive = lastReceive;
     }
 
-    public String getLast_seen() {
-        return last_seen;
+    public String getMemberId() {
+        return memberId;
     }
 
-    public void setLast_seen(String last_seen) {
-        this.last_seen = last_seen;
+    public void setMemberId(String memberId) {
+        this.memberId = memberId;
     }
 
-    public String getLast_receive() {
-        return last_receive;
+    public String getLastSeen() {
+        return lastSeen;
     }
 
-    public void setLast_receive(String last_receive) {
-        this.last_receive = last_receive;
+    public void setLastSeen(String lastSeen) {
+        this.lastSeen = lastSeen;
+    }
+
+    public String getLastReceive() {
+        return lastReceive;
+    }
+
+    public void setLastReceive(String lastReceive) {
+        this.lastReceive = lastReceive;
     }
 }
