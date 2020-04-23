@@ -12,41 +12,24 @@ import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 import java.text.ParseException;
 import java.util.ArrayList;
 
-public class LocalChannelRepositoryImpl  extends SQLiteOpenHelper implements LocalChannelRepository {
+public class LocalChannelRepositoryImpl extends LocalRepository implements LocalChannelRepository {
 
     private String CHANNEL_TAG = "CHANNEL_DB";
 
+    static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.CHANNEL_TABLE_NAME + "("
+            + Constant.CHANNEL_ID + " TEXT PRIMARY KEY,"
+            + Constant.CHANNEL_COLUMN_NAME + " TEXT,"
+            + Constant.CHANNEL_COLUMN_AVATAR + " TEXT,"
+            + Constant.CHANNEL_TYPE + " INTEGER,"
+            + Constant.CHANNEL_COLUMN_UPDATED_AT + " TEXT,"
+            + Constant.CHANNEL_COLUMN_CREATED_AT + " TEXT,"
+            + Constant.CHANNEL_LAST_MESSAGE_ID + " TEXT"
+            + ")";
+
+    static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.CHANNEL_TABLE_NAME;
+
     public LocalChannelRepositoryImpl(Context context) {
-        super(context, Constant.CHANNEL_DB_NAME, null, Constant.DATABASE_VERSION);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-
-        Log.i(CHANNEL_TAG, "Create CHANNEL Table ... ");
-
-        String table = "CREATE TABLE " + Constant.CHANNEL_TABLE_NAME + "("
-                + Constant.CHANNEL_ID + " STRING PRIMARY KEY,"
-                + Constant.CHANNEL_COLUMN_NAME + " TEXT,"
-                + Constant.CHANNEL_COLUMN_AVATAR + " TEXT,"
-                + Constant.CHANNEL_TYPE + " INTEGER,"
-                + Constant.CHANNEL_COLUMN_UPDATED_AT + " TEXT,"
-                + Constant.CHANNEL_COLUMN_CREATED_AT + " TEXT,"
-                + Constant.CHANNEL_LAST_MESSAGE_ID + " TEXT"
-                + ")";
-
-        db.execSQL(table);
-
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        Log.i(CHANNEL_TAG, "Drop Table ... ");
-        db.execSQL("DROP TABLE IF EXISTS " + Constant.CHANNEL_TABLE_NAME);
-
-        onCreate(db);
-
+        super(context);
     }
 
     @Override

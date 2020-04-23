@@ -70,7 +70,7 @@ class ChannelAdapter(val context: Context) :
             tvName.text = channelVM.channel_name.value.toString()
             tvContent.text = channelVM.last_message.value.toString()
 
-            tvTime.text = DateFormatUtils.getInstance().getTime(channelVM.channel.created_at)
+            tvTime.text = channelVM.channel.createdAtString
 
             channelVM.channel_name.observeForever {
                 tvName.text = it.toString()

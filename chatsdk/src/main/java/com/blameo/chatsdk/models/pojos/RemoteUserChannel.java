@@ -1,9 +1,16 @@
 package com.blameo.chatsdk.models.pojos;
 
+import com.google.gson.annotations.SerializedName;
+
 public class RemoteUserChannel {
 
+    @SerializedName("member_id")
     private String memberId;
+
+    @SerializedName("last_seen")
     private String lastSeen;
+
+    @SerializedName("last_receive")
     private String lastReceive;
 
     public RemoteUserChannel() {

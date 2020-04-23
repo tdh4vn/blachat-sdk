@@ -11,37 +11,23 @@ import com.blameo.chatsdk.models.pojos.UserInChannel;
 
 import java.util.ArrayList;
 
-public class LocalUserInChannelRepositoryImpl extends SQLiteOpenHelper implements LocalUserInChannelRepository {
+public class LocalUserInChannelRepositoryImpl extends LocalRepository implements LocalUserInChannelRepository {
 
     private String TAG = "UIC_DB";
 
+
+    static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.UIC_TABLE_NAME + "("
+            + Constant.UIC_ID + " TEXT PRIMARY KEY,"
+            + Constant.UIC_CHANNEL_ID + " TEXT,"
+            + Constant.UIC_USER_ID + " TEXT"
+            + ")";
+
+    static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.UIC_TABLE_NAME;
+
+
+
     public LocalUserInChannelRepositoryImpl(Context context) {
-        super(context, Constant.UIC_DB_NAME, null, Constant.DATABASE_VERSION);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-
-        Log.i(TAG, "Create UIC Table ... ");
-
-        String table = "CREATE TABLE " + Constant.UIC_TABLE_NAME + "("
-                + Constant.UIC_ID + " STRING PRIMARY KEY,"
-                + Constant.UIC_CHANNEL_ID + " TEXT,"
-                + Constant.UIC_USER_ID + " TEXT"
-                + ")";
-
-        db.execSQL(table);
-
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        Log.i(TAG, "Drop Table ... ");
-        db.execSQL("DROP TABLE IF EXISTS " + Constant.UIC_TABLE_NAME);
-
-        onCreate(db);
-
+        super(context);
     }
 
     @Override

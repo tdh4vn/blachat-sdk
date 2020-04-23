@@ -1,24 +1,38 @@
 package com.blameo.chatsdk.models.events;
 
 import com.blameo.chatsdk.models.pojos.CustomData;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.util.Date;
 
 
 //TODO: check xem co thay ChannelEvent thanh Channel dc ko
 public class ChannelEvent extends CustomData implements Serializable {
+    @SerializedName("id")
     private String id;
+
+    @SerializedName("name")
     private String name;
+
+    @SerializedName("avatar")
     private String avatar;
+
+    @SerializedName("type")
     private int type;
-    private String updatedAt;
-    private String createdAt;
+
+    @SerializedName("updated_at")
+    private Date updatedAt;
+
+    @SerializedName("created_at")
+    private Date createdAt;
+
     private String last_message_id;
 
     public ChannelEvent() {
     }
 
-    public ChannelEvent(String id, String name, String avatar, int type, String updatedAt, String createdAt, String last_message_id) {
+    public ChannelEvent(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String last_message_id) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
@@ -60,19 +74,19 @@ public class ChannelEvent extends CustomData implements Serializable {
         this.type = type;
     }
 
-    public String getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(String updatedAt) {
+    public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public String getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 

@@ -17,6 +17,7 @@ import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.events.CursorEvent
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
 import com.nostra13.universalimageloader.core.ImageLoader
 import kotlinx.android.synthetic.main.activity_chat.*
 
@@ -45,7 +46,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
 
     private fun markSeenMessage(message: Message) {
 
-        chatSdk.sendSeenMessageEvent(message.channel_id, message.id, message.author_id, this)
+        chatSdk.sendSeenMessageEvent(message.channelId, message.id, message.authorId, this)
 
     }
 
@@ -157,7 +158,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                     map[it.id] = it
                 }
                 adapter.users = map
-                if (channel.last_message != null)
+                if (channel.lastMessage != null)
                     getMessages("")
                 users.forEachIndexed { index, it ->
                     Log.e(TAG, "users in channel: $index ${it.name}")
@@ -206,7 +207,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                 if(type == "SEEN"){
                     allMessages.forEach {
                         if(it.id == cursor.message_id){
-                            it.seen_at = cursor.time
+                            it.seenAt = ChatSdkDateFormatUtil.parse(cursor.time)
                             adapter.notifyDataSetChanged()
                             return@forEach
                         }

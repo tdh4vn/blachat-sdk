@@ -11,40 +11,24 @@ import com.blameo.chatsdk.models.pojos.User;
 
 import java.util.ArrayList;
 
-public class LocalUserRepositoryImpl extends SQLiteOpenHelper implements LocalUserRepository {
+public class LocalUserRepositoryImpl extends LocalRepository implements LocalUserRepository {
 
     private String TAG = "USER_DB";
 
+
+    static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.USER_TABLE_NAME + "("
+            + Constant.USER_ID + " TEXT PRIMARY KEY,"
+            + Constant.USER_NAME + " TEXT,"
+            + Constant.USER_AVATAR + " TEXT,"
+            + Constant.USER_CONNECTION_STATUS + " TEXT,"
+            + Constant.USER_LAST_ACTIVE_AT + " TEXT,"
+            + Constant.USER_CUSTOM_DATA + " TEXT"
+            + ")";
+
+    static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.USER_TABLE_NAME;
+
     public LocalUserRepositoryImpl(Context context) {
-        super(context, Constant.USER_DB_NAME, null, Constant.DATABASE_VERSION);
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-
-        Log.i(TAG, "Create USER Table ... ");
-
-        String table = "CREATE TABLE " + Constant.USER_TABLE_NAME + "("
-                + Constant.USER_ID + " STRING PRIMARY KEY,"
-                + Constant.USER_NAME + " TEXT,"
-                + Constant.USER_AVATAR + " TEXT,"
-                + Constant.USER_CONNECTION_STATUS + " TEXT,"
-                + Constant.USER_LAST_ACTIVE_AT + " TEXT,"
-                + Constant.USER_CUSTOM_DATA + " TEXT"
-                + ")";
-
-        db.execSQL(table);
-
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        Log.i(TAG, "Drop Table ... ");
-        db.execSQL("DROP TABLE IF EXISTS " + Constant.USER_TABLE_NAME);
-
-        onCreate(db);
-
+        super(context);
     }
 
     @Override
@@ -111,11 +95,14 @@ public class LocalUserRepositoryImpl extends SQLiteOpenHelper implements LocalUs
 
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(Constant.USER_TABLE_NAME, new String[]{Constant.USER_ID,
+        Cursor cursor = db.query(Constant.USER_TABLE_NAME,
+                new String[]{
+                        Constant.USER_ID,
                         Constant.USER_NAME, Constant.USER_AVATAR,
                         Constant.USER_CONNECTION_STATUS, Constant.USER_LAST_ACTIVE_AT,
-                        Constant.USER_CUSTOM_DATA}
-                , Constant.USER_ID + "=?",
+                        Constant.USER_CUSTOM_DATA
+                },
+                Constant.USER_ID + "=?",
                 new String[]{id}, null, null, null, null);
         User user = null;
 

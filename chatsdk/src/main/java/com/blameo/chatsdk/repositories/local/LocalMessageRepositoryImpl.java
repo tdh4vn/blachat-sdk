@@ -15,45 +15,29 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements LocalMessageRepository {
+public class LocalMessageRepositoryImpl extends LocalRepository implements LocalMessageRepository {
 
     private String MESSAGE_TAG = "MESSAGE_DB";
 
+    static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.MESSAGE_TABLE_NAME + "("
+            + Constant.MESSAGE_ID + " TEXT,"
+            + Constant.MESSAGE_AUTHOR_ID + " TEXT,"
+            + Constant.MESSAGE_CHANNEL_ID + " TEXT,"
+            + Constant.MESSAGE_CONTENT + " TEXT,"
+            + Constant.MESSAGE_TYPE + " INTEGER,"
+            + Constant.MESSAGE_CREATED_AT + " TEXT,"
+            + Constant.MESSAGE_UPDATED_AT + " TEXT,"
+            + Constant.MESSAGE_SENT_AT + " TEXT,"
+            + Constant.MESSAGE_SEEN_AT + " TEXT,"
+            + Constant.MESSAGE_CUSTOM_DATA + " TEXT"
+            + ")";
+
+    static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.MESSAGE_TABLE_NAME;
+
     public LocalMessageRepositoryImpl(Context context) {
-        super(context, Constant.MESSAGE_DB_NAME, null, Constant.DATABASE_VERSION);
+        super(context);
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-
-        Log.i(MESSAGE_TAG, "Create MESSAGE Table ... ");
-
-        String table = "CREATE TABLE " + Constant.MESSAGE_TABLE_NAME + "("
-                + Constant.MESSAGE_ID + " TEXT,"
-                + Constant.MESSAGE_AUTHOR_ID + " TEXT,"
-                + Constant.MESSAGE_CHANNEL_ID + " TEXT,"
-                + Constant.MESSAGE_CONTENT + " TEXT,"
-                + Constant.MESSAGE_TYPE + " INTEGER,"
-                + Constant.MESSAGE_CREATED_AT + " TEXT,"
-                + Constant.MESSAGE_UPDATED_AT + " TEXT,"
-                + Constant.MESSAGE_SENT_AT + " TEXT,"
-                + Constant.MESSAGE_SEEN_AT + " TEXT,"
-                + Constant.MESSAGE_CUSTOM_DATA + " TEXT"
-                + ")";
-
-        db.execSQL(table);
-
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        Log.i(MESSAGE_TAG, "Drop Table ... ");
-        db.execSQL("DROP TABLE IF EXISTS " + Constant.MESSAGE_TABLE_NAME);
-
-        onCreate(db);
-
-    }
 
     @Override
     public void clearAllLocalMessages() {
@@ -264,11 +248,11 @@ public class LocalMessageRepositoryImpl extends SQLiteOpenHelper implements Loca
 
             Log.i("ok", "id : "+lastId);
             selectQuery = "SELECT * FROM " + Constant.MESSAGE_TABLE_NAME
-                    + " where " + Constant.MESSAGE_CHANNEL_ID + " = '" + channelId + "'"
-                    + " and " + Constant.MESSAGE_CREATED_AT + " <'" + message.getCreatedAtString() + "'"
-                    + " order by " +Constant.MESSAGE_CREATED_AT
+                    + " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = '" + channelId + "'"
+                    + " AND " + Constant.MESSAGE_CREATED_AT + " <'" + message.getCreatedAtString() + "'"
+                    + " ORDER BY " + Constant.MESSAGE_CREATED_AT
                     + " DESC"
-                    + " limit 20";
+                    + " LIMIT 20";
         }
 
         SQLiteDatabase db = this.getWritableDatabase();

@@ -28,10 +28,10 @@ class ConversationViewModel(val channel: Channel) {
         if(!TextUtils.isEmpty(channel.avatar))
             channel_avatar.value = channel.avatar
 
-        channel_updated.value = channel.created_at
+        channel_updated.value = channel.createdAtString
 
-        last_message.value = if(channel.last_message == null)
-            "" else channel.last_message.content
+        last_message.value = if(channel.lastMessage == null)
+            "" else channel.lastMessage.content
     }
 
     fun getUsersInChannel(){

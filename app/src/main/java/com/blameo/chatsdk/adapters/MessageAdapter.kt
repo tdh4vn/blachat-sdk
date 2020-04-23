@@ -79,7 +79,7 @@ class MessageAdapter(
 
     override fun getItemViewType(position: Int): Int {
 
-        return if(currentId == messages[position].author_id) 1 else 0
+        return if(currentId == messages[position].authorId) 1 else 0
     }
 
     abstract inner class ItemMessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -96,17 +96,17 @@ class MessageAdapter(
 
         override fun fillData(m: Message) {
             tvContent.text = m.content
-            tvTime.text = DateFormatUtils.getInstance().getTime(m.created_at)
-            if(!TextUtils.isEmpty(m.seen_at))
+            tvTime.text = m.createdAtString
+            if(!TextUtils.isEmpty(m.seenAtString))
                 tvTime.text = tvTime.text.toString() + " Seen"
             else{
-                if(!TextUtils.isEmpty(m.sent_at))
+                if(!TextUtils.isEmpty(m.sentAtString))
                     tvTime.text = tvTime.text.toString() + " Sent"
             }
 
 
-            if (!TextUtils.isEmpty(users[m.author_id]?.avatar))
-                ImageLoader.getInstance().displayImage(users[m.author_id]?.avatar,imgAvatar, options)
+            if (!TextUtils.isEmpty(users[m.authorId]?.avatar))
+                ImageLoader.getInstance().displayImage(users[m.authorId]?.avatar,imgAvatar, options)
         }
     }
 
@@ -118,10 +118,10 @@ class MessageAdapter(
 
         override fun fillData(m: Message) {
             tvContent.text = m.content
-            tvTime.text = DateFormatUtils.getInstance().getTime(m.created_at)
+            tvTime.text = DateFormatUtils.getInstance().getTime(m.createdAtString)
 
-            if (!TextUtils.isEmpty(users[m.author_id]?.avatar))
-                ImageLoader.getInstance().displayImage(users[m.author_id]?.avatar,imgAvatar, options)
+            if (!TextUtils.isEmpty(users[m.authorId]?.avatar))
+                ImageLoader.getInstance().displayImage(users[m.authorId]?.avatar,imgAvatar, options)
         }
     }
 }

@@ -18,7 +18,12 @@ public class ChatSdkDateFormatUtil {
     }
 
     public static String parse(Date date) {
-        return inputFormat.format(date);
+        try {
+            return inputFormat.format(date);
+        } catch (Exception e) {
+            return inputFormat.format(new Date());
+        }
+
     }
 
     public static String getTime(String time) {
