@@ -26,7 +26,7 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
 
                 override fun onResponse(call: Call<GetChannelResult>, response: Response<GetChannelResult>) {
                     if(response.isSuccessful){
-                        if(response.body() != null){
+                        if(response.body()?.data != null){
                             channelResultListener.onGetRemoteChannelsSuccess(response.body()!!.data)
                         }else{
                             channelResultListener.onGetRemoteChannelsFailed("")

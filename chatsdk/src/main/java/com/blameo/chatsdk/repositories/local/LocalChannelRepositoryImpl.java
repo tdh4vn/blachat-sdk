@@ -26,6 +26,17 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
             + Constant.CHANNEL_LAST_MESSAGE_ID + " TEXT"
             + ")";
 
+
+    private static String QUERY_GET_CHANNEL_WITH_LAST_MESSAGE = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME
+            + " LEFT JOIN " + Constant.MESSAGE_TABLE_NAME
+            + " ON " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_ID
+            + " = " + Constant.MESSAGE_TABLE_NAME + "." + Constant.MESSAGE_CHANNEL_ID;
+
+    private static String SORT_BY_UPDATED = " ORDER BY " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_COLUMN_UPDATED_AT + " ASC ";
+
+    private static String QUERY_GET_CHANNEL_BY_ID_WITH_LAST_MESSAGE = QUERY_GET_CHANNEL_WITH_LAST_MESSAGE
+            + " WHERE " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_ID + " = ?";
+
     static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.CHANNEL_TABLE_NAME;
 
     public LocalChannelRepositoryImpl(Context context) {
@@ -108,12 +119,8 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(Constant.CHANNEL_TABLE_NAME, new String[]{Constant.CHANNEL_ID,
-                        Constant.CHANNEL_COLUMN_NAME, Constant.CHANNEL_COLUMN_AVATAR,
-                        Constant.CHANNEL_TYPE, Constant.CHANNEL_COLUMN_UPDATED_AT,
-                        Constant.CHANNEL_COLUMN_CREATED_AT, Constant.CHANNEL_LAST_MESSAGE_ID}
-                , Constant.CHANNEL_ID + "=?",
-                new String[]{id}, null, null, null, null);
+        Cursor cursor = db.rawQuery(QUERY_GET_CHANNEL_BY_ID_WITH_LAST_MESSAGE + SORT_BY_UPDATED, new String[]{id});
+
         if (cursor != null) {
             cursor.moveToFirst();
 
@@ -168,10 +175,9 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
     @Override
     public ArrayList<Channel> getChannels() {
         ArrayList<Channel> channels = new ArrayList<>();
-        String selectQuery = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " ORDER BY "+ Constant.CHANNEL_ID + " ASC";
 
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, null);
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(QUERY_GET_CHANNEL_WITH_LAST_MESSAGE + SORT_BY_UPDATED, null);
         cursor.moveToFirst();
 
         if (cursor.getCount() == 0) return channels;

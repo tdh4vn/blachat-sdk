@@ -45,7 +45,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
 
-
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = "ChatSDK Demo"
         chatSdk = BlameoChatSdk.getInstance()
         chatSdk.initContext(this)
         chatSdk.initSession(baseUrl, ws, token, tokenWs, myId)
@@ -65,15 +66,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
-                Log.e(TAG, "size ${channels.size}")
-
                 adapter.channels = channels
                 adapter.notifyDataSetChanged()
-
             }
 
         })
-
         chatSdk.addOnNewChannelListener(object : OnNewChannelListener{
             override fun onNewChannel(channel: Channel) {
                 Log.i(TAG, "new channel id: ${channel.id}")
@@ -88,12 +85,9 @@ class MainActivity : AppCompatActivity() {
                     override fun createChannelSuccess(channel: Channel) {
                         adapter.channels.add(0, channel)
                         adapter.notifyDataSetChanged()
-//                        Log.e(TAG, "create channel id: ${channel.id} ${channel.name}")
                     }
-                })
+                }
+            )
         }
-
-
     }
-
 }

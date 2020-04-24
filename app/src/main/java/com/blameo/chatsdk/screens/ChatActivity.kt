@@ -108,7 +108,6 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
         }
 
         tvAdd.setOnClickListener {
-
             startActivity(
                 Intent(this, AboutChannelActivity::class.java)
                     .putExtra("CHANNEL", channel))
@@ -158,8 +157,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                     map[it.id] = it
                 }
                 adapter.users = map
-                if (channel.lastMessage == null)
-                    getMessages("")
+                getMessages("")
                 users.forEachIndexed { index, it ->
                     Log.e(TAG, "users in channel: $index ${it.name}")
                 }

@@ -84,6 +84,19 @@ public class Message extends CustomData implements Serializable {
         this.customData = GsonUtil.jsonToMap(cursor.getString(9));
     }
 
+    public Message(Cursor cursor, int offset) throws ParseException {
+        this.id = cursor.getString(offset);
+        this.authorId = cursor.getString(offset + 1);
+        this.channelId = cursor.getString(offset + 2);
+        this.content = cursor.getString(offset + 3);
+        this.type = cursor.getInt(offset + 4);
+        this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 5));
+        this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 6));
+        this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 7));
+        this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 8));
+        this.customData = GsonUtil.jsonToMap(cursor.getString(offset + 9));
+    }
+
     public Message() {
     }
 
