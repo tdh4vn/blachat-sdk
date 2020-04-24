@@ -57,7 +57,6 @@ public class LocalUserRepositoryImpl extends LocalRepository implements LocalUse
             this.updateUser(user);
         }
 
-        db.close();
     }
 
     @Override
@@ -138,7 +137,6 @@ public class LocalUserRepositoryImpl extends LocalRepository implements LocalUse
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(Constant.USER_TABLE_NAME, Constant.USER_ID + " = ?",
                 new String[]{uId});
-        db.close();
     }
 
     @Override
@@ -166,7 +164,7 @@ public class LocalUserRepositoryImpl extends LocalRepository implements LocalUse
         ArrayList<User> users = new ArrayList<>();
         String selectQuery = "SELECT * FROM " + Constant.USER_TABLE_NAME;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
         cursor.moveToFirst();
 

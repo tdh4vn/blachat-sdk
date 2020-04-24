@@ -73,7 +73,6 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
             this.updateChannel(channel);
         }
 
-        db.close();
     }
 
     @Override
@@ -154,7 +153,6 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(Constant.CHANNEL_TABLE_NAME, Constant.CHANNEL_ID + " = ?",
                 new String[]{channelId});
-        db.close();
     }
 
     @Override

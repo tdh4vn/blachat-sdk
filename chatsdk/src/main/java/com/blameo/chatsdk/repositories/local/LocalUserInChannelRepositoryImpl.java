@@ -59,7 +59,6 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
             Log.i(TAG, "" + uId +" has already inserted in the channel: "+ cId +" before");
         }
 
-        db.close();
     }
 
     @Override
@@ -90,7 +89,6 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(Constant.UIC_TABLE_NAME, Constant.UIC_ID + " = ?",
                 new String[]{userInChannel.getChannelId() + userInChannel.getUserId()});
-        db.close();
     }
 
     @Override

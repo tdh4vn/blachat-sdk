@@ -158,7 +158,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                     map[it.id] = it
                 }
                 adapter.users = map
-                if (channel.lastMessage != null)
+                if (channel.lastMessage == null)
                     getMessages("")
                 users.forEachIndexed { index, it ->
                     Log.e(TAG, "users in channel: $index ${it.name}")
