@@ -1,10 +1,9 @@
 package com.blameo.chatsdk.repositories.remote
 
+import com.blameo.chatsdk.models.bodies.ChannelsBody
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
-import com.blameo.chatsdk.models.results.BaseResult
-import com.blameo.chatsdk.models.results.CreateChannelResult
-import com.blameo.chatsdk.models.results.GetChannelResult
-import com.blameo.chatsdk.models.results.GetUsersInChannelResult
+import com.blameo.chatsdk.models.pojos.InviteUserToChannelBody
+import com.blameo.chatsdk.models.results.*
 import com.blameo.chatsdk.repositories.remote.net.UserAPI
 import com.blameo.chatsdk.repositories.ChannelResultListener
 import retrofit2.Call
@@ -16,9 +15,9 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
 )
     : ChannelRemoteRepository {
 
-    override fun getChannels() {
+    override fun getChannels(pageSize: String) {
 
-        return userAPI.getChannel(10)
+        return userAPI.getChannel(pageSize)
             .enqueue(object : Callback<GetChannelResult>{
                 override fun onFailure(call: Call<GetChannelResult>, t: Throwable) {
                     channelResultListener.onGetRemoteChannelsFailed(t.message!!)
@@ -38,6 +37,23 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
             })
     }
 
+    override fun getNewerChannels(id: String) {
+
+        return userAPI.getNewerChannels(id)
+            .enqueue(object : Callback<GetChannelResult>{
+                override fun onFailure(call: Call<GetChannelResult>, t: Throwable) {
+                }
+
+                override fun onResponse(call: Call<GetChannelResult>, response: Response<GetChannelResult>) {
+                    if(response.isSuccessful) {
+                        if (response.body()?.data != null) {
+                            channelResultListener.onGetNewerChannelsSuccess(response.body()!!.data)
+                        }
+                    }
+                }
+            })
+    }
+
     override fun getUsersInChannel(id: String) {
 
         return userAPI.getUsersInChannels(id)
@@ -48,12 +64,8 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
 
                 override fun onResponse(call: Call<GetUsersInChannelResult>, response: Response<GetUsersInChannelResult>) {
                     if(response.isSuccessful){
-                        if(response.body() != null){
-                            val ids = arrayListOf<String>()
-                            response.body()!!.data.forEach {
-                                ids.add(it.memberId)
-                            }
-                            channelResultListener.onGetUsersInChannelSuccess(id, ids)
+                        if(response.body()?.data != null){
+                            channelResultListener.onGetUsersInChannelSuccess(id, response.body()?.data!!)
                         }
                     }
                 }
@@ -80,7 +92,6 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
     }
 
     override fun putTypingInChannel(cId: String) {
-        println("put typing in $cId")
         userAPI.putTypingEvent(cId)
             .enqueue(object: Callback<BaseResult>{
                 override fun onFailure(call: Call<BaseResult>, t: Throwable) {
@@ -88,15 +99,11 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
                 }
 
                 override fun onResponse(call: Call<BaseResult>, response: Response<BaseResult>) {
-                    if(response.isSuccessful)
-                        if(response.body()!!.success())
-                            println("ok sent typing")
                 }
             })
     }
 
     override fun putStopTypingInChannel(cId: String) {
-        println("put stop typing in $cId")
         userAPI.putStopTypingEvent(cId)
             .enqueue(object: Callback<BaseResult>{
                 override fun onFailure(call: Call<BaseResult>, t: Throwable) {
@@ -104,9 +111,42 @@ class ChannelRemoteRepositoryImpl(private val userAPI: UserAPI,
                 }
 
                 override fun onResponse(call: Call<BaseResult>, response: Response<BaseResult>) {
-                    if(response.isSuccessful)
-                        if(response.body()!!.success())
-                            println("ok sent stop")
+                }
+            })
+    }
+
+    override fun inviteUserToChannel(userIds: ArrayList<String>, channelId: String) {
+        val body = InviteUserToChannelBody()
+        body.userIds = userIds
+        userAPI.inviteUserToChannel(channelId, body)
+            .enqueue(object: Callback<BaseResult>{
+                override fun onFailure(call: Call<BaseResult>, t: Throwable) {
+                }
+
+                override fun onResponse(call: Call<BaseResult>, response: Response<BaseResult>) {
+                    if(response.isSuccessful){
+                        if(response.body() != null)
+                            channelResultListener.onInviteUsersToChannelSuccess(channelId, userIds)
+                    }
+                }
+            })
+    }
+
+    override fun getMembersOfMultiChannel(ids: ArrayList<String>) {
+
+        userAPI.getMembersOfMultiChannel(ChannelsBody(ids))
+            .enqueue(object: Callback<GetMembersOfMultiChannelResult>{
+                override fun onFailure(call: Call<GetMembersOfMultiChannelResult>, t: Throwable) {
+                }
+
+                override fun onResponse(
+                    call: Call<GetMembersOfMultiChannelResult>,
+                    response: Response<GetMembersOfMultiChannelResult>
+                ) {
+                    if(response.isSuccessful){
+                        if(response.body()?.membersInChannels != null)
+                            channelResultListener.onGetMembersOfMultiChannelSuccess(response.body()?.membersInChannels!!)
+                    }
                 }
             })
     }

@@ -4,34 +4,42 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.blameo.chatsdk.repositories.local.*
-import com.blameo.chatsdk.models.events.*
-import com.blameo.chatsdk.models.pojos.*
-import com.blameo.chatsdk.repositories.remote.net.APIProvider
-import com.blameo.chatsdk.repositories.remote.MessageRemoteRepository
 import com.blameo.chatsdk.controllers.*
+import com.blameo.chatsdk.models.events.*
+import com.blameo.chatsdk.models.pojos.Channel
+import com.blameo.chatsdk.models.pojos.Message
+import com.blameo.chatsdk.models.pojos.RemoteUserChannel
+import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.repositories.local.*
+import com.blameo.chatsdk.repositories.remote.net.APIProvider
 import com.google.gson.Gson
 import io.github.centrifugal.centrifuge.*
 import io.github.centrifugal.centrifuge.EventListener
 import okhttp3.*
 import okio.ByteString
 import java.nio.charset.StandardCharsets
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 
 private var shareInstance: BlameoChatSdk? = null
 
-interface OnTypingListener{
+interface OnTypingListener {
     fun onTyping()
     fun onStopTyping()
+}
+
+interface OnEventListener {
     fun onNewMessage(message: Message)
 }
 
-interface OnCursorChangeListener{
+interface OnCursorChangeListener {
     fun onCursorChange(type: String, cursor: CursorEvent)
 }
 
-interface OnNewChannelListener{
+interface OnNewChannelListener {
     fun onNewChannel(channel: Channel)
 }
 
@@ -40,7 +48,6 @@ class BlameoChatSdk : ChatListener() {
     lateinit var token: String
     lateinit var tokenWs: String
     lateinit var uId: String
-    lateinit var uidSocket: String
     lateinit var wsURL: String
     lateinit var channel: String
     lateinit var currentChannelID: String
@@ -50,63 +57,50 @@ class BlameoChatSdk : ChatListener() {
 
     private var getChannelsListener: GetChannelsListener? = null
     lateinit var getMessagesListener: GetMessagesListener
-    private var usersInChannelListener: GetUsersInChannelListener? = null
     lateinit var createChannelListener: CreateChannelListener
     lateinit var createMessageListener: CreateMessageListener
     lateinit var markSeenMessageListener: MarkSeenMessageListener
     lateinit var markReceiveMessageListener: MarkReceiveMessageListener
-    lateinit var channelViewModel: ChannelController
+    lateinit var channelController: ChannelController
     lateinit var messageController: MessageController
     lateinit var userController: UserController
     lateinit var typingListener: OnTypingListener
+    lateinit var onEventListener: OnEventListener
     lateinit var onCursorChangeListener: OnCursorChangeListener
     lateinit var onNewChannelListener: OnNewChannelListener
+    lateinit var onGetAllMembersListener: GetAllMembersListener
+    lateinit var onInviteUsersToChannelListener: InviteUsersToChannelListener
 
     lateinit var localChannels: LocalChannelRepository
     lateinit var localMessages: LocalMessageRepository
-    lateinit var localUserInChannels: LocalUserInChannelRepository
     lateinit var localUsers: LocalUserRepository
     private var channels = arrayListOf<Channel>()
 
-    private lateinit var messageRepository: MessageRemoteRepository
-
-    fun addOnTypingListener(onTypingListener: OnTypingListener){
-        this.typingListener = onTypingListener
-    }
-
-    fun addOnCursorChangeListener(onCursorChangeListener: OnCursorChangeListener){
-        this.onCursorChangeListener = onCursorChangeListener
-    }
-
-    fun addOnNewChannelListener(onNewChannelListener: OnNewChannelListener){
-        this.onNewChannelListener = onNewChannelListener
-    }
-
-    fun syncMessage() {
-        this.messageController.syncMessage()
-    }
-
+    private var uicMap: HashMap<String, ArrayList<RemoteUserChannel>> = hashMapOf()
+    private var usersMap: HashMap<String, User> = hashMapOf()
+    private var lastChannelId = ""
 
     private val channelListener = object : ChannelListener {
         override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
+            this@BlameoChatSdk.channels = channels
+            lastChannelId = ""
             if (channels.size > 0) {
-                this@BlameoChatSdk.channels = channels
-//                getChannelsListener.onGetChannelsSuccess(channels)
 
                 channels.forEach { channel ->
-                    if(TextUtils.isEmpty(channel.lastMessageId)) {
-                        Log.i(TAG, "id ${channel.id} last_mess ${channel.lastMessageId}")
-                        if (!TextUtils.isEmpty(channel.lastMessageId))
-                            messageController.getMessageById(channel.lastMessageId)
-                    }else{
-                        channelViewModel.updateLastMessage(channel.id, channel.lastMessage.id)
+//                    Log.i(TAG, "id ${channel.id} last_mess ${channel.lastMessageId}")
+                    lastChannelId = channel.id
+                    var id = channel.lastMessageId
+                    if (TextUtils.isEmpty(id)){
+                        if(channel.lastMessage != null) id = channel.lastMessage.id
                     }
-                }
+                    if(!TextUtils.isEmpty(id))
+                        messageController.getMessageById(id)
+                    else{
+                        val m = Message()
+                        m.channelId = channel.id
+                        messageListener.onGetMessageByIdSuccess(m)
+                    }
 
-                channels.forEach { channel ->
-                    Log.i(TAG, "get users in ${channel.id}")
-                    Log.i(TAG, "channel name: ${channel.name} ${channel.id}")
-                    channelViewModel.getUsersInChannel(channel.id)
                 }
             }
         }
@@ -123,33 +117,52 @@ class BlameoChatSdk : ChatListener() {
 
         }
 
-        override fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>) {
-            Log.i(TAG, "get ids: ${ids.size}")
-            getUsersByIds(channelId, ids)
+        override fun onGetUsersInChannelSuccess(channelId: String, uic: ArrayList<RemoteUserChannel>) {
+//            Log.i(TAG, "get ids: ${uic.size}")
+            getUsersByIds(channelId, convertUICToStringIds(channelId, uic))
         }
 
         override fun onGetUsersInChannelFailed(error: String) {
 
         }
 
+        override fun onInviteUsersToChannelSuccess(channelId: String, userIds: ArrayList<String>) {
+            val users = userController.getLocalUsers(userIds)
+            onInviteUsersToChannelListener.onInviteSuccess(channelId, users)
+        }
+
     }
 
     private val messageListener = object : MessageListener {
         override fun onGetMessagesSuccess(messages: ArrayList<Message>) {
-            Log.i(TAG, "ok : ${messages.size}")
+//            Log.i(TAG, "ok : ${messages.size}")
+            if(messages.size == 0)  return
+            messages.forEachIndexed { index, message ->
+                messages[index] = handleResultMessage(message)
+            }
+
             getMessagesListener.getMessagesSuccess(messages)
+            updateUserLastSeenInChannel(messages[messages.size -1])
         }
 
         override fun onGetMessagesError(error: String) {
+            getMessagesListener.getMessageFailed(error)
+        }
+
+        override fun onNewMessages(messages: ArrayList<Message>) {
+            Log.i(TAG, "abc ${messages.size}")
+            messages.forEach {
+                Log.i(TAG, "abc ${it.id}")
+                onEventListener.onNewMessage(it)
+                channelController.updateLastMessage(it.channelId, it.id)
+            }
         }
 
         override fun onGetMessageByIdSuccess(message: Message) {
-            Log.i(TAG, "message : ${message.id}")
-            channels.forEach { channel ->
-                if (channel.id == message.channelId) {
-                    channel.lastMessage = message
-//                    getChannelsListener.onGetChannelsSuccess(channels)
-                    return@forEach
+            if (message.channelId == lastChannelId) {
+//                Log.i(TAG, "this is the message id of last channel")
+                channels.forEach {
+                    channelController.getUsersInChannel(it.id)
                 }
             }
         }
@@ -174,34 +187,61 @@ class BlameoChatSdk : ChatListener() {
         }
     }
 
-    private val userListener = object : UserListener{
+    private val userListener = object : UserListener {
         override fun onUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
-            Log.e(TAG, "success ${users.size}")
-//            usersInChannelListener.onGetUsersByIdsSuccess(users)
-            if(users.size == 2){
-                channels.forEach { channel ->
-                    if(channelId == channel.id){
-                        users.forEach { user ->
-                            if(user.id != uId){
-                                channel.name = user.name
-                                channel.avatar = user.avatar
-                                return@forEach
-                            }
-                        }
-                        return@forEach
-                    }
-                }
+            Log.e(TAG, "users by ids: ${users.size} $channelId")
+
+            users.forEach {
+                usersMap[it.id] = it
             }
 
-            if(usersInChannelListener != null)
-                usersInChannelListener?.onGetUsersByIdsSuccess(channelId, users)
 
-            if(channels[channels.size -1].id == channelId){
-                getChannelsListener?.onGetChannelsSuccess(channels)
+            if(channels.size > 0){
+                if (channelId == lastChannelId) {
+                    Log.e(TAG, "this is last channel $channelId")
+                    responseChannels()
+                }
+            }else{
+                // on newer channels
+
+                val channel = channelController.getLocalChannelById(channelId)
+                if (channel.lastMessage == null) {
+                    if(!TextUtils.isEmpty(channel.lastMessageId)){
+                        val message = messageController.getLocalMessageById(channel.lastMessageId)
+                        channel.lastMessage = message
+                    }
+
+                }
+
+                Log.e(TAG, "users by ids in newer channels: ${users.size} $channelId ${channel.avatar}")
+
+                Log.i(TAG, "${channel.id} ${users.size}")
+                if (users.size == 2) {
+                    users.forEach { user ->
+                        if (user.id != uId) {
+                            channel.avatar = user.avatar
+                            channel.name = user.name
+                            return@forEach
+                        }
+                    }
+                }
+                onNewChannelListener.onNewChannel(channel)
             }
         }
 
         override fun onGetUsersByIdsError(error: String) {
+        }
+
+        override fun onGetAllMembersSuccess(users: ArrayList<User>) {
+            users.forEach {
+                usersMap[it.id] = it
+            }
+
+            onGetAllMembersListener.onSuccess(users)
+        }
+
+        override fun onGetAllMembersError(error: String) {
+
         }
 
     }
@@ -212,6 +252,171 @@ class BlameoChatSdk : ChatListener() {
                 shareInstance = BlameoChatSdk()
             return shareInstance!!
         }
+    }
+
+    fun addOnTypingListener(onTypingListener: OnTypingListener) {
+        this.typingListener = onTypingListener
+    }
+
+    fun addOnEventListener(onEventListener: OnEventListener) {
+        this.onEventListener = onEventListener
+    }
+
+    fun addOnCursorChangeListener(onCursorChangeListener: OnCursorChangeListener) {
+        this.onCursorChangeListener = onCursorChangeListener
+    }
+
+    fun addOnNewChannelListener(onNewChannelListener: OnNewChannelListener) {
+        this.onNewChannelListener = onNewChannelListener
+    }
+
+
+    private fun convertUICToStringIds(channelId: String, uic: ArrayList<RemoteUserChannel>): ArrayList<String>{
+        uicMap[channelId] = uic
+        val ids = arrayListOf<String>()
+        uic.forEach {
+            ids.add(it.memberId)
+        }
+        return ids
+    }
+
+    fun syncMessage() {
+        this.messageController.syncMessage()
+    }
+
+    private fun handleResultMessage(message: Message) : Message{
+        val uic = uicMap[message.channelId]
+        uic?.forEach {
+            var user = usersMap[it.memberId]
+            if(user == null)    user = User(it.memberId)
+            usersMap[it.memberId] = user
+            if(it.lastSeen > message.createdAtString)
+                message.seenBy.add(user)
+
+            if(it.lastReceive > message.createdAtString)
+                message.receiveBy.add(user)
+        }
+        return message
+    }
+
+    fun updateUserLastSeenInChannel(lastMessage: Message){
+        userController.updateUserLastSeenInChannel(uId, lastMessage.channelId, lastMessage)
+    }
+
+    fun inviteUsersToChannel(channelId: String, userIds: ArrayList<String>, listener: InviteUsersToChannelListener){
+        onInviteUsersToChannelListener = listener
+        channelController.inviteUsersToChannel(channelId, userIds)
+    }
+
+    private fun responseChannels() {
+
+        channels.forEach { channel ->
+            if (channel.lastMessage == null) {
+                if(!TextUtils.isEmpty(channel.lastMessageId)) {
+                    val message = messageController.getLocalMessageById(channel.lastMessageId)
+                    channel.lastMessage = message
+                }
+            }
+            val uic = channelController.getLocalUsersInChannel(channel.id)
+            val users = userController.getLocalUsersByIds(channel.id, convertUICToStringIds(channel.id, uic))
+
+            Log.i(TAG, "${channel.id} ${users.size}")
+            if (uic.size == 2) {
+                users.forEach { user ->
+                    if (user.id != uId) {
+                        channel.avatar = user.avatar
+                        channel.name = user.name
+                        return@forEach
+                    }
+                }
+            }
+        }
+
+        getChannelsListener?.onGetChannelsSuccess(channels)
+        channels.clear()
+    }
+
+
+
+    fun sendTypingEvent(is_typing: Boolean, channelID: String) {
+        if (is_typing)
+            channelController.putTypingInChannel(channelID)
+        else
+            channelController.putStopTypingInChannel(channelID)
+    }
+
+    private fun initDB() {
+        localChannels = LocalChannelRepositoryImpl(context)
+        localMessages = LocalMessageRepositoryImpl(context)
+        localUsers = LocalUserRepositoryImpl(context)
+    }
+
+    fun initContext(activity: AppCompatActivity) {
+        context = activity
+        initDB()
+    }
+
+    fun getAllMembers(listener: GetAllMembersListener) {
+        onGetAllMembersListener = listener
+        userController.getAllMembers()
+    }
+
+    fun getChannels(getChannelsListener: GetChannelsListener) {
+        this.getChannelsListener = getChannelsListener
+        channelController.getChannels()
+    }
+
+    fun exportDB() {
+        localChannels.exportChannelDB()
+        localMessages.exportMessageDB()
+    }
+
+    fun getUsersInChannel(channelId: String, usersInChannelListener: GetUsersInChannelListener) {
+        val uic = channelController.getLocalUsersInChannel(channelId)
+        val users = userController.getLocalUsersByIds(channelId, convertUICToStringIds(channelId, uic))
+        usersInChannelListener.onGetUsersByIdsSuccess(channelId, users)
+    }
+
+    private fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
+        userController.getUsersByIds(channelId, ids)
+    }
+
+    fun createChannel(
+        ids: ArrayList<String>, name: String, type: Int, listener: CreateChannelListener) {
+        this.createChannelListener = listener
+        channelController.createChannel(ids, name, type)
+    }
+
+    fun createMessage(
+        content: String,
+        type: Int,
+        channelId: String,
+        listener: CreateMessageListener
+    ) {
+        createMessageListener = listener
+        messageController.createMessage(content, type, channelId)
+    }
+
+    fun getMessages(channelId: String, lastId: String, listener: GetMessagesListener) {
+        getMessagesListener = listener
+        currentChannelID = channelId
+        messageController.getMessages(channelId, lastId)
+    }
+
+    fun sendSeenMessageEvent(
+        channelId: String, messageId: String, authorId: String,
+        listener: MarkSeenMessageListener
+    ) {
+        markSeenMessageListener = listener
+        messageController.sendSeenMessageEvent(channelId, messageId, authorId)
+    }
+
+    fun sendReceiveMessageEvent(
+        channelId: String, messageId: String, authorId: String,
+        listener: MarkReceiveMessageListener
+    ) {
+        markReceiveMessageListener = listener
+        messageController.sendReceivedMessageEvent(channelId, messageId, authorId)
     }
 
     fun initSession(
@@ -226,11 +431,11 @@ class BlameoChatSdk : ChatListener() {
         this.uId = uid
         this.channel = "chat#$uid"
         connectSocket()
-        initViewModels()
+        initController()
     }
 
-    private fun initViewModels() {
-        channelViewModel = ChannelController(channelListener, this.localChannels, this.localUserInChannels)
+    private fun initController() {
+        channelController = ChannelController(channelListener, this.localChannels)
         messageController = MessageController(messageListener)
         userController = UserController(userListener, this.localUsers)
     }
@@ -265,11 +470,11 @@ class BlameoChatSdk : ChatListener() {
                 Log.i(TAG, "Message from " + sub.channel + ": " + data)
                 val g = Gson()
                 val p = g.fromJson(data, Event::class.java)
-                when(p.type){
+                when (p.type) {
                     "typing_event" -> {
                         val typing = g.fromJson(p.payload.toString(), Payload::class.java)
-                        if(typing.channel_id != currentChannelID)   return
-                        if(typing.is_typing)
+                        if (typing.channel_id != currentChannelID) return
+                        if (typing.is_typing)
                             typingListener.onTyping()
                         else
                             typingListener.onStopTyping()
@@ -277,32 +482,41 @@ class BlameoChatSdk : ChatListener() {
                     "new_message" -> {
                         val new_event = g.fromJson(data, NewMessageEvent::class.java)
                         val message = new_event.payload
-                        if(message.authorId != uId){
-                            typingListener.onNewMessage(message)
+                        if (message.authorId != uId) {
+                            onEventListener.onNewMessage(message)
                             messageController.receiveEventNewMessage(message)
+                            channelController.updateLastMessage(message.channelId, message.id)
                         }
 
                     }
 
                     "mark_seen" -> {
                         val event = g.fromJson(data, StatusMessageEvent::class.java)
-                        println("seen")
                         onCursorChangeListener.onCursorChange("SEEN", event.payload)
                         messageController.receiveEventSeenMessage(event.payload.message_id)
                     }
 
                     "mark_receive" -> {
                         val event = g.fromJson(data, StatusMessageEvent::class.java)
-                        println("receive")
                         messageController.receiveEventReceiveMessage(event.payload.message_id)
+                        val message = Message()
+                        message.id = event.payload.message_id
+                        message.createdAt = Date(event.payload.time)
+                        userController.updateUserLastSeenInChannel(event.payload.actor_id, event.payload.channel_id, message)
                     }
 
                     "new_channel" -> {
                         val event = g.fromJson(data, NewChannelEvent::class.java)
-                        println("new channel")
                         val c = event.payload
-                        val channel = Channel(c.id, c.name, c.avatar, c.type, c.updatedAt, c.createdAt, c.last_message_id)
-                        channelViewModel.addNewChannel(channel)
+                        val channel = Channel(
+                            c.id,
+                            c.name,
+                            c.avatar,
+                            c.type,
+                            c.updatedAt,
+                            c.createdAt,
+                            c.last_message_id)
+                        channelController.addNewChannel(channel)
                         onNewChannelListener.onNewChannel(channel)
                     }
                 }
@@ -368,85 +582,7 @@ class BlameoChatSdk : ChatListener() {
         presenceSubscription.subscribe()
 
         client.connect()
-//        connectPresence()
 
-    }
-
-    fun sendTypingEvent(is_typing: Boolean, channelID: String){
-        if(is_typing)
-            channelViewModel.putTypingInChannel(channelID)
-        else
-            channelViewModel.putStopTypingInChannel(channelID)
-    }
-
-    private fun initDB() {
-        localChannels = LocalChannelRepositoryImpl(context)
-        localMessages = LocalMessageRepositoryImpl(context)
-        localUserInChannels = LocalUserInChannelRepositoryImpl(context)
-        localUsers = LocalUserRepositoryImpl(context)
-
-        exportDB()
-    }
-
-    fun initContext(activity: AppCompatActivity) {
-        context = activity
-        initDB()
-    }
-
-    fun getChannels(getChannelsListener: GetChannelsListener) {
-        this.getChannelsListener = getChannelsListener
-        channelViewModel.getChannels()
-    }
-
-    fun exportDB() {
-        localChannels.exportChannelDB()
-        localMessages.exportMessageDB()
-        localUserInChannels.exportUicDB()
-    }
-
-    fun getUsersInChannel(channelId: String, usersInChannelListener: GetUsersInChannelListener) {
-        this.usersInChannelListener = usersInChannelListener
-        channelViewModel.getUsersInChannel(channelId)
-    }
-
-    private fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
-        userController.getUsersByIds(channelId, ids)
-    }
-
-    fun createChannel(ids: ArrayList<String>, name: String, type: Int, listener: CreateChannelListener) {
-        this.createChannelListener = listener
-        channelViewModel.createChannel(ids, name, type)
-    }
-
-    fun putTypingInChannel(cId: String){
-        channelViewModel.putTypingInChannel(cId)
-    }
-
-    fun putStopTypingInChannel(cId: String){
-        channelViewModel.putStopTypingInChannel(cId)
-    }
-
-    fun createMessage(content: String, type: Int, channelId: String, listener: CreateMessageListener) {
-        createMessageListener = listener
-        messageController.createMessage(content, type, channelId)
-    }
-
-    fun getMessages(channelId: String, lastId: String, listener: GetMessagesListener) {
-        getMessagesListener = listener
-        currentChannelID = channelId
-        messageController.getMessages(channelId, lastId)
-    }
-
-    fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String,
-                             listener: MarkSeenMessageListener){
-        markSeenMessageListener = listener
-        messageController.sendSeenMessageEvent(channelId, messageId, authorId)
-    }
-
-    fun sendReceiveMessageEvent(channelId: String, messageId: String, authorId: String,
-                                 listener: MarkReceiveMessageListener){
-        markReceiveMessageListener = listener
-        messageController.sendReceivedMessageEvent(channelId, messageId, authorId)
     }
 
     private fun connectPresence() {

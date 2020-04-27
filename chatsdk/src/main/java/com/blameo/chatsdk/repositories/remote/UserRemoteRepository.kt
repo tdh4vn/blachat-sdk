@@ -6,4 +6,6 @@ interface UserRemoteRepository {
 
     fun getUsersByIds(channelID: String, body: UsersBody)
 
+    fun getAllMembers()
+
 }

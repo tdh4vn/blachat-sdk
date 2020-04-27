@@ -140,19 +140,25 @@
         </RelativeLayout>
     </RelativeLayout>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="match_parent"
-        android:layout_height="32dp"
-        android:layout_below="@id/appbar"
-        android:layout_marginTop="12dp"
-        android:visibility="gone" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/listMessage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <LinearLayout
         android:layout_above="@id/bottomBar"
-        android:layout_below="@id/progressBar"
-        />
+        android:layout_below="@id/appbar"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ProgressBar
+            android:layout_marginTop="8dp"
+            android:layout_gravity="center"
+            android:indeterminateTint="@color/colorPrimary"
+            android:id="@+id/progressBar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:visibility="visible" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/listMessage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            />
+    </LinearLayout>
 </RelativeLayout>

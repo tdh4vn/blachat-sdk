@@ -5,10 +5,16 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.blameo.chatsdk.models.pojos.Channel;
+import com.blameo.chatsdk.models.pojos.Message;
+import com.blameo.chatsdk.models.pojos.RemoteUserChannel;
 import com.blameo.chatsdk.models.pojos.UserInChannel;
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class LocalUserInChannelRepositoryImpl extends LocalRepository implements LocalUserInChannelRepository {
@@ -19,7 +25,9 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
     static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.UIC_TABLE_NAME + "("
             + Constant.UIC_ID + " TEXT PRIMARY KEY,"
             + Constant.UIC_CHANNEL_ID + " TEXT,"
-            + Constant.UIC_USER_ID + " TEXT"
+            + Constant.UIC_USER_ID + " TEXT,"
+            + Constant.UIC_LAST_RECEIVE + " TEXT,"
+            + Constant.UIC_LAST_SEEN + " TEXT"
             + ")";
 
     static final String DROP_SCRIPT = "DROP TABLE IF EXISTS " + Constant.UIC_TABLE_NAME;
@@ -37,26 +45,69 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
     }
 
     @Override
-    public void saveUserIdsToChannel(String channelId, ArrayList<String> uIds) {
+    public void saveUserIdsToChannel(String channelId, ArrayList<RemoteUserChannel> rus) {
 
-        for(String id: uIds)
-            save(channelId, id);
+        for(RemoteUserChannel uc: rus)
+            save(channelId, uc);
     }
 
-    private void save(String cId, String uId){
+    public RemoteUserChannel getUIC(String channelId, String userId) {
 
-        Log.e(TAG, "add local uic: " + cId + " uid: " + uId);
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(Constant.UIC_TABLE_NAME, new String[]{Constant.UIC_ID,
+                        Constant.UIC_CHANNEL_ID, Constant.UIC_USER_ID,
+                        Constant.UIC_LAST_RECEIVE, Constant.UIC_LAST_SEEN}
+                , Constant.UIC_ID + "=?",
+                new String[]{channelId + userId}, null, null, null, null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+
+            if(cursor.getCount() == 0) return null;
+
+            RemoteUserChannel channel = new RemoteUserChannel(userId, cursor.getString(3), cursor.getString(4));
+
+            return channel;
+        }
+
+        return null;
+
+
+    }
+
+    @Override
+    public void updateUserLastSeenInChannel(String userId, String channelId, Message lastMessage) {
+
+        RemoteUserChannel uic = getUIC(channelId, userId);
+        if(uic.getLastSeen().compareTo(lastMessage.getCreatedAtString()) >= 0) return;
+
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(Constant.UIC_LAST_SEEN, lastMessage.getCreatedAtString());
+
+        db.update(Constant.UIC_TABLE_NAME, values, Constant.UIC_CHANNEL_ID + " = ?"
+                        + " and "+ Constant.UIC_USER_ID + " = ?",
+                new String[]{channelId, userId});
+
+//        exportUicDB();
+    }
+
+    private void save(String cId, RemoteUserChannel uc){
+
+        Log.e(TAG, "add local uic: " + cId + " uid: " + uc.getMemberId());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(Constant.UIC_ID, cId + uId);
+        values.put(Constant.UIC_ID, cId + uc.getMemberId());
         values.put(Constant.UIC_CHANNEL_ID, cId);
-        values.put(Constant.UIC_USER_ID, uId);
+        values.put(Constant.UIC_USER_ID, uc.getMemberId());
+        values.put(Constant.UIC_LAST_RECEIVE, uc.getLastReceive());
+        values.put(Constant.UIC_LAST_SEEN, uc.getLastSeen());
 
         int res = (int) db.insertWithOnConflict(Constant.UIC_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         if (res == -1) {
-            Log.i(TAG, "" + uId +" has already inserted in the channel: "+ cId +" before");
+            Log.i(TAG, "" + uc.getMemberId() +" has already inserted in the channel: "+ cId +" before");
         }
 
     }
@@ -76,11 +127,12 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
 
     @Override
     public void exportUicDB() {
-        Log.e(TAG, "ID       CHANNEL_ID           USER_ID");
+        Log.e(TAG, "ID       CHANNEL_ID           USER_ID       LAST_SEEN       LAST_RECEIVE");
         ArrayList<UserInChannel> users = getAllUICs();
         Log.e(TAG, "total UICs: " + users.size());
         for (UserInChannel c : users) {
-            Log.e(TAG, "" + c.getId() + "       " + c.getChannelId() + "        " + c.getUserId());
+            Log.e(TAG, "" + c.getId() + "       " + c.getChannelId() + "        "
+                    + c.getUserId()       +c.getLastSeen() + "      "+ c.getLastReceive());
         }
     }
 
@@ -92,9 +144,8 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
     }
 
     @Override
-    public ArrayList<String> getAllUserIdsInChannel(String channelId) {
-        ArrayList<String> uIds = new ArrayList<>();
-//        exportUicDB();
+    public ArrayList<RemoteUserChannel> getAllUserIdsInChannel(String channelId) {
+        ArrayList<RemoteUserChannel> uIds = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + Constant.UIC_TABLE_NAME
                 + " where " + Constant.UIC_CHANNEL_ID + " ='" + channelId + "'";
@@ -102,12 +153,13 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        Log.i(TAG, "count : "+ cursor.getCount());
+ //       Log.i(TAG, "count : "+ cursor.getCount());
 
         if(cursor == null || !cursor.moveToFirst()) return uIds;
 
         do {
-            uIds.add(cursor.getString(2));
+            RemoteUserChannel  uc = new RemoteUserChannel(cursor.getString(2), cursor.getString(3), cursor.getString(4));
+            uIds.add(uc);
         } while (cursor.moveToNext());
 
         return uIds;
@@ -126,7 +178,7 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
 
         do {
             UserInChannel user = new UserInChannel(cursor.getString(0),
-                    cursor.getString(1), cursor.getString(2));
+                    cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
 
             users.add(user);
         } while (cursor.moveToNext());

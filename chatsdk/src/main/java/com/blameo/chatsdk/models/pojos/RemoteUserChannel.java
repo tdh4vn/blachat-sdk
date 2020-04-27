@@ -16,10 +16,10 @@ public class RemoteUserChannel {
     public RemoteUserChannel() {
     }
 
-    public RemoteUserChannel(String memberId, String lastSeen, String lastReceive) {
+    public RemoteUserChannel(String memberId, String lastReceive, String lastSeen) {
         this.memberId = memberId;
-        this.lastSeen = lastSeen;
         this.lastReceive = lastReceive;
+        this.lastSeen = lastSeen;
     }
 
     public String getMemberId() {
@@ -31,6 +31,7 @@ public class RemoteUserChannel {
     }
 
     public String getLastSeen() {
+        if(lastSeen == null)    lastSeen = "2000-01-01T00:00:00.000Z";
         return lastSeen;
     }
 

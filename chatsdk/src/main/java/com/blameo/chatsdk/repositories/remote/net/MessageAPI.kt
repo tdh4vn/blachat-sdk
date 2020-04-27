@@ -36,5 +36,11 @@ interface MessageAPI {
         @Body body: MessageRemoteRepositoryImpl.MarkStatusMessage
     ): Call<BaseResult>
 
+    @GET("channel/{channelId}")
+    fun getNewerMessagesInChannel(
+        @Path("channelId") channelId: String,
+        @Query("latestId") latestId: String
+    ): Call<GetMessagesResult>
+
 
 }

@@ -48,6 +48,8 @@ public class Constant {
     public static final String UIC_ID = "ID";
     public static final String UIC_CHANNEL_ID = "CHANNEL_ID";
     public static final String UIC_USER_ID = "USER_ID";
+    public static final String UIC_LAST_RECEIVE = "LAST_RECEIVE";
+    public static final String UIC_LAST_SEEN = "LAST_SEEN";
 
 
 }

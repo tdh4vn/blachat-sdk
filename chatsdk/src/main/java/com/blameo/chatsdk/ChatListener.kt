@@ -23,6 +23,10 @@ open class ChatListener {
         fun createChannelSuccess(channel: Channel)
     }
 
+    interface InviteUsersToChannelListener{
+        fun onInviteSuccess(channelId: String, users: ArrayList<User>)
+    }
+
 
     // MESSAGE
 
@@ -32,6 +36,7 @@ open class ChatListener {
 
     interface GetMessagesListener{
         fun getMessagesSuccess(messages: ArrayList<Message>)
+        fun getMessageFailed(error: String)
     }
 
     interface MarkSeenMessageListener{
@@ -45,6 +50,10 @@ open class ChatListener {
 
 
     // USER
+
+    interface GetAllMembersListener{
+        fun onSuccess(users: ArrayList<User>)
+    }
 
 
     // USER IN CHANNEL

@@ -7,6 +7,7 @@ import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.utils.DateFormatUtils
 
 class ConversationViewModel(val channel: Channel) {
 
@@ -28,7 +29,7 @@ class ConversationViewModel(val channel: Channel) {
         if(!TextUtils.isEmpty(channel.avatar))
             channel_avatar.value = channel.avatar
 
-        channel_updated.value = channel.createdAtString
+        channel_updated.value = DateFormatUtils.getInstance().getTime(channel.createdAtString)
 
         last_message.value = if(channel.lastMessage == null)
             "" else channel.lastMessage.content

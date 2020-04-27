@@ -39,10 +39,11 @@ class MessageRemoteRepositoryImpl(
 
     }
 
-    override fun createMessage(temID: String, body: CreateMessageBody) {
+    override fun createMessage(temID: String, body: CreateMessageBody, localMessage: Message) {
         messageAPI.createMessage(body)
             .enqueue(object : Callback<GetMessageByIDResult> {
                 override fun onFailure(call: Call<GetMessageByIDResult>, t: Throwable) {
+                    messageListener.onCreateMessageFailed(localMessage)
                 }
 
                 override fun onResponse(
@@ -51,6 +52,8 @@ class MessageRemoteRepositoryImpl(
                 ) {
                     if (response.isSuccessful)
                         messageListener.onCreateMessageSuccess(temID, response.body()?.message!!)
+                    else
+                        messageListener.onCreateMessageFailed(localMessage)
                 }
             })
     }
@@ -102,6 +105,27 @@ class MessageRemoteRepositoryImpl(
                     else
                         messageListener.onGetRemoteMessagesFailed("2")
 
+                }
+            })
+    }
+
+    override fun getMessageBeforeAMessage(channelId: String, messageId: String) {
+
+        messageAPI.getNewerMessagesInChannel(channelId, messageId)
+            .enqueue(object : Callback<GetMessagesResult>{
+                override fun onFailure(call: Call<GetMessagesResult>, t: Throwable) {
+                    messageListener.onGetNewerMessagesFailed(t.message!!)
+                }
+
+                override fun onResponse(
+                    call: Call<GetMessagesResult>,
+                    response: Response<GetMessagesResult>
+                ) {
+                    if(response.isSuccessful){
+                        if(response.body()!!.data != null){
+                            messageListener.onGetNewerMessagesSuccess(response.body()?.data!!)
+                        }
+                    }
                 }
             })
     }

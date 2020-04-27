@@ -3,6 +3,7 @@ package com.blameo.chatsdk
 import android.content.Context
 import android.content.Intent
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,7 +47,6 @@ class ChannelAdapter(val context: Context) :
     override fun onBindViewHolder(holder: ChannelVH, position: Int) {
 
         val channelVM = vmStore.getChannelViewModel(channels[position])
-//        channelVM.getUsersInChannel()
 
         val channel = channels[position]
         holder.bindChannel(channelVM, options)
@@ -65,21 +65,25 @@ class ChannelAdapter(val context: Context) :
 
         fun bindChannel(channelVM: ConversationViewModel, options: DisplayImageOptions) {
 
-            if (!TextUtils.isEmpty(channelVM.channel.avatar))
+            Log.i("adapter", "avatar: ${channelVM.channel.avatar}")
+
+            if (!TextUtils.isEmpty(channelVM.channel_avatar.value.toString()))
                 ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
+            else
+                imgAvatar.setImageResource(R.mipmap.ic_launcher)
             tvName.text = channelVM.channel_name.value.toString()
             tvContent.text = channelVM.last_message.value.toString()
 
-            tvTime.text = channelVM.channel.createdAtString
+            tvTime.text = channelVM.channel_updated.value.toString()
 
-            channelVM.channel_name.observeForever {
-                tvName.text = it.toString()
-            }
-
-            channelVM.channel_avatar.observeForever {
-                if (!TextUtils.isEmpty(channelVM.channel_avatar.value))
-                    ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
-            }
+//            channelVM.channel_name.observeForever {
+//                tvName.text = it.toString()
+//            }
+//
+//            channelVM.channel_avatar.observeForever {
+//                if (!TextUtils.isEmpty(channelVM.channel_avatar.value))
+//                    ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
+//            }
         }
     }
 }

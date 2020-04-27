@@ -5,8 +5,12 @@ import com.blameo.chatsdk.repositories.local.LocalChannelRepository
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
+import com.blameo.chatsdk.models.pojos.RemoteUserChannel
+import com.blameo.chatsdk.models.results.MembersInChannel
 import com.blameo.chatsdk.repositories.ChannelRepository
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl
+import com.blameo.chatsdk.repositories.UserRepository
+import com.blameo.chatsdk.repositories.UserRepositoryImpl
 
 
 interface ChannelListener{
@@ -14,27 +18,43 @@ interface ChannelListener{
     fun onGetChannelError(error: String)
     fun onCreateChannelSuccess(channel: Channel)
     fun onCreateChannelFailed(error: String)
-    fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>)
+    fun onGetUsersInChannelSuccess(channelId: String, uic: ArrayList<RemoteUserChannel>)
     fun onGetUsersInChannelFailed(error: String)
+    fun onInviteUsersToChannelSuccess(channelId: String, userIds: ArrayList<String>)
+    fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>)
+}
+
+interface SDKResultListener{
+
+}
+
+interface ChannelResultListener{
+    fun abc()
+}
+
+interface UserResultListener{
+    fun  \
+}
+
+private val channelListener = object : ChannelResultListener{
+    override fun abc() {
+
+    }
 }
 
 class ChannelController(
-    private val listener: ChannelListener,
-    localChannelRepository: LocalChannelRepository,
-    localUserInChannels: LocalUserInChannelRepository
+    private val listener: SDKResultListener,
+    localChannelRepository: LocalChannelRepository
 )
-    : ChannelListener {
+    : ChannelListener,  {
 
-    private var channelRepository: ChannelRepository =
+    private val channelRepository: ChannelRepository =
         ChannelRepositoryImpl(
             this,
-            localChannelRepository,
-            localUserInChannels
+            localChannelRepository
         )
 
-    var localChannels : ArrayList<String> = arrayListOf()
-
-
+    private val userRepository: UserRepository = UserRepositoryImpl(this, )
 
     private val TAG = "CHANNEL_VM"
 
@@ -44,6 +64,14 @@ class ChannelController(
 
     fun getUsersInChannel(channelId: String) {
         channelRepository.getUsersInChannel(channelId)
+    }
+
+    fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel>{
+        return channelRepository.getLocalUsersInChannel(channelId)
+    }
+
+    fun getLocalChannelById(id: String): Channel{
+        return channelRepository.getLocalChannelById(id)
     }
 
     fun createChannel(ids: ArrayList<String>, name: String, type: Int) {
@@ -67,6 +95,10 @@ class ChannelController(
         channelRepository.addNewChannel(channel)
     }
 
+    fun inviteUsersToChannel(channelId: String, userIds: ArrayList<String>){
+        channelRepository.inviteUsersToChannel(channelId, userIds)
+    }
+
     override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
 
         Log.e(TAG, "result")
@@ -75,7 +107,7 @@ class ChannelController(
 //            channelsResult = channels
 //        }
 
-        listener.onGetChannelsSuccess(channels)
+ //       listener.onGetChannelsSuccess(channels)
 
         channels.forEachIndexed { index, channel ->
             Log.e(TAG, "$index: ${channel.id}")
@@ -83,24 +115,30 @@ class ChannelController(
     }
 
     override fun onGetChannelError(error: String) {
-//        val localChannels = (channelRepository as ChannelRepositoryImpl).getLocalChannels()
-//        listener.onGetChannelsSuccess(localChannels)
-        listener.onGetChannelError(error)
+//        listener.onGetChannelError(error)
     }
 
     override fun onCreateChannelSuccess(channel: Channel) {
-        listener.onCreateChannelSuccess(channel)
+//        listener.onCreateChannelSuccess(channel)
     }
 
     override fun onCreateChannelFailed(error: String) {
-        listener.onCreateChannelFailed(error)
+//        listener.onCreateChannelFailed(error)
     }
 
-    override fun onGetUsersInChannelSuccess(channelId: String, ids: ArrayList<String>) {
-        listener.onGetUsersInChannelSuccess(channelId, ids)
+    override fun onGetUsersInChannelSuccess(channelId: String, uic: ArrayList<RemoteUserChannel>) {
+//        listener.onGetUsersInChannelSuccess(channelId, uic)
     }
 
     override fun onGetUsersInChannelFailed(error: String) {
-        listener.onGetUsersInChannelFailed(error)
+ //       listener.onGetUsersInChannelFailed(error)
+    }
+
+    override fun onInviteUsersToChannelSuccess(channelId: String, userIds: ArrayList<String>) {
+//        listener.onInviteUsersToChannelSuccess(channelId, userIds)
+    }
+
+    override fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>) {
+
     }
 }

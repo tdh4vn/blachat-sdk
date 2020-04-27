@@ -34,6 +34,18 @@ class MainActivity : AppCompatActivity() {
 
         init()
 
+        getMembers()
+
+    }
+
+    private fun getMembers() {
+        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+            override fun onSuccess(users: ArrayList<User>) {
+                users.forEach {
+                    Log.i(TAG, "member: ${it.id} ${it.name}")
+                }
+            }
+        })
     }
 
     private fun getUser() {
@@ -45,16 +57,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
 
-        setSupportActionBar(toolbar)
-        supportActionBar?.title = "ChatSDK Demo"
+
         chatSdk = BlameoChatSdk.getInstance()
         chatSdk.initContext(this)
         chatSdk.initSession(baseUrl, ws, token, tokenWs, myId)
 
         //call sync message to resent unsent message to server
         chatSdk.syncMessage()
-
-//        chatSdk.exportChannelDB()
 
         adapter = ChannelAdapter(this@MainActivity)
         rv_channels.adapter = adapter
@@ -66,16 +75,21 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
-                adapter.channels = channels
+                Log.e(TAG, "size ${channels.size}")
+
+                adapter.channels.addAll(channels)
                 adapter.notifyDataSetChanged()
+
             }
 
         })
+
         chatSdk.addOnNewChannelListener(object : OnNewChannelListener{
             override fun onNewChannel(channel: Channel) {
                 Log.i(TAG, "new channel id: ${channel.id}")
                 adapter.channels.add(0, channel)
                 adapter.notifyDataSetChanged()
+
             }
         })
 
@@ -85,9 +99,12 @@ class MainActivity : AppCompatActivity() {
                     override fun createChannelSuccess(channel: Channel) {
                         adapter.channels.add(0, channel)
                         adapter.notifyDataSetChanged()
+//                        Log.e(TAG, "create channel id: ${channel.id} ${channel.name}")
                     }
-                }
-            )
+                })
         }
+
+
     }
+
 }
