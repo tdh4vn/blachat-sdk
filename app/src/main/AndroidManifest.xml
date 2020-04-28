@@ -14,7 +14,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
-        <activity android:name=".screens.AboutChannelActivity"></activity>
+        <activity android:name=".screens.CreateChannelActivity"></activity>
+        <activity android:name=".screens.AboutChannelActivity" />
         <activity android:name=".MainActivity" />
         <activity android:name=".screens.ChatActivity" />
         <activity android:name=".screens.HomeActivity">

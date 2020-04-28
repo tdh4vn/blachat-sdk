@@ -69,8 +69,6 @@ class MessageAdapter(
         val message = messages[position]
 
         holder.fillData(message)
-
-
     }
 
     override fun getItemCount(): Int {

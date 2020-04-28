@@ -54,7 +54,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         ContentValues values = new ContentValues();
         values.put(attr, ChatSdkDateFormatUtil.getCurrentTimeUTC());
 
-        exportMessageDB();
+//        exportMessageDB();
 
         db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
                 new String[]{messageId});
@@ -85,7 +85,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        if(checkIfMessageIsExist(message.getId()))  return;
+//        if(checkIfMessageIsExist(message.getId()))  return;
 
         ContentValues values = new ContentValues();
         values.put(Constant.MESSAGE_ID, message.getId());
@@ -102,6 +102,8 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         Log.e("DB", "add local message: " + message.getId() + " author_id: " + message.getAuthorId() + " channel_id: " + message.getChannelId());
 
         db.insertWithOnConflict(Constant.MESSAGE_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
+//        db.close();
     }
 
     @Override
@@ -179,10 +181,10 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
-            cursor.close();
+//            cursor.close();
             return false;
         }
-        cursor.close();
+//        cursor.close();
         return true;
     }
 
@@ -192,6 +194,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(Constant.MESSAGE_TABLE_NAME, Constant.MESSAGE_ID + " = ?",
                 new String[]{messageId});
+        db.close();
     }
 
     @Override
@@ -252,16 +255,15 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
                     + " LIMIT 20";
         }
 
-        SQLiteDatabase db = this.getReadableDatabase();
-
+        SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-
         if(cursor == null || !cursor.moveToFirst()) return messages;
 
         if (cursor.getCount() == 0) return messages;
 
         do {
             Message message = new Message(cursor);
+
             messages.add(message);
         } while (cursor.moveToNext());
 

@@ -11,7 +11,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 
-public class Message extends CustomData implements Serializable {
+public class Message extends MessageResult implements Serializable {
 
     @SerializedName("id")
     private String id;
@@ -40,15 +40,17 @@ public class Message extends CustomData implements Serializable {
     @SerializedName("seen_at")
     private Date seenAt;
 
-
     @SerializedName("is_system_message")
     private boolean isSystemMessage;
 
+//    @SerializedName("custom_data")
+//    private HashMap<String, Object> customData;
+
     @SerializedName("custom_data")
-    private HashMap<String, Object> customData;
+    private String customData;
 
 
-    public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, Date seenAt, boolean isSystemMessage, HashMap<String, Object> customData) {
+    public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, Date seenAt, boolean isSystemMessage, String customData) {
         this.id = id;
         this.authorId = authorId;
         this.channelId = channelId;
@@ -62,7 +64,7 @@ public class Message extends CustomData implements Serializable {
         this.customData = customData;
     }
 
-    public Message(String id, String authorId, String channelId, String content, int type, HashMap<String, Object> customData) {
+    public Message(String id, String authorId, String channelId, String content, int type, String customData) {
         this.id = id;
         this.authorId = authorId;
         this.channelId = channelId;
@@ -81,7 +83,8 @@ public class Message extends CustomData implements Serializable {
         this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(6));
         this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(7));
         this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(8));
-        this.customData = GsonUtil.jsonToMap(cursor.getString(9));
+//        this.customData = GsonUtil.jsonToMap(cursor.getString(9));
+        this.customData = cursor.getString(9);
     }
 
     public Message(Cursor cursor, int offset) throws ParseException {
@@ -189,7 +192,8 @@ public class Message extends CustomData implements Serializable {
     }
 
     public String getCustomDataString() {
-        return GsonUtil.mapToJSON(customData);
+//        return GsonUtil.mapToJSON(customData);
+        return customData;
     }
 
     public boolean isSystemMessage() {

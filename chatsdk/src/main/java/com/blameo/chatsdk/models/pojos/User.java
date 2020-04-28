@@ -42,8 +42,11 @@ public class User {
     @SerializedName("last_active_at")
     private Date lastActiveAt;
 
-    @SerializedName("custom_data")
-    private HashMap<String, Object> customData;
+//    @SerializedName("custom_data")
+//    private HashMap<String, Object> customData;
+
+        @SerializedName("custom_data")
+    private String customData;
 
     public boolean isCheck = false;
 
@@ -63,10 +66,11 @@ public class User {
         this.avatar =        cursor.getString(2);
         this.connectionStatus = cursor.getString(3);
         this.lastActiveAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
-        this.customData = GsonUtil.jsonToMap(cursor.getString(5));
+//        this.customData = GsonUtil.jsonToMap(cursor.getString(5));
+        this.customData = cursor.getString(5);
     }
 
-    public User(String id, String name, String avatar, Date createdAt, Date updatedAt, String email, Role role, String gender, String connectionStatus, Date lastActiveAt, HashMap<String, Object> customData) {
+    public User(String id, String name, String avatar, Date createdAt, Date updatedAt, String email, Role role, String gender, String connectionStatus, Date lastActiveAt, String customData) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
@@ -81,6 +85,10 @@ public class User {
     }
 
     public User() {
+    }
+
+    public User(String id) {
+        this.id = id;
     }
 
     public String getId() {
@@ -179,7 +187,7 @@ public class User {
         this.dobString = dobString;
     }
 
-    public HashMap<String, Object> getCustomData() {
+    public String getCustomData() {
         return customData;
     }
 
@@ -187,12 +195,12 @@ public class User {
         return ChatSdkDateFormatUtil.parse(lastActiveAt);
     }
 
-    public void setCustomData(HashMap<String, Object> customData) {
+    public void setCustomData(String customData) {
         this.customData = customData;
     }
 
     public String getCustomDataString() {
-        return GsonUtil.mapToJSON(customData);
+        return customData;
     }
 
     public enum Role {

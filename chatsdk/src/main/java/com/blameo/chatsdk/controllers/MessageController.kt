@@ -11,6 +11,7 @@ import com.blameo.chatsdk.repositories.MessageRepositoryImpl
 interface MessageListener {
     fun onGetMessagesSuccess(messages: ArrayList<Message>)
     fun onGetMessagesError(error: String)
+    fun onNewMessages(messages: ArrayList<Message>)
     fun onGetMessageByIdSuccess(message: Message)
     fun onCreateMessageSuccess(message: Message)
     fun onMarkSeenMessageSuccess(id: String)
@@ -32,6 +33,10 @@ class MessageController(private val listener: MessageListener) : MessageListener
         if(TextUtils.isEmpty(id))   return
         Log.e(TAG, "get by id: $id")
         messageRepository.getMessageById(id)
+    }
+
+    fun getLocalMessageById(id: String): Message{
+        return messageRepository.getMessageByIdLocal(id)
     }
 
     fun createMessage(content: String, type: Int, channelId: String) {
@@ -69,7 +74,11 @@ class MessageController(private val listener: MessageListener) : MessageListener
     }
 
     override fun onGetMessagesError(error: String) {
+        listener.onGetMessagesError(error)
+    }
 
+    override fun onNewMessages(messages: ArrayList<Message>) {
+        listener.onNewMessages(messages)
     }
 
     override fun onGetMessageByIdSuccess(message: Message) {

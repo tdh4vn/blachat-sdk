@@ -50,7 +50,7 @@ public class LocalUserRepositoryImpl extends LocalRepository implements LocalUse
         values.put(Constant.USER_LAST_ACTIVE_AT, user.getLastActiveAtString());
         values.put(Constant.USER_CUSTOM_DATA, user.getCustomDataString());
 
-        Log.e("DB", "add local user: " + user.getId() + " name: " + user.getName() + " avatar: " + user.getAvatar());
+//        Log.e("DB", "add local user: " + user.getId() + " name: " + user.getName() + " avatar: " + user.getAvatar());
 
         int res = (int) db.insertWithOnConflict(Constant.USER_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
         if (res == -1) {

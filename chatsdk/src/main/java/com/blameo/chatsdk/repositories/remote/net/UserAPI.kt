@@ -1,7 +1,9 @@
 package com.blameo.chatsdk.repositories.remote.net
 
+import com.blameo.chatsdk.models.bodies.ChannelsBody
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.bodies.UsersBody
+import com.blameo.chatsdk.models.pojos.InviteUserToChannelBody
 import com.blameo.chatsdk.models.results.*
 import retrofit2.Call
 import retrofit2.http.*
@@ -10,7 +12,7 @@ interface UserAPI {
 
     @GET("user/channels/me")
     fun getChannel(
-        @Query("pageSize") pageSize: Int
+        @Query("pageSize") pageSize: String
     ): Call<GetChannelResult>
 
     @GET("user/channels/members/{id}")
@@ -37,5 +39,27 @@ interface UserAPI {
     fun putStopTypingEvent(
         @Path("channelID") channelID: String
     ): Call<BaseResult>
+
+    @GET("user/members/members")
+    fun getAllMembers(
+    ): Call<GetUsersByIdsResult>
+
+    @GET("user/channels/channel")
+    fun getNewerChannels(
+        @Query("channelId") channelId: String
+    ): Call<GetChannelResult>
+
+    @POST("user/channels/invite/{channelId}")
+    fun inviteUserToChannel(
+        @Path("channelId") channelID: String,
+        @Body body: InviteUserToChannelBody
+    ): Call<BaseResult>
+
+    @GET("user/channels/members")
+    fun getMembersOfMultiChannel(
+        @Body body: ChannelsBody
+    ): Call<GetMembersOfMultiChannelResult>
+
+
 
 }

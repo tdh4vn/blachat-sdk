@@ -10,11 +10,13 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.SmoothScroller
 import com.blameo.chatsdk.*
 import com.blameo.chatsdk.adapters.MessageAdapter
-import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.events.CursorEvent
+import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
@@ -30,6 +32,8 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
     private val TAG = "CHAT"
     private var allMessages: ArrayList<Message> = arrayListOf()
     private var isLoading = true
+
+    lateinit var smoothScroller: SmoothScroller
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,34 +57,55 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
     private fun getMessages(lastId: String) {
 
         Log.i(TAG, "load message with id: $lastId")
+        progressBar.visibility = View.VISIBLE
 
         chatSdk.getMessages(channel.id, lastId, object : ChatListener.GetMessagesListener {
             override fun getMessagesSuccess(messages: ArrayList<Message>) {
                 Log.i(TAG, "${channel.id} has ${messages.size} in total")
                 messages.forEach {
-                    Log.i(TAG, "${it.content}")
+                    Log.i(TAG, "${it.content} ${it.id}")
                 }
 
-                if (messages.size > 0) {
-                    val pos = allMessages.size - 1
-                    isLoading = false
-                    markSeenMessage(messages[0])
-                    allMessages.addAll(0, messages)
-                    adapter.notifyDataSetChanged()
-                    Handler().postDelayed({
-                        if (pos > 0)
-                            listMessage.smoothScrollToPosition(messages.size)
-                        }, 1
-                    )
 
-//                    if (allMessages[0].seen_at == null)
-//                        markSeenMessage(allMessages[0])
-                }
+                Handler().postDelayed({
+                    progressBar.visibility = View.GONE
+
+                    if (messages.size > 0) {
+                        val pos = allMessages.size - 1
+                        isLoading = false
+                        markSeenMessage(messages[0])
+                        allMessages.addAll(0, messages)
+                        adapter.notifyItemRangeInserted(0, messages.size)
+
+
+
+                        Handler().postDelayed({
+                            (listMessage.layoutManager as LinearLayoutManager).smoothScrollToPosition(listMessage, null, messages.size)
+//                            smoothScroller.targetPosition = messages.size - 1
+//                            (listMessage.layoutManager as LinearLayoutManager).startSmoothScroll(smoothScroller)
+
+                            }, 100
+                        )
+                    }
+                }, 2000)
+            }
+
+            override fun getMessageFailed(error: String) {
+                Handler().postDelayed({
+                    progressBar.visibility = View.GONE
+                }, 2000)
+
             }
         })
     }
 
     private fun init() {
+
+        smoothScroller = object : LinearSmoothScroller(this) {
+            override fun getVerticalSnapPreference(): Int {
+                return SNAP_TO_START
+            }
+        }
 
         chatSdk = BlameoChatSdk.getInstance()
         channel = intent.getSerializableExtra("CHANNEL") as Channel
@@ -110,14 +135,15 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
         tvAdd.setOnClickListener {
             startActivity(
                 Intent(this, AboutChannelActivity::class.java)
-                    .putExtra("CHANNEL", channel))
+                    .putExtra("CHANNEL", channel)
+            )
         }
 
         val handler = Handler()
 
         chatSdk.addOnTypingListener(object : OnTypingListener {
             override fun onTyping() {
-               Log.i(TAG," typingaddad")
+                Log.i(TAG, " typingaddad")
                 runOnUiThread {
                     txtTyping.visibility = View.VISIBLE
                 }
@@ -131,13 +157,15 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
 
             override fun onStopTyping() {
                 println("stop typing")
-                Log.i(TAG," stop typingaddad")
+                Log.i(TAG, " stop typingaddad")
                 runOnUiThread {
                     txtTyping.visibility = View.GONE
                 }
                 handler.removeCallbacksAndMessages(null)
             }
+        })
 
+        chatSdk.addOnEventListener(object : OnEventListener {
             override fun onNewMessage(message: Message) {
                 println("client got new message")
                 runOnUiThread {
@@ -146,7 +174,6 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                     listMessage.smoothScrollToPosition(allMessages.size - 1)
                     markSeenMessage(message)
                 }
-
             }
         })
 
@@ -159,7 +186,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                 adapter.users = map
                 getMessages("")
                 users.forEachIndexed { index, it ->
-                    Log.e(TAG, "users in channel: $index ${it.name}")
+                    Log.e(TAG, "users in channel: $index ${it.name} ${it.id}")
                 }
             }
         })
@@ -180,7 +207,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
             }
         })
 
-        listMessage.addOnScrollListener(object : RecyclerView.OnScrollListener(){
+        listMessage.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
             }
@@ -188,9 +215,9 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                if(!isLoading){
+                if (!isLoading) {
                     val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                    if(layoutManager.findFirstCompletelyVisibleItemPosition() == 0){
+                    if (layoutManager.findFirstCompletelyVisibleItemPosition() == 0) {
                         isLoading = true
                         loadMoreMessages()
                     }
@@ -198,13 +225,13 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
             }
         })
 
-        chatSdk.addOnCursorChangeListener(object : OnCursorChangeListener{
+        chatSdk.addOnCursorChangeListener(object : OnCursorChangeListener {
             override fun onCursorChange(type: String, cursor: CursorEvent) {
                 Log.i(TAG, "type: $type ${cursor.channel_id}")
-                if(channel.id != cursor.channel_id) return
-                if(type == "SEEN"){
+                if (channel.id != cursor.channel_id) return
+                if (type == "SEEN") {
                     allMessages.forEach {
-                        if(it.id == cursor.message_id){
+                        if (it.id == cursor.message_id) {
                             it.seenAt = ChatSdkDateFormatUtil.parse(cursor.time)
                             adapter.notifyDataSetChanged()
                             return@forEach

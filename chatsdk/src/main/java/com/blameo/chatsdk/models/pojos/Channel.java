@@ -1,9 +1,7 @@
 package com.blameo.chatsdk.models.pojos;
 
 import android.database.Cursor;
-import android.text.TextUtils;
 
-import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -12,7 +10,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Date;
 
-public class Channel extends CustomData implements Serializable {
+public class Channel implements Serializable {
     @SerializedName("id")
     private String id;
 
@@ -31,42 +29,23 @@ public class Channel extends CustomData implements Serializable {
     @SerializedName("created_at")
     private Date createdAt;
 
-    @Expose(serialize = false, deserialize = false)
     private String lastMessageId;
 
+    @Expose(serialize = false, deserialize = false)
     @SerializedName("last_message")
     private Message lastMessage;
 
+    @SerializedName("custom_data")
+    private String customData;
+
     public Channel(Cursor cursor) throws ParseException {
         this.id = cursor.getString(0);
-        this.name = cursor.getString(1);
-        this.avatar = cursor.getString(2);
-        this.type = cursor.getInt(3);
-        this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
-        this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
-        this.lastMessageId = cursor.getString(6);
-
-        if (!TextUtils.isEmpty(this.lastMessageId)) {
-            this.lastMessage = new Message(cursor, 7);
-        } else {
-            this.lastMessage = null;
-        }
-    }
-
-    public Channel(Cursor cursor, int offset) throws ParseException {
-        this.id = cursor.getString(offset);
-        this.name = cursor.getString(offset + 1);
-        this.avatar = cursor.getString(offset + 2);
-        this.type = cursor.getInt(offset + 3);
-        this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 4));
-        this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 5));
-        this.lastMessageId = cursor.getString(offset + 6);
-
-        if (!TextUtils.isEmpty(this.lastMessageId)) {
-            this.lastMessage = new Message(cursor, offset + 7);
-        } else {
-            this.lastMessage = null;
-        }
+         this.name = cursor.getString(1);
+         this.avatar = cursor.getString(2);
+         this.type = cursor.getInt(3);
+         this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
+         this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
+         this.lastMessageId = cursor.getString(6);
     }
 
     public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId) {
@@ -160,5 +139,13 @@ public class Channel extends CustomData implements Serializable {
 
     public void setLastMessage(Message lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public String getCustomData() {
+        return customData;
+    }
+
+    public void setCustomData(String customData) {
+        this.customData = customData;
     }
 }

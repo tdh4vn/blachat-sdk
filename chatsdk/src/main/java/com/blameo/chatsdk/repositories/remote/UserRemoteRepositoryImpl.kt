@@ -26,6 +26,28 @@ class UserRemoteRepositoryImpl(
                 ) {
                     if(response.isSuccessful)
                         listener.onGetUsersSuccess(channelID, response.body()?.data!!)
+                    else
+                        listener.onGetUsersFailed(response.errorBody().toString())
+                }
+            })
+    }
+
+    override fun getAllMembers() {
+
+        return userAPI.getAllMembers()
+            .enqueue(object : Callback<GetUsersByIdsResult>{
+                override fun onFailure(call: Call<GetUsersByIdsResult>, t: Throwable) {
+                    listener.onGetMembersFailed(t.message!!)
+                }
+
+                override fun onResponse(
+                    call: Call<GetUsersByIdsResult>,
+                    response: Response<GetUsersByIdsResult>
+                ) {
+                    if(response.isSuccessful)
+                        listener.onGetAllMembersSuccess(response.body()?.data!!)
+                    else
+                        listener.onGetMembersFailed("")
                 }
             })
     }
