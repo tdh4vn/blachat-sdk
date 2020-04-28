@@ -23,8 +23,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
     }
 
 }
@@ -42,5 +42,8 @@ dependencies {
     implementation 'com.makeramen:roundedimageview:2.3.0'
     implementation project(":chatsdk")
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
-    implementation 'io.github.centrifugal:centrifuge-java:0.0.3'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+
+    implementation libs.rxJava
+    implementation libs.rxAndroid
 }

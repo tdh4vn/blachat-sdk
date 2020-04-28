@@ -2,13 +2,13 @@ package com.blameo.chatsdk.models.pojos;
 
 public class CustomData {
     
-    private String custom_data;
+    private String customData;
 
-    public String getCustom_data() {
-        return custom_data;
+    public String getCustomData() {
+        return customData;
     }
 
-    public void setCustom_data(String custom_data) {
-        this.custom_data = custom_data;
+    public void setCustomData(String customData) {
+        this.customData = customData;
     }
 }

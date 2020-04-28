@@ -1,11 +1,10 @@
 package com.blameo.chatsdk.repositories
 
-import com.blameo.chatsdk.local.UserSharedPreference
+import com.blameo.chatsdk.repositories.local.UserSharedPreference
 import com.blameo.chatsdk.models.pojos.Me
-import com.blameo.chatsdk.net.APIProvider
-import com.blameo.chatsdk.net.SessionAPI
+import com.blameo.chatsdk.repositories.remote.net.APIProvider
+import com.blameo.chatsdk.repositories.remote.net.SessionAPI
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
 class SessionRepositoryImpl constructor(
@@ -18,7 +17,7 @@ class SessionRepositoryImpl constructor(
         val me = UserSharedPreference.getCurrentUser()
 
         if (me != null) {
-            APIProvider.setSession(me.token)
+            APIProvider.setSession("", me.token)
             // update firebase here
         }
         return me!!
@@ -40,10 +39,9 @@ class SessionRepositoryImpl constructor(
         
         return sessionAPI.login(idToken)
             .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
             .flatMap {
                 saveSession(it)
-                APIProvider.setSession(it.token)
+                APIProvider.setSession("", it.token)
                 Single.just(it)
             }
     }

@@ -3,4 +3,19 @@
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="titileColor">#60727a</color>
+    <color name="titileColor2">#c7c6c6</color>
+    <color name="titileColor3">#f9f9f9</color>
+    <color name="colorMainBg">#fff</color>
+    <color name="statusBar">#f5f6f7</color>
+    <color name="timeTextColor">#c1bfbf</color>
+    <color name="subTextColor">#C0C0C0</color>
+    <color name="colorTextPrimary">#ffffff</color>
+    <color name="no_text">#858E99</color>
+    <color name="colorPhone">#57d98d</color>
+    <color name="black">#000</color>
+    <color name="black_accent">#242121</color>
+    <color name="grey">#808080</color>
+    <color name="red">#FF0000</color>
+    <color name="violet_accent">#4538F8</color>
 </resources>

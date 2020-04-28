@@ -1,44 +1,127 @@
 package com.blameo.chatsdk.models.pojos;
 
-public class Message extends CustomData {
-    private String id;
-    private String author_id;
-    private String channel_id;
-    private String content;
-    private int type;
-    private String created_at;
-    private String updated_at;
-    private String sent_at;
-    private String seen_at;
-    private boolean is_system_message;
+import android.database.Cursor;
 
-    public Message(String id, String author_id, String channel_id, String content, int type,
-                   String created_at, String updated_at, String sent_at, String seen_at) {
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.blameo.chatsdk.utils.GsonUtil;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.Serializable;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.HashMap;
+
+public class Message extends CustomData implements Serializable {
+
+    @SerializedName("id")
+    private String id;
+
+    @SerializedName("author_id")
+    private String authorId;
+
+    @SerializedName("channel_id")
+    private String channelId;
+
+    @SerializedName("content")
+    private String content;
+
+    @SerializedName("type")
+    private int type;
+
+    @SerializedName("created_at")
+    private Date createdAt;
+
+    @SerializedName("updated_at")
+    private Date updatedAt;
+
+    @SerializedName("sent_at")
+    private Date sentAt;
+
+    @SerializedName("seen_at")
+    private Date seenAt;
+
+
+    @SerializedName("is_system_message")
+    private boolean isSystemMessage;
+
+    @SerializedName("custom_data")
+    private HashMap<String, Object> customData;
+
+
+    public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, Date seenAt, boolean isSystemMessage, HashMap<String, Object> customData) {
         this.id = id;
-        this.author_id = author_id;
-        this.channel_id = channel_id;
+        this.authorId = authorId;
+        this.channelId = channelId;
         this.content = content;
         this.type = type;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
-        this.sent_at = sent_at;
-        this.seen_at = seen_at;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.sentAt = sentAt;
+        this.seenAt = seenAt;
+        this.isSystemMessage = isSystemMessage;
+        this.customData = customData;
     }
 
-    public String getChannel_id() {
-        return channel_id;
+    public Message(String id, String authorId, String channelId, String content, int type, HashMap<String, Object> customData) {
+        this.id = id;
+        this.authorId = authorId;
+        this.channelId = channelId;
+        this.content = content;
+        this.type = type;
+        this.customData = customData;
     }
 
-    public void setChannel_id(String channel_id) {
-        this.channel_id = channel_id;
+    public Message(Cursor cursor) throws ParseException {
+        this.id = cursor.getString(0);
+        this.authorId = cursor.getString(1);
+        this.channelId = cursor.getString(2);
+        this.content = cursor.getString(3);
+        this.type = cursor.getInt(4);
+        this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
+        this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(6));
+        this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(7));
+        this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(8));
+        this.customData = GsonUtil.jsonToMap(cursor.getString(9));
     }
 
-    public String getAuthor_id() {
-        return author_id;
+    public Message(Cursor cursor, int offset) throws ParseException {
+        this.id = cursor.getString(offset);
+        this.authorId = cursor.getString(offset + 1);
+        this.channelId = cursor.getString(offset + 2);
+        this.content = cursor.getString(offset + 3);
+        this.type = cursor.getInt(offset + 4);
+        this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 5));
+        this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 6));
+        this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 7));
+        this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 8));
+        this.customData = GsonUtil.jsonToMap(cursor.getString(offset + 9));
     }
 
-    public void setAuthor_id(String author_id) {
-        this.author_id = author_id;
+    public Message() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(String authorId) {
+        this.authorId = authorId;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
     public String getContent() {
@@ -57,53 +140,63 @@ public class Message extends CustomData {
         this.type = type;
     }
 
-    public boolean isIs_system_message() {
-        return is_system_message;
+    public Date getCreatedAt() {
+        return createdAt;
     }
 
-    public void setIs_system_message(boolean is_system_message) {
-        this.is_system_message = is_system_message;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
-    public String getSent_at() {
-        return sent_at;
+    public Date getSentAt() {
+        return sentAt;
     }
 
-    public void setSent_at(String sent_at) {
-        this.sent_at = sent_at;
+    public void setSentAt(Date sentAt) {
+        this.sentAt = sentAt;
     }
 
-    public String getSeen_at() {
-        return seen_at;
+    public Date getSeenAt() {
+        return seenAt;
     }
 
-    public void setSeen_at(String seen_at) {
-        this.seen_at = seen_at;
+    public void setSeenAt(Date seenAt) {
+        this.seenAt = seenAt;
     }
 
-    public String getId() {
-        return id;
+    public String getCreatedAtString() {
+        return ChatSdkDateFormatUtil.parse(createdAt);
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public String getUpdatedAtString() {
+        return ChatSdkDateFormatUtil.parse(updatedAt);
     }
 
-    public String getUpdated_at() {
-        return updated_at;
+    public String getSentAtString() {
+        return ChatSdkDateFormatUtil.parse(sentAt);
     }
 
-    public void setUpdated_at(String updated_at) {
-        this.updated_at = updated_at;
+    public String getSeenAtString() {
+        return ChatSdkDateFormatUtil.parse(seenAt);
     }
 
+    public String getCustomDataString() {
+        return GsonUtil.mapToJSON(customData);
+    }
 
+    public boolean isSystemMessage() {
+        return isSystemMessage;
+    }
+
+    public void setSystemMessage(boolean systemMessage) {
+        isSystemMessage = systemMessage;
+    }
 }

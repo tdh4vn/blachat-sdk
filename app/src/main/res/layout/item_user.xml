@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.makeramen.roundedimageview.RoundedImageView
+        android:layout_centerVertical="true"
+        android:layout_margin="16dp"
+        app:riv_corner_radius="28dp"
+        android:id="@+id/imgAvatar"
+        android:src="@mipmap/ic_launcher_round"
+        android:layout_width="56dp"
+        android:layout_height="56dp"/>
+
+    <LinearLayout
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/imgAvatar"
+        android:layout_marginEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+            <TextView
+                android:layout_alignParentStart="true"
+                android:layout_toStartOf="@+id/tvTime"
+                android:text="Nam Jr"
+                android:fontFamily="sans-serif-medium"
+                android:maxLines="1"
+                android:textSize="16sp"
+                android:ellipsize="end"
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <ImageView
+                android:visibility="invisible"
+                android:tint="@color/titileColor"
+                android:src="@drawable/ic_done_black_36dp"
+                android:layout_marginStart="16dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:id="@+id/imgSelected"
+                android:layout_width="32dp"
+                android:layout_height="32dp"/>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

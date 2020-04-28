@@ -13,7 +13,7 @@ public class DateFormatUtils {
     private static DateFormatUtils instance;
 
     private SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    private SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy");
+    private SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm:ss");
     private DisplayImageOptions options;
 
     public static DateFormatUtils getInstance() {
