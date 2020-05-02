@@ -39,13 +39,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getMembers() {
-        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
-            override fun onSuccess(users: ArrayList<User>) {
-                users.forEach {
-                    Log.i(TAG, "member: ${it.id} ${it.name}")
-                }
-            }
-        })
+//        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+//            override fun onSuccess(users: ArrayList<User>) {
+//                users.forEach {
+//                    Log.i(TAG, "member: ${it.id} ${it.name}")
+//                }
+//            }
+//        })
     }
 
     private fun getUser() {
@@ -56,6 +56,12 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun init() {
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            finish()
+        }
 
 
         chatSdk = BlameoChatSdk.getInstance()

@@ -8,8 +8,6 @@ import io.reactivex.Single
 
 interface MessageRemoteRepository {
 
-    fun getMessageById(id: String)
-
     fun createMessage(temID: String, body: CreateMessageBody, localMessage: Message)
 
     fun resentMessage(message: Message, onSuccess: (m: Message) -> Unit, onFailed: (t: Throwable) -> Unit)

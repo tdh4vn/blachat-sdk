@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Channel implements Serializable {
@@ -46,6 +47,7 @@ public class Channel implements Serializable {
          this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
          this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
          this.lastMessageId = cursor.getString(6);
+         this.lastMessage = new Message(cursor, 7);
     }
 
     public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId) {

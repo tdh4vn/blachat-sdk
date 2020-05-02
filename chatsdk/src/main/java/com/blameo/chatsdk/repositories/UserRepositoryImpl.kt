@@ -11,6 +11,7 @@ import com.blameo.chatsdk.controllers.UserListener
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepositoryImpl
+import com.blameo.chatsdk.repositories.local.LocalUserRepositoryImpl
 
 interface UserRepository {
     fun getUsersByIds(channelId: String, ids: ArrayList<String>)
@@ -27,8 +28,7 @@ interface UserResultListener {
 }
 
 class UserRepositoryImpl(
-    private val userListener: UserListener,
-    private val localUserRepository: LocalUserRepository
+    private val userListener: UserListener
 ) : UserRepository,
     UserResultListener {
 
@@ -37,6 +37,7 @@ class UserRepositoryImpl(
             APIProvider.userAPI,
             this
         )
+    private val localUserRepository: LocalUserRepository = LocalUserRepositoryImpl(BlameoChatSdk.getInstance().context)
 
     private val localUIC: LocalUserInChannelRepository
             = LocalUserInChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
@@ -45,11 +46,20 @@ class UserRepositoryImpl(
 
     override fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
 
-        localUsers = localUserRepository.getUsersByIds(ids)
-        if(localUsers.size == 0){
-            userRemoteRepository.getUsersByIds(channelId, UsersBody(ids))
-        }else
-            onGetUsersSuccess(channelId, localUsers)
+        val idsNotAvailable = arrayListOf<String>()
+        localUsers = arrayListOf()
+        ids.forEach {
+            val user = localUserRepository.getUserByID(it)
+            if( user != null)
+                localUsers.add(user)
+            else
+                idsNotAvailable.add(it)
+        }
+
+        if(idsNotAvailable.size > 0)
+            userRemoteRepository.getUsersByIds("", UsersBody(idsNotAvailable))
+        else
+            userListener.onUsersByIdsSuccess("", localUsers)
     }
 
     override fun getLocalUsersByIds(channelId: String, ids: ArrayList<String>): ArrayList<User> {
@@ -65,8 +75,9 @@ class UserRepositoryImpl(
     }
 
     override fun onGetUsersSuccess(channelId: String, users: ArrayList<User>) {
-        Log.i(TAG, "size: ${users.size} + ${localUsers.size}")
-        userListener.onUsersByIdsSuccess(channelId, users)
+        Log.i(TAG, "size: ${users.size} + ${localUsers.size} channelId: $channelId")
+        localUsers.addAll(users)
+        userListener.onUsersByIdsSuccess(channelId, localUsers)
         if(users.size > 0)
         users.forEach { localUserRepository.addLocalUser(it) }
     }

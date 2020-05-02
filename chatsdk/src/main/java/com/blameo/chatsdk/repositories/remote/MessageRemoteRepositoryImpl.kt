@@ -20,25 +20,6 @@ class MessageRemoteRepositoryImpl(
 
     private val TAG = "MESS_MODEL"
 
-    override fun getMessageById(id: String) {
-
-        messageAPI.getMessageById(id)
-            .enqueue(object : Callback<GetMessageByIDResult> {
-                override fun onFailure(call: Call<GetMessageByIDResult>, t: Throwable) {
-                }
-
-                override fun onResponse(
-                    call: Call<GetMessageByIDResult>,
-                    response: Response<GetMessageByIDResult>
-                ) {
-                    Log.e(TAG, "${response.isSuccessful}")
-                    if (response.isSuccessful)
-                        messageListener.onGetMessageByIdSuccess(response.body()?.message!!)
-                }
-            })
-
-    }
-
     override fun createMessage(temID: String, body: CreateMessageBody, localMessage: Message) {
         messageAPI.createMessage(body)
             .enqueue(object : Callback<GetMessageByIDResult> {

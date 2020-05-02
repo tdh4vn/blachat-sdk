@@ -18,7 +18,6 @@ import kotlin.collections.ArrayList
 
 interface MessageRepository {
     fun getMessages(channelId: String, lastMessageId: String)
-    fun getMessageById(id: String)
     fun getMessageByIdLocal(id: String): Message
     fun createMessage(body: CreateMessageBody)
     fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String)
@@ -34,7 +33,6 @@ interface MessageResultListener {
     fun onGetRemoteMessagesFailed(error: String)
     fun onGetNewerMessagesSuccess(messages: ArrayList<Message>)
     fun onGetNewerMessagesFailed(error: String)
-    fun onGetMessageByIdSuccess(message: Message)
     fun onCreateMessageSuccess(temID: String, message: Message)
     fun onCreateMessageFailed(message: Message)
     fun onMarkSeenMessageSuccess(messageId: String)
@@ -46,8 +44,7 @@ interface MessageResultListener {
 class MessageRepositoryImpl(
     private val messageListener: MessageListener,
     private val userID: String
-) : MessageRepository,
-    MessageResultListener {
+) : MessageRepository, MessageResultListener {
 
     private var messageRemoteRepository: MessageRemoteRepository =
         MessageRemoteRepositoryImpl(
@@ -56,9 +53,7 @@ class MessageRepositoryImpl(
         )
     private val TAG = "MESS_REPO"
     private var localMessages: ArrayList<Message> = arrayListOf()
-    private val localMessageRepository: LocalMessageRepository =
-        LocalMessageRepositoryImpl(BlameoChatSdk.getInstance().context)
-
+    private val localMessageRepository: LocalMessageRepository = LocalMessageRepositoryImpl(BlameoChatSdk.getInstance().context)
     private val localChannel = LocalChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
 
     override fun getMessages(channelId: String, lastMessageId: String) {
@@ -67,20 +62,8 @@ class MessageRepositoryImpl(
 
         if (localMessages.size > 0)
             messageListener.onGetMessagesSuccess(localMessages)
-        else
-        {
+        else {
             messageRemoteRepository.getMessages(channelId, lastMessageId)
-        }
-    }
-
-    override fun getMessageById(id: String) {
-        val message: Message? = localMessageRepository.getMessageByID(id)
-        if (message != null) {
-            Log.i(TAG, "get local $id")
-            messageListener.onGetMessageByIdSuccess(message)
-        } else {
-            Log.i(TAG, "get remote $id")
-            messageRemoteRepository.getMessageById(id)
         }
     }
 
@@ -150,8 +133,7 @@ class MessageRepositoryImpl(
     }
 
     override fun onGetRemoteMessagesSuccess(messages: ArrayList<Message>) {
-        if(localMessages.size == 0)
-            messageListener.onGetMessagesSuccess(messages)
+        messageListener.onGetMessagesSuccess(messages)
 
         Log.i(TAG, "remote size: ${messages.size}")
         messages.forEach { localMessageRepository.addLocalMessage(it) }
@@ -168,11 +150,7 @@ class MessageRepositoryImpl(
     }
 
     override fun onGetNewerMessagesFailed(error: String) {
-    }
 
-    override fun onGetMessageByIdSuccess(message: Message) {
-        messageListener.onGetMessageByIdSuccess(message)
-        localMessageRepository.addLocalMessage(message)
     }
 
     override fun onCreateMessageSuccess(temID: String, message: Message) {

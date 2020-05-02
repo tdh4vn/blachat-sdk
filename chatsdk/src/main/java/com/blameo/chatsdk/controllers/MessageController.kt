@@ -1,10 +1,11 @@
 package com.blameo.chatsdk.controllers
 
-import android.text.TextUtils
 import android.util.Log
 import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
+import com.blameo.chatsdk.models.pojos.RemoteUserChannel
+import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.repositories.MessageRepository
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl
 
@@ -12,7 +13,6 @@ interface MessageListener {
     fun onGetMessagesSuccess(messages: ArrayList<Message>)
     fun onGetMessagesError(error: String)
     fun onNewMessages(messages: ArrayList<Message>)
-    fun onGetMessageByIdSuccess(message: Message)
     fun onCreateMessageSuccess(message: Message)
     fun onMarkSeenMessageSuccess(id: String)
     fun onMarkSeenMessageFail(error: String)
@@ -23,21 +23,11 @@ interface MessageListener {
 class MessageController(private val listener: MessageListener) : MessageListener {
 
     private val TAG = "MESSAGE_VM"
-    var messageRepository: MessageRepository =
+    private var messageRepository: MessageRepository =
         MessageRepositoryImpl(
             this,
             BlameoChatSdk.getInstance().uId
         )
-
-    fun getMessageById(id: String) {
-        if(TextUtils.isEmpty(id))   return
-        Log.e(TAG, "get by id: $id")
-        messageRepository.getMessageById(id)
-    }
-
-    fun getLocalMessageById(id: String): Message{
-        return messageRepository.getMessageByIdLocal(id)
-    }
 
     fun createMessage(content: String, type: Int, channelId: String) {
         messageRepository.createMessage(CreateMessageBody(content, type, channelId))
@@ -81,10 +71,6 @@ class MessageController(private val listener: MessageListener) : MessageListener
         listener.onNewMessages(messages)
     }
 
-    override fun onGetMessageByIdSuccess(message: Message) {
-        listener.onGetMessageByIdSuccess(message)
-    }
-
     override fun onCreateMessageSuccess(message: Message) {
         listener.onCreateMessageSuccess(message)
     }
@@ -106,5 +92,29 @@ class MessageController(private val listener: MessageListener) : MessageListener
 
     fun syncMessage() {
         messageRepository.syncUnsentMessage()
+    }
+
+    fun handleMessages(
+        messages: ArrayList<Message>,
+        uicMap: HashMap<String, ArrayList<RemoteUserChannel>>,
+        usersMap: HashMap<String, User>
+    ): ArrayList<Message>{
+
+        messages.forEachIndexed { index, message ->
+
+            val uic = uicMap[message.channelId]
+            uic?.forEach {
+                var user = usersMap[it.memberId]
+                if(user == null)    user = User(it.memberId)
+                usersMap[it.memberId] = user
+                if(it.lastSeen > message.createdAtString)
+                    message.seenBy.add(user)
+
+                if(it.lastReceive > message.createdAtString)
+                    message.receiveBy.add(user)
+            }
+//            messages[index] = message
+        }
+        return messages
     }
 }

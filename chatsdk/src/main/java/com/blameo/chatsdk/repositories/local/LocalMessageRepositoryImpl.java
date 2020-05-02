@@ -103,7 +103,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
         db.insertWithOnConflict(Constant.MESSAGE_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
-//        db.close();
+        db.close();
     }
 
     @Override
@@ -242,7 +242,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         if(lastId.length() > 0){
             Message message = getMessageByID(lastId);
 
-            if(TextUtils.isEmpty(message.getCreatedAtString())){
+            if(message.getCreatedAt() == null){
                 message.setCreatedAt(new Date());
             }
 

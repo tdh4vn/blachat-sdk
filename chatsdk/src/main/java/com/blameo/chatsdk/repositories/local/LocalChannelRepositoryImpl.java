@@ -5,7 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.nfc.Tag;
 import android.util.Log;
+
 import com.blameo.chatsdk.models.pojos.Channel;
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
@@ -14,7 +16,7 @@ import java.util.ArrayList;
 
 public class LocalChannelRepositoryImpl extends LocalRepository implements LocalChannelRepository {
 
-    private String CHANNEL_TAG = "CHANNEL_DB";
+    private String TAG = "CHANNEL_DB";
 
     static final String CREATE_SCRIPT = "CREATE TABLE " + Constant.CHANNEL_TABLE_NAME + "("
             + Constant.CHANNEL_ID + " TEXT PRIMARY KEY,"
@@ -28,11 +30,11 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
 
     private static String QUERY_GET_CHANNEL_WITH_LAST_MESSAGE = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME
-            + " LEFT JOIN " + Constant.MESSAGE_TABLE_NAME
-            + " ON " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_ID
-            + " = " + Constant.MESSAGE_TABLE_NAME + "." + Constant.MESSAGE_CHANNEL_ID;
+            + " LEFT OUTER JOIN " + Constant.MESSAGE_TABLE_NAME
+            + " ON " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_LAST_MESSAGE_ID
+            + " = " + Constant.MESSAGE_TABLE_NAME + "." + Constant.MESSAGE_ID;
 
-    private static String SORT_BY_UPDATED = " ORDER BY " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_COLUMN_UPDATED_AT + " ASC ";
+    private static String SORT_BY_UPDATED = " ORDER BY " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_COLUMN_UPDATED_AT + " DESC";
 
     private static String QUERY_GET_CHANNEL_BY_ID_WITH_LAST_MESSAGE = QUERY_GET_CHANNEL_WITH_LAST_MESSAGE
             + " WHERE " + Constant.CHANNEL_TABLE_NAME + "." + Constant.CHANNEL_ID + " = ?";
@@ -41,6 +43,20 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
     public LocalChannelRepositoryImpl(Context context) {
         super(context);
+    }
+
+    public int getTotalLocalMessages() {
+
+        String countQuery = "SELECT * FROM " + Constant.CHANNEL_TABLE_NAME;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(countQuery, null);
+
+        int count = cursor.getCount();
+        cursor.close();
+
+        Log.e("man", "size: " + count);
+
+        return count;
     }
 
     @Override
@@ -72,7 +88,7 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
         values.put(Constant.CHANNEL_TYPE, channel.getType());
         values.put(Constant.CHANNEL_COLUMN_UPDATED_AT, channel.getUpdatedAtString());
         values.put(Constant.CHANNEL_COLUMN_CREATED_AT, channel.getCreatedAtString());
-        if(channel.getLastMessage() != null) {
+        if (channel.getLastMessage() != null) {
             last_id = channel.getLastMessage().getId();
             values.put(Constant.CHANNEL_LAST_MESSAGE_ID, channel.getLastMessage().getId());
         }
@@ -124,7 +140,7 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
         if (cursor != null) {
             cursor.moveToFirst();
 
-            if(cursor.getCount() == 0) return null;
+            if (cursor.getCount() == 0) return null;
 
             Channel channel = null;
             try {
@@ -144,7 +160,7 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "Select * from " + Constant.CHANNEL_TABLE_NAME + " where " + Constant.CHANNEL_ID + " = " + id;
-        Log.i("qqqqabdasdc", ""+query);
+        Log.i("qqqqabdasdc", "" + query);
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
             cursor.close();
@@ -164,12 +180,13 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
     @Override
     public void exportChannelDB() {
-        Log.e("DB", "ID       NAME           LAST_ID");
-        ArrayList<Channel> channels = getChannels();
-        Log.e("DB", "total channels: " + channels.size());
-        for (Channel c : channels) {
-            Log.e("DB", "" + c.getId() + "       " + c.getName() + "        " + c.getLastMessageId());
-        }
+        getTotalLocalMessages();
+//        Log.e("DB", "ID       NAME           LAST_ID");
+//        ArrayList<Channel> channels = getChannels();
+//        Log.e("DB", "total channels: " + channels.size());
+//        for (Channel c : channels) {
+//            Log.e("DB", "" + c.getId() + "       " + c.getName() + "        " + c.getLastMessageId());
+//        }
     }
 
     @Override
@@ -182,6 +199,8 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
 
         if (cursor.getCount() == 0) return channels;
 
+        Log.e("123", "count " + cursor.getColumnCount() + " " + cursor.getCount());
+
         do {
             Channel channel = null;
             try {
@@ -193,8 +212,8 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
             channels.add(channel);
         } while (cursor.moveToNext());
 
-        for(Channel c : channels){
-            Log.e("123", ""+c.getName() + " "+c.getCreatedAtString());
+        for (Channel c : channels) {
+            Log.e("123", "" + c.getId() + " " + c.getName() + " " + c.getUpdatedAtString());
         }
         return channels;
     }

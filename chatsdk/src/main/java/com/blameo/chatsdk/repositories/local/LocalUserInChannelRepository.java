@@ -7,6 +7,7 @@ import com.blameo.chatsdk.models.pojos.UserInChannel;
 import java.util.ArrayList;
 
 public interface LocalUserInChannelRepository {
+
     ArrayList<RemoteUserChannel> getAllUserIdsInChannel(String channelId);
 
     ArrayList<UserInChannel> getAllUICs();

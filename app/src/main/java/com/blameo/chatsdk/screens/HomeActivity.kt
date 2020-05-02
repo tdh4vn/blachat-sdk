@@ -34,7 +34,7 @@ class HomeActivity : AppCompatActivity() {
             "OTU4ODY3LCJzdWIiOiIzMzY5NjQzMi00NDQwLTQ3OGItOTc4Ny04YWI5ZGJiMWYzODAiLCJ1c2VySWQiOiIzMzY5NjQzMi00NDQw" +
             "LTQ3OGItOTc4Ny04YWI5ZGJiMWYzODAifQ.kl38LgvhjwKk61WXuoqL2CuChZZ338BXA-4tlU35efA"
 
-    private val my_id_user1 = "e97cad19-b1a4-4369-9c47-38c88d2760aa"
+    private val my_id_user1 = "e13e4d60-ed89-4dd4-af22-55647855d166"
     private val my_id_user2 = "ca9559ee-6500-4970-865e-12a9671e33b4"
     private val my_id_user3 = "33696432-4440-478b-9787-8ab9dbb1f380"
 

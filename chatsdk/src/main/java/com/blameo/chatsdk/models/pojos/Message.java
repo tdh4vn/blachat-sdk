@@ -88,6 +88,7 @@ public class Message extends MessageResult implements Serializable {
     }
 
     public Message(Cursor cursor, int offset) throws ParseException {
+        if(cursor.getString(offset) == null)    return;
         this.id = cursor.getString(offset);
         this.authorId = cursor.getString(offset + 1);
         this.channelId = cursor.getString(offset + 2);
@@ -97,7 +98,7 @@ public class Message extends MessageResult implements Serializable {
         this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 6));
         this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 7));
         this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 8));
-        this.customData = GsonUtil.jsonToMap(cursor.getString(offset + 9));
+//        this.customData = GsonUtil.jsonToMap(cursor.getString(offset + 9));
     }
 
     public Message() {

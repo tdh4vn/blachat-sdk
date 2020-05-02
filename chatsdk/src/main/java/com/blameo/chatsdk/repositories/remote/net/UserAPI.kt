@@ -55,7 +55,7 @@ interface UserAPI {
         @Body body: InviteUserToChannelBody
     ): Call<BaseResult>
 
-    @GET("user/channels/members")
+    @POST("user/channels/members")
     fun getMembersOfMultiChannel(
         @Body body: ChannelsBody
     ): Call<GetMembersOfMultiChannelResult>

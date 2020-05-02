@@ -1,20 +1,25 @@
 package com.blameo.chatsdk.controllers
 
+import android.graphics.BlendMode
 import android.util.Log
+import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.repositories.local.LocalChannelRepository
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.RemoteUserChannel
+import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.models.results.MembersInChannel
 import com.blameo.chatsdk.repositories.ChannelRepository
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl
 import com.blameo.chatsdk.repositories.UserRepository
 import com.blameo.chatsdk.repositories.UserRepositoryImpl
+import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepositoryImpl
 
 
-interface ChannelListener{
+interface ChannelListener {
     fun onGetChannelsSuccess(channels: ArrayList<Channel>)
+    fun onGetNewChannelsSuccess(channels: ArrayList<Channel>)
     fun onGetChannelError(error: String)
     fun onCreateChannelSuccess(channel: Channel)
     fun onCreateChannelFailed(error: String)
@@ -24,37 +29,91 @@ interface ChannelListener{
     fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>)
 }
 
-interface SDKResultListener{
-
+interface SdkChannelListener {
+    fun onGetChannelsSuccess(channels: ArrayList<Channel>)
+    fun onNewChannels(channels: ArrayList<Channel>)
+    fun onCreateChannelSuccess(channel: Channel)
+    fun onCreateChannelFailed(error: String)
+    fun onGetUsersInChannelSuccess(channelId: String, uic: ArrayList<RemoteUserChannel>)
+    fun onGetUsersInChannelFailed(error: String)
+    fun onInviteUsersToChannelSuccess(channelId: String, userIds: ArrayList<String>)
 }
 
-interface ChannelResultListener{
-    fun abc()
-}
+class ChannelController(private val sdkListener: SdkChannelListener) : ChannelListener {
 
-interface UserResultListener{
-    fun  \
-}
+    private val channelRepository: ChannelRepository = ChannelRepositoryImpl(this)
+    private val localUIC: LocalUserInChannelRepository =
+        LocalUserInChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
+    private val userId = BlameoChatSdk.getInstance().uId
+    private val usersMap: HashMap<String, User> = hashMapOf()
+    private var membersInChannels: ArrayList<MembersInChannel> = arrayListOf()
+    private var uicMap: HashMap<String, ArrayList<RemoteUserChannel>> = hashMapOf()
+    private lateinit var channels: ArrayList<Channel>
+    private var newerChannels: ArrayList<Channel> = arrayListOf()
 
-private val channelListener = object : ChannelResultListener{
-    override fun abc() {
+    fun getUicMap(): HashMap<String, ArrayList<RemoteUserChannel>> {
+        return uicMap
+    }
+
+    fun getUsersMap(): HashMap<String, User> {
+        return usersMap
+    }
+
+    fun addUsersToMap(users: ArrayList<User>) {
+        users.forEach {
+            usersMap[it.id] = it
+        }
+    }
+
+    private val userListener = object : UserListener {
+        override fun onUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
+            addUsersToMap(users)
+            addUsersToChannels()
+        }
+
+        override fun onGetUsersByIdsError(error: String) {
+
+        }
+
+        override fun onGetAllMembersSuccess(users: ArrayList<User>) {
+
+        }
+
+        override fun onGetAllMembersError(error: String) {
+
+        }
+    }
+
+    private fun addUsersToChannels() {
+
+        channels.forEach { channel ->
+            membersInChannels.forEach { membersInChannel ->
+                if (channel.id == membersInChannel.channelId) {
+                    localUIC.saveUserIdsToChannel(channel.id, membersInChannel.userChannels)
+                    if (membersInChannel.userChannels.size == 2) {
+                        membersInChannel.userChannels.forEach {
+                            if (it.memberId != userId) {
+                                val partner = usersMap[it.memberId]
+                                if (partner != null) {
+                                    channel.name = partner.name
+                                    channel.avatar = partner.avatar
+                                }
+                            }
+                        }
+                    }
+                    return@forEach
+                }
+            }
+        }
+
+        if (newerChannels.size == 0)
+            sdkListener.onGetChannelsSuccess(channels)
+        else
+            sdkListener.onNewChannels(channels)
 
     }
-}
 
-class ChannelController(
-    private val listener: SDKResultListener,
-    localChannelRepository: LocalChannelRepository
-)
-    : ChannelListener,  {
-
-    private val channelRepository: ChannelRepository =
-        ChannelRepositoryImpl(
-            this,
-            localChannelRepository
-        )
-
-    private val userRepository: UserRepository = UserRepositoryImpl(this, )
+    private val userRepository: UserRepository = UserRepositoryImpl(userListener)
 
     private val TAG = "CHANNEL_VM"
 
@@ -62,16 +121,24 @@ class ChannelController(
         channelRepository.getChannels()
     }
 
-    fun getUsersInChannel(channelId: String) {
-        channelRepository.getUsersInChannel(channelId)
+    fun getLocalUsers(channelId: String): ArrayList<User> {
+        val uic = uicMap[channelId]
+        val users = arrayListOf<User>()
+        uic?.forEach {
+            val user = usersMap[it.memberId]
+            if (user != null)
+                users.add(user)
+        }
+
+        return users
+
+//        channelRepository.getUsersInChannel(channelId)
     }
 
-    fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel>{
+    fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel> {
+        val ram = uicMap[channelId]
+        if (ram != null) return ram
         return channelRepository.getLocalUsersInChannel(channelId)
-    }
-
-    fun getLocalChannelById(id: String): Channel{
-        return channelRepository.getLocalChannelById(id)
     }
 
     fun createChannel(ids: ArrayList<String>, name: String, type: Int) {
@@ -79,39 +146,39 @@ class ChannelController(
         channelRepository.createChannel(body)
     }
 
-    fun putTypingInChannel(cId: String){
+    fun putTypingInChannel(cId: String) {
         channelRepository.putTypingInChannel(cId)
     }
 
-    fun putStopTypingInChannel(cId: String){
+    fun putStopTypingInChannel(cId: String) {
         channelRepository.putStopTypingInChannel(cId)
     }
 
-    fun updateLastMessage(channelId: String, messageId: String){
+    fun updateLastMessage(channelId: String, messageId: String) {
         channelRepository.updateLastMessage(channelId, messageId)
     }
 
-    fun addNewChannel(channel: Channel){
+    fun addNewChannel(channel: Channel) {
         channelRepository.addNewChannel(channel)
     }
 
-    fun inviteUsersToChannel(channelId: String, userIds: ArrayList<String>){
+    fun inviteUsersToChannel(channelId: String, userIds: ArrayList<String>) {
         channelRepository.inviteUsersToChannel(channelId, userIds)
     }
 
     override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
 
-        Log.e(TAG, "result")
-//        var channelsResult = (channelRepository as ChannelRepositoryImpl).getLocalChannels()
-//        if(channels.size == 0){
-//            channelsResult = channels
-//        }
 
- //       listener.onGetChannelsSuccess(channels)
+        Log.e(TAG, "result")
+        this.channels = channels
 
         channels.forEachIndexed { index, channel ->
-            Log.e(TAG, "$index: ${channel.id}")
+            Log.e(TAG, "$index: ${channel.id} ${channel.name}")
         }
+    }
+
+    override fun onGetNewChannelsSuccess(channels: ArrayList<Channel>) {
+        newerChannels = channels
     }
 
     override fun onGetChannelError(error: String) {
@@ -119,26 +186,35 @@ class ChannelController(
     }
 
     override fun onCreateChannelSuccess(channel: Channel) {
-//        listener.onCreateChannelSuccess(channel)
+        sdkListener.onCreateChannelSuccess(channel)
     }
 
     override fun onCreateChannelFailed(error: String) {
-//        listener.onCreateChannelFailed(error)
+        sdkListener.onCreateChannelFailed(error)
     }
 
     override fun onGetUsersInChannelSuccess(channelId: String, uic: ArrayList<RemoteUserChannel>) {
-//        listener.onGetUsersInChannelSuccess(channelId, uic)
+        sdkListener.onGetUsersInChannelSuccess(channelId, uic)
     }
 
     override fun onGetUsersInChannelFailed(error: String) {
- //       listener.onGetUsersInChannelFailed(error)
+        sdkListener.onGetUsersInChannelFailed(error)
     }
 
     override fun onInviteUsersToChannelSuccess(channelId: String, userIds: ArrayList<String>) {
-//        listener.onInviteUsersToChannelSuccess(channelId, userIds)
+        sdkListener.onInviteUsersToChannelSuccess(channelId, userIds)
     }
 
     override fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>) {
+        val map: HashMap<String, String> = hashMapOf()
+        membersInChannels.addAll(data)
+        data.forEach {
+            uicMap[it.channelId] = it.userChannels
+            it.userChannels.forEach { user ->
+                map[user.memberId] = user.memberId
+            }
+        }
 
+        userRepository.getUsersByIds("", ArrayList(map.keys))
     }
 }

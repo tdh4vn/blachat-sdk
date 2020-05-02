@@ -87,13 +87,13 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener {
                             }, 100
                         )
                     }
-                }, 2000)
+                }, 1000)
             }
 
             override fun getMessageFailed(error: String) {
                 Handler().postDelayed({
                     progressBar.visibility = View.GONE
-                }, 2000)
+                }, 1000)
 
             }
         })

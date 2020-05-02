@@ -23,8 +23,7 @@ class UserController(
 
     private var userRepository: UserRepository =
         UserRepositoryImpl(
-            this,
-            localUserRepository
+            this
         )
 
     fun getUsersByIds(channelId: String, ids: ArrayList<String>) {
