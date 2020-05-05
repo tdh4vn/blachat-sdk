@@ -35,14 +35,8 @@ class AboutChannelActivity : AppCompatActivity() {
 
         chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
             override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
-//                users.forEach {
-//                    if(it.id == BlameoChatSdk.getInstance().uId){
-//                        users.remove(it)
-//                        return@forEach
-//                    }
-//                }
 
-                adapter = MemberAdapter(this@AboutChannelActivity, users, BlameoChatSdk.getInstance().uId)
+                adapter = MemberAdapter(this@AboutChannelActivity, users, BlameoChatSdk.getInstance().uId, 1)
                 val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
                 rv_members.layoutManager = layoutManager
                 layoutManager.stackFromEnd = true

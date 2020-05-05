@@ -6,10 +6,7 @@ import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.controllers.MessageListener
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.repositories.local.Constant
-import com.blameo.chatsdk.repositories.local.LocalChannelRepositoryImpl
-import com.blameo.chatsdk.repositories.local.LocalMessageRepository
-import com.blameo.chatsdk.repositories.local.LocalMessageRepositoryImpl
+import com.blameo.chatsdk.repositories.local.*
 import com.blameo.chatsdk.repositories.remote.MessageRemoteRepository
 import com.blameo.chatsdk.repositories.remote.MessageRemoteRepositoryImpl
 import com.blameo.chatsdk.repositories.remote.net.APIProvider
@@ -54,7 +51,7 @@ class MessageRepositoryImpl(
     private val TAG = "MESS_REPO"
     private var localMessages: ArrayList<Message> = arrayListOf()
     private val localMessageRepository: LocalMessageRepository = LocalMessageRepositoryImpl(BlameoChatSdk.getInstance().context)
-    private val localChannel = LocalChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
+    private val localChannel:LocalChannelRepository = LocalChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
 
     override fun getMessages(channelId: String, lastMessageId: String) {
         localMessages = localMessageRepository.getAllMessagesInChannel(channelId, lastMessageId)
@@ -73,7 +70,8 @@ class MessageRepositoryImpl(
 
     override fun createMessage(body: CreateMessageBody) {
 
-        val tempId = Date().time.toString()
+        val date = Date()
+        val tempId = date.time.toString()
         val message = Message(
             tempId,
             userID,
@@ -82,6 +80,8 @@ class MessageRepositoryImpl(
             body.type,
             null
         )
+
+        message.createdAt = date
         localMessageRepository.addLocalMessage(message)
         messageRemoteRepository.createMessage(tempId, body, message)
     }
@@ -116,13 +116,19 @@ class MessageRepositoryImpl(
     }
 
     override fun syncUnsentMessage() {
+
         val messageUnsent = localMessageRepository.unsentMessage
 
+        Log.e(TAG, "sync message :${messageUnsent.size}")
+
         for (message in messageUnsent) {
+            Log.e(TAG, "unsent message :${message.id} ${message.content} ${message.channelId}")
             messageRemoteRepository.resentMessage(
                 message,
                 onSuccess = { messageSent ->
+                    Log.e(TAG, "unsent message success:${messageSent.id} ${messageSent.content} ${messageSent.channelId}")
                     localMessageRepository.updateMessage(message.id, messageSent)
+                    localChannel.updateLastMessage(messageSent.channelId, messageSent.id)
                 },
                 onFailed = { throwable ->
                     throwable.printStackTrace()
@@ -158,10 +164,15 @@ class MessageRepositoryImpl(
         messageListener.onCreateMessageSuccess(message)
         localMessageRepository.updateMessage(temID, message)
         localChannel.updateLastMessage(message.channelId, message.id)
+
+        localMessageRepository.exportMessageDB()
     }
 
-    override fun onCreateMessageFailed(localMessage: Message) {
-        messageListener.onCreateMessageSuccess(localMessage)
+    override fun onCreateMessageFailed(message: Message) {
+        messageListener.onCreateMessageSuccess(message)
+        localChannel.updateLastMessage(message.channelId, message.id)
+
+        localMessageRepository.exportMessageDB()
     }
 
     override fun onMarkSeenMessageSuccess(messageId: String) {

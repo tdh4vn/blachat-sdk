@@ -54,8 +54,6 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         ContentValues values = new ContentValues();
         values.put(attr, ChatSdkDateFormatUtil.getCurrentTimeUTC());
 
-//        exportMessageDB();
-
         db.update(Constant.MESSAGE_TABLE_NAME, values, Constant.MESSAGE_ID + " = ?",
                 new String[]{messageId});
     }
@@ -85,8 +83,6 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-//        if(checkIfMessageIsExist(message.getId()))  return;
-
         ContentValues values = new ContentValues();
         values.put(Constant.MESSAGE_ID, message.getId());
         values.put(Constant.MESSAGE_AUTHOR_ID, message.getAuthorId());
@@ -99,7 +95,7 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
         values.put(Constant.MESSAGE_SEEN_AT, message.getSeenAtString());
         values.put(Constant.MESSAGE_CUSTOM_DATA, message.getCustomDataString());
 
-        Log.e("DB", "add local message: " + message.getId() + " author_id: " + message.getAuthorId() + " channel_id: " + message.getChannelId());
+//        Log.e("DB", "add local message: " + message.getId() + " content: " + message.getContent() + " seen_at: " + message.getSentAtString() + " "+message.getSentAtString());
 
         db.insertWithOnConflict(Constant.MESSAGE_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
@@ -181,10 +177,10 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
         Cursor cursor = db.rawQuery(query, null);
         if (cursor.getCount() <= 0) {
-//            cursor.close();
+            cursor.close();
             return false;
         }
-//        cursor.close();
+        cursor.close();
         return true;
     }
 
@@ -199,12 +195,12 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
 
     @Override
     public void exportMessageDB() throws ParseException {
-        Log.e(MESSAGE_TAG, "ID       AUTHOR_ID           CHANNEL_ID         SEEN_AT         SENT_AT");
+        Log.e(MESSAGE_TAG, "ID       CREATED_AT          CONTENT         SEEN_AT         SENT_AT");
         ArrayList<Message> messages = getAllLocalMessages();
         Log.e(MESSAGE_TAG, "total of all messages: " + messages.size());
         for (Message c : messages) {
-            Log.e(MESSAGE_TAG, "" + c.getId() + "       " + c.getAuthorId()
-                    + "        " + c.getChannelId() + "       " + c.getSeenAtString() + "        " + c.getSentAtString() );
+            Log.e(MESSAGE_TAG, "" + c.getId() + "       " + c.getCreatedAtString()
+                    + "        " + c.getContent() + "       " + c.getSeenAtString() + "        " + c.getSentAtString() );
         }
     }
 
@@ -236,8 +232,6 @@ public class LocalMessageRepositoryImpl extends LocalRepository implements Local
                 + " order by " +Constant.MESSAGE_CREATED_AT
                 + " DESC"
                 + " limit 20";
-
-        Log.i("asdasda", "id : "+lastId);
 
         if(lastId.length() > 0){
             Message message = getMessageByID(lastId);

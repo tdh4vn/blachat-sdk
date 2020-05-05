@@ -88,13 +88,11 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
         db.update(Constant.UIC_TABLE_NAME, values, Constant.UIC_CHANNEL_ID + " = ?"
                         + " and "+ Constant.UIC_USER_ID + " = ?",
                 new String[]{channelId, userId});
-
-//        exportUicDB();
     }
 
     private void save(String cId, RemoteUserChannel uc){
 
-        Log.e(TAG, "add local uic: " + cId + " uid: " + uc.getMemberId());
+//        Log.e(TAG, "add local uic: " + cId + " uid: " + uc.getMemberId());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -106,9 +104,9 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
         values.put(Constant.UIC_LAST_SEEN, uc.getLastSeen());
 
         int res = (int) db.insertWithOnConflict(Constant.UIC_TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
-        if (res == -1) {
-            Log.i(TAG, "" + uc.getMemberId() +" has already inserted in the channel: "+ cId +" before");
-        }
+//        if (res == -1) {
+//            Log.i(TAG, "" + uc.getMemberId() +" has already inserted in the channel: "+ cId +" before");
+//        }
 
     }
 
@@ -152,8 +150,6 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
 
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
-
- //       Log.i(TAG, "count : "+ cursor.getCount());
 
         if(cursor == null || !cursor.moveToFirst()) return uIds;
 

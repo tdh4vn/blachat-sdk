@@ -33,6 +33,14 @@
                     android:layout_marginRight="4dp"
                     android:src="@mipmap/ic_launcher" />
 
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/imgStatus"
+                    android:layout_alignEnd="@id/imgAvatar"
+                    android:layout_alignBottom="@id/imgAvatar"
+                    android:src="@color/red"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"/>
+
                 <RelativeLayout
                     android:layout_centerVertical="true"
                     android:layout_toStartOf="@+id/tvAdd"

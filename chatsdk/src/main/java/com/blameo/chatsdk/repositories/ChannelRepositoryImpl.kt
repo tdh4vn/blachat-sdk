@@ -60,16 +60,6 @@ class ChannelRepositoryImpl(
         val localChannels = localChannelRepository.channels
         Log.e(TAG, "local : ${localChannels.size}")
 
-        localChannels.forEach {
-            Log.e(TAG, "local id: ${it.id} ${it.lastMessage?.content}")
-        }
-
-
-//       val ids = localUIC.getAllChannelIds(BlameoChatSdk.getInstance().uId)
-//        ids.forEach {
-//            val c = localChannelRepository.getChannelByID(it)
-//            if(c != null)         localChannels.add(c)
-//        }
         if(localChannels.size == 0)
             remoteChannels.getChannels("")
         else {
@@ -126,7 +116,6 @@ class ChannelRepositoryImpl(
     override fun onGetRemoteChannelsSuccess(channels: ArrayList<Channel>) {
 
         channelListener.onGetChannelsSuccess(channels)
-        Log.e(TAG, "remote channels size: ${channels.size}")
         backupRemoteChannels(channels)
     }
 
@@ -158,8 +147,6 @@ class ChannelRepositoryImpl(
                 data.add(membersInChannel)
             }
         }
-
-        Log.e(TAG, "local data size: ${data.size}")
         channelListener.onGetMembersOfMultiChannelSuccess(data)
 
     }
@@ -173,7 +160,7 @@ class ChannelRepositoryImpl(
 
     override fun onGetRemoteChannelsFailed(error: String) {
         channelListener.onGetChannelsSuccess(localChannels)
-        Log.e(TAG, "get channels error: $error ${localChannels.size}")
+//        Log.e(TAG, "get channels error: $error ${localChannels.size}")
     }
 
     override fun onCreateChannelSuccess(channel: Channel) {
@@ -209,7 +196,6 @@ class ChannelRepositoryImpl(
     }
 
     override fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>) {
-        Log.e(TAG, "get members of multi channels success ${data.size}")
         channelListener.onGetMembersOfMultiChannelSuccess(data)
     }
 

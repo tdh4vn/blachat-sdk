@@ -1,12 +1,16 @@
 package com.blameo.chatsdk
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blameo.chatsdk.controllers.ChannelVMlStore
+import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.results.UserStatus
+import com.blameo.chatsdk.screens.CreateChannelActivity
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -22,9 +26,10 @@ class MainActivity : AppCompatActivity() {
     private var myId = ""
     private val userId1 = "7a7c52fe-0a3f-4123-849b-3c2bcabe4f62"
     private val IP = "159.65.2.104"
-    private val baseUrl = "http://$IP:9000"
+    private val baseUrl = "http://$IP"
     private val ws = "ws://$IP:8001/connection/websocket?format=protobuf"
     private var channels: ArrayList<Channel> = arrayListOf()
+    lateinit var userVMStore: UserVMStore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,13 +44,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getMembers() {
-//        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
-//            override fun onSuccess(users: ArrayList<User>) {
-//                users.forEach {
+        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+            override fun onSuccess(users: ArrayList<User>) {
+                users.forEach {
 //                    Log.i(TAG, "member: ${it.id} ${it.name}")
-//                }
-//            }
-//        })
+
+                }
+            }
+        })
+
+        chatSdk.subcribeUserStatusListener(object : ChatListener.UserStatusChangeListener{
+            override fun onStatusChanged(userStatus: UserStatus) {
+                Log.e(TAG, "user changed: ${userStatus.id} ${userStatus.status}")
+                val user = userVMStore.getUserViewModel(userStatus)
+                user.updateStatus(userStatus.status)
+            }
+        })
     }
 
     private fun getUser() {
@@ -63,6 +77,15 @@ class MainActivity : AppCompatActivity() {
             finish()
         }
 
+        userVMStore = UserVMStore.getInstance()
+
+        val channelVMStore = ChannelVMlStore.getInstance()
+        channelVMStore.newChannel.observeForever {
+            runOnUiThread {
+                adapter.channels.add(0, it)
+                adapter.notifyDataSetChanged()
+            }
+        }
 
         chatSdk = BlameoChatSdk.getInstance()
         chatSdk.initContext(this)
@@ -100,14 +123,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         btn_create_channel.setOnClickListener {
-            chatSdk.createChannel(arrayListOf(userId1), "BlameO General",
-                1, object: ChatListener.CreateChannelListener{
-                    override fun createChannelSuccess(channel: Channel) {
-                        adapter.channels.add(0, channel)
-                        adapter.notifyDataSetChanged()
-//                        Log.e(TAG, "create channel id: ${channel.id} ${channel.name}")
-                    }
-                })
+            startActivity(Intent(this, CreateChannelActivity::class.java))
         }
 
 

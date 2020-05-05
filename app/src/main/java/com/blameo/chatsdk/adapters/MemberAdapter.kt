@@ -9,13 +9,30 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
+import com.blameo.chatsdk.controllers.UserVMStore
+import com.blameo.chatsdk.controllers.UserViewModel
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.results.UserStatus
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 
-class MemberAdapter(val context: Context, private val users: ArrayList<User>, private val myId: String) :
+class MemberAdapter(val context: Context, private val users: ArrayList<User>, private val myId: String, private val type: Int) :
     RecyclerView.Adapter<MemberAdapter.MemberVH>() {
+
+
+    val userVMStore = UserVMStore.getInstance()
+
+    interface SelectUserListener{
+        fun onAdd(id: String)
+        fun onRemove(id: String)
+    }
+
+    private var selectUserListener: SelectUserListener? = null
+
+    fun setListener(listener: SelectUserListener){
+        selectUserListener = listener
+    }
 
 
     private var options: DisplayImageOptions = DisplayImageOptions.Builder()
@@ -41,11 +58,27 @@ class MemberAdapter(val context: Context, private val users: ArrayList<User>, pr
     override fun onBindViewHolder(holder: MemberVH, position: Int) {
 
         val member = users[position]
-        holder.bindUser(member, options)
+        val memberVM = userVMStore.getUserViewModel(UserStatus(member.id, 1))
+        holder.bindUser(member, memberVM, options, context)
+
+        if(type == 1)
+        {
+            holder.itemView.isEnabled = false
+            holder.itemView.isClickable = false
+            holder.imgCheck.visibility = View.GONE
+        }
 
         holder.itemView.setOnClickListener {
-            member.isCheck = !member.isCheck
-            holder.bindCheck(member)
+            if(selectUserListener != null) {
+                if(holder.imgCheck.visibility == View.VISIBLE) {
+                    holder.imgCheck.visibility = View.GONE
+                    selectUserListener?.onRemove(member.id)
+                }
+                else{
+                    holder.imgCheck.visibility = View.VISIBLE
+                    selectUserListener?.onAdd(member.id)
+                }
+            }
         }
     }
 
@@ -54,22 +87,20 @@ class MemberAdapter(val context: Context, private val users: ArrayList<User>, pr
         var tvName: TextView = view.findViewById(R.id.tvName)
         var imgCheck: ImageView = view.findViewById(R.id.imgSelected)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
+        var imgStatus: ImageView = view.findViewById(R.id.imgStatus)
 
-        fun bindUser(user: User, options: DisplayImageOptions) {
+        fun bindUser(user: User, userStatus: UserViewModel, options: DisplayImageOptions, context: Context) {
             if(!TextUtils.isEmpty(user.name))
                 tvName.text = user.name
             if(!TextUtils.isEmpty(user.avatar))
                 ImageLoader.getInstance().displayImage(user.avatar, imgAvatar, options)
 
-            bindCheck(user)
-
-        }
-        fun bindCheck(user: User) {
-
-            if(!user.isCheck)
-                imgCheck.visibility = View.INVISIBLE
-            else
-                imgCheck.visibility = View.VISIBLE
+            userStatus.status.observeForever { status ->
+                if(status){
+                    imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_green_light))
+                }else
+                    imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_red_light))
+            }
 
         }
     }

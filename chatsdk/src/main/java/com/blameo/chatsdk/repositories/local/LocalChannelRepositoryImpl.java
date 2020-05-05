@@ -54,8 +54,6 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
         int count = cursor.getCount();
         cursor.close();
 
-        Log.e("man", "size: " + count);
-
         return count;
     }
 
@@ -69,7 +67,11 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
     public void updateLastMessage(String channelId, String messageId) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
+        Log.e(TAG, "update last message "+channelId + " "+messageId);
+
         values.put(Constant.CHANNEL_LAST_MESSAGE_ID, messageId);
+
+
 
         db.update(Constant.CHANNEL_TABLE_NAME, values, Constant.CHANNEL_ID + " = ?",
                 new String[]{String.valueOf(channelId)});
@@ -213,7 +215,7 @@ public class LocalChannelRepositoryImpl extends LocalRepository implements Local
         } while (cursor.moveToNext());
 
         for (Channel c : channels) {
-            Log.e("123", "" + c.getId() + " " + c.getName() + " " + c.getUpdatedAtString());
+            Log.e("123", "" + c.getId() + " " + c.getName() + " " + c.getUpdatedAtString() + " "+c.getLastMessage().getId() + " "+c.getLastMessageId());
         }
         return channels;
     }

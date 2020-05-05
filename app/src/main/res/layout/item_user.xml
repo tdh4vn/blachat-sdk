@@ -14,6 +14,14 @@
         android:layout_width="56dp"
         android:layout_height="56dp"/>
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:src="@color/red"
+        android:layout_width="12dp"
+        android:layout_alignEnd="@id/imgAvatar"
+        android:layout_alignBottom="@id/imgAvatar"
+        android:id="@+id/imgStatus"
+        android:layout_height="12dp"/>
+
     <LinearLayout
         android:layout_centerVertical="true"
         android:layout_toEndOf="@+id/imgAvatar"

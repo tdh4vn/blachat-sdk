@@ -17,12 +17,16 @@ object APIProvider {
 
     private var retrofitMessage: Retrofit? = null
 
+    private var retrofitPresence: Retrofit? = null
+
     private var retrofit: Retrofit? = null
     lateinit var baseUrl: String
+    private var presenceUrl: String? = null
 
     fun setSession(baseUrl: String, token: String) {
-        this.baseUrl = "$baseUrl/v1/"
+        this.baseUrl = "$baseUrl:9000/v1/"
         currentToken = token
+        this.presenceUrl = "$baseUrl:8081/"
     }
 
     val userAPI: UserAPI
@@ -74,6 +78,29 @@ object APIProvider {
             return retrofitMessage!!.create(MessageAPI::class.java)
         }
 
+    val presenceAPI: PresenceAPI
+        get() {
+            if (retrofitPresence == null) {
+                val httpClient = OkHttpClient.Builder()
+                    .addInterceptor { chain ->
+                        val ongoing = chain.request().newBuilder()
+                        ongoing.addHeader("Authorization", currentToken)
+                        chain.proceed(ongoing.build())
+                    }
+                    .readTimeout(120, TimeUnit.SECONDS)
+                    .build()
+
+
+                retrofitPresence = Retrofit.Builder()
+                    .baseUrl(presenceUrl!!)
+                    .client(httpClient)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                    .build()
+            }
+            return retrofitPresence!!.create(PresenceAPI::class.java)
+        }
+
     val sessionAPI: SessionAPI
         get() {
             if (retrofit == null) {
@@ -90,7 +117,7 @@ object APIProvider {
                     .build()
 
                 retrofit = Retrofit.Builder()
-                    .baseUrl(this.baseUrl+"/v1/")
+                    .baseUrl(this.baseUrl)
                     .client(httpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())

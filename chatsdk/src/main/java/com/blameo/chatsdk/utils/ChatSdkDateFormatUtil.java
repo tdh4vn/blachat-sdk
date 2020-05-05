@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.utils;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.text.ParseException;
@@ -14,6 +15,7 @@ public class ChatSdkDateFormatUtil {
     private static SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
 
     public static Date parse(String dateString) throws ParseException {
+        if(TextUtils.isEmpty(dateString))  return null;
         return inputFormat.parse(dateString);
     }
 
@@ -21,7 +23,8 @@ public class ChatSdkDateFormatUtil {
         try {
             return inputFormat.format(date);
         } catch (Exception e) {
-            return inputFormat.format(new Date());
+//            return inputFormat.format(new Date());
+            return null;
         }
 
     }

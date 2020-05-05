@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Channel implements Serializable {
+
     @SerializedName("id")
     private String id;
 

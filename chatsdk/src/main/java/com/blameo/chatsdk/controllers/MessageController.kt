@@ -8,6 +8,7 @@ import com.blameo.chatsdk.models.pojos.RemoteUserChannel
 import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.repositories.MessageRepository
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl
+import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
 
 interface MessageListener {
     fun onGetMessagesSuccess(messages: ArrayList<Message>)
@@ -107,10 +108,10 @@ class MessageController(private val listener: MessageListener) : MessageListener
                 var user = usersMap[it.memberId]
                 if(user == null)    user = User(it.memberId)
                 usersMap[it.memberId] = user
-                if(it.lastSeen > message.createdAtString)
+                if(it.lastSeen > message.createdAtString?:ChatSdkDateFormatUtil.getPastTimeUTC())
                     message.seenBy.add(user)
 
-                if(it.lastReceive > message.createdAtString)
+                if(it.lastReceive > message.createdAtString?:ChatSdkDateFormatUtil.getPastTimeUTC())
                     message.receiveBy.add(user)
             }
 //            messages[index] = message

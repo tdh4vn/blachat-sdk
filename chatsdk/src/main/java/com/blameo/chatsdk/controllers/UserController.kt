@@ -4,6 +4,7 @@ import android.util.Log
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.repositories.local.LocalUserRepository
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.repositories.UserRepository
 import com.blameo.chatsdk.repositories.UserRepositoryImpl
 
@@ -12,6 +13,7 @@ interface UserListener {
     fun onGetUsersByIdsError(error: String)
     fun onGetAllMembersSuccess(users: ArrayList<User>)
     fun onGetAllMembersError(error: String)
+    fun onUserStatusChanged(user: UserStatus)
 }
 
 class UserController(
@@ -54,6 +56,14 @@ class UserController(
         userRepository.updateUserLastSeenInChannel(userId, channelId, lastMessage)
     }
 
+    fun getUsersStatus(){
+        userRepository.getUsersStatus()
+    }
+
+    fun updateStatus(){
+        userRepository.updateStatus()
+    }
+
     override fun onUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
         Log.e(TAG, "get users by ids - REMOTE success: ${users.size}")
         userListener.onUsersByIdsSuccess(channelId, users)
@@ -69,6 +79,11 @@ class UserController(
 
     override fun onGetAllMembersError(error: String) {
         userListener.onGetAllMembersError(error)
+    }
+
+    override fun onUserStatusChanged(user: UserStatus) {
+        Log.e(TAG, "user changed status has id: ${user.id} ${user.status}")
+        userListener.onUserStatusChanged(user)
     }
 
 }

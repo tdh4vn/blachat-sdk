@@ -1,7 +1,6 @@
 package com.blameo.chatsdk.adapters
 
 import android.content.Context
-import android.os.Build
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.models.pojos.Message
@@ -55,7 +53,7 @@ class MessageAdapter(
                 false
             )
             )
-        else OtherMessageViewHolder(
+        else PartnerMessageViewHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.other_message_viewholder,
                 parent,
@@ -94,7 +92,9 @@ class MessageAdapter(
 
         override fun fillData(m: Message) {
             tvContent.text = m.content
-            tvTime.text = m.createdAtString
+            tvTime.text = DateFormatUtils.getInstance().getTime(m.createdAtString)
+
+            Log.i("adapter", "${m.id} ${m.seenAtString} ${m.sentAtString}")
             if(!TextUtils.isEmpty(m.seenAtString))
                 tvTime.text = tvTime.text.toString() + " Seen"
             else{
@@ -102,13 +102,12 @@ class MessageAdapter(
                     tvTime.text = tvTime.text.toString() + " Sent"
             }
 
-
             if (!TextUtils.isEmpty(users[m.authorId]?.avatar))
                 ImageLoader.getInstance().displayImage(users[m.authorId]?.avatar,imgAvatar, options)
         }
     }
 
-    inner class OtherMessageViewHolder(itemView: View) :
+    inner class PartnerMessageViewHolder(itemView: View) :
         MessageAdapter.ItemMessageViewHolder(itemView) {
         private val tvContent: TextView = itemView.findViewById(R.id.txtContent)
         private val imgAvatar: ImageView = itemView.findViewById(R.id.avatarUser)

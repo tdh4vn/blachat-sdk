@@ -8,7 +8,10 @@ import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.repositories.remote.net.APIProvider
 import com.blameo.chatsdk.repositories.remote.UserRemoteRepositoryImpl
 import com.blameo.chatsdk.controllers.UserListener
+import com.blameo.chatsdk.models.bodies.PostIDsBody
+import com.blameo.chatsdk.models.bodies.UpdateStatusBody
 import com.blameo.chatsdk.models.pojos.Message
+import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepositoryImpl
 import com.blameo.chatsdk.repositories.local.LocalUserRepositoryImpl
@@ -18,6 +21,8 @@ interface UserRepository {
     fun getLocalUsersByIds(channelId: String, ids: ArrayList<String>) : ArrayList<User>
     fun getAllMembers()
     fun updateUserLastSeenInChannel(userId: String, channelId: String, lastMessage: Message)
+    fun getUsersStatus()
+    fun updateStatus()
 }
 
 interface UserResultListener {
@@ -25,6 +30,7 @@ interface UserResultListener {
     fun onGetUsersFailed(error: String)
     fun onGetAllMembersSuccess(users: ArrayList<User>)
     fun onGetMembersFailed(error: String)
+    fun onGetUsersStatusSuccess(data: ArrayList<UserStatus>)
 }
 
 class UserRepositoryImpl(
@@ -34,13 +40,13 @@ class UserRepositoryImpl(
 
     var userRemoteRepository: UserRemoteRepositoryImpl =
         UserRemoteRepositoryImpl(
-            APIProvider.userAPI,
+            APIProvider.userAPI, APIProvider.presenceAPI,
             this
         )
     private val localUserRepository: LocalUserRepository = LocalUserRepositoryImpl(BlameoChatSdk.getInstance().context)
+    private val localUIC: LocalUserInChannelRepository = LocalUserInChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
+    private val userStatusMap: HashMap<String, UserStatus> = hashMapOf()
 
-    private val localUIC: LocalUserInChannelRepository
-            = LocalUserInChannelRepositoryImpl(BlameoChatSdk.getInstance().context)
     private val TAG = "USER_REPO"
     private var localUsers: ArrayList<User> = arrayListOf()
 
@@ -74,12 +80,27 @@ class UserRepositoryImpl(
         localUIC.updateUserLastSeenInChannel(userId, channelId, lastMessage)
     }
 
+    override fun getUsersStatus() {
+        val users = localUserRepository.allUsers
+        var userIds = ""
+        users.forEach {
+            userIds+="${it.id},"
+        }
+        val body = PostIDsBody()
+        body.ids = userIds
+        userRemoteRepository.getUsersStatus(body)
+    }
+
+    override fun updateStatus() {
+        userRemoteRepository.updateStatus(UpdateStatusBody(BlameoChatSdk.getInstance().uId, "2"))
+    }
+
     override fun onGetUsersSuccess(channelId: String, users: ArrayList<User>) {
         Log.i(TAG, "size: ${users.size} + ${localUsers.size} channelId: $channelId")
         localUsers.addAll(users)
         userListener.onUsersByIdsSuccess(channelId, localUsers)
         if(users.size > 0)
-        users.forEach { localUserRepository.addLocalUser(it) }
+            users.forEach { localUserRepository.addLocalUser(it) }
     }
 
     override fun onGetUsersFailed(error: String) {
@@ -95,7 +116,29 @@ class UserRepositoryImpl(
 
     override fun onGetMembersFailed(error: String) {
         userListener.onGetAllMembersSuccess(localUserRepository.allUsers)
-        userListener.onGetAllMembersError(error)
+//        userListener.onGetAllMembersError(error)
     }
+
+    override fun onGetUsersStatusSuccess(data: ArrayList<UserStatus>) {
+        Log.e(TAG, "get update status success ${data.size}")
+
+        data.forEach {
+
+            if(userStatusMap[it.id] != null){
+
+                val userStatus = userStatusMap[it.id]
+                if(userStatus?.status != it.status){
+                    userStatusMap[it.id] = it
+                    userListener.onUserStatusChanged(it)
+                }
+            }else
+            {
+                userStatusMap[it.id] = it
+                userListener.onUserStatusChanged(it)
+            }
+        }
+    }
+
+
 
 }

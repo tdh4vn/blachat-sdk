@@ -1,15 +1,13 @@
 package com.blameo.chatsdk.controllers
 
-import android.graphics.BlendMode
-import android.util.Log
 import com.blameo.chatsdk.BlameoChatSdk
-import com.blameo.chatsdk.repositories.local.LocalChannelRepository
 import com.blameo.chatsdk.repositories.local.LocalUserInChannelRepository
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.RemoteUserChannel
 import com.blameo.chatsdk.models.pojos.User
 import com.blameo.chatsdk.models.results.MembersInChannel
+import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.repositories.ChannelRepository
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl
 import com.blameo.chatsdk.repositories.UserRepository
@@ -82,6 +80,10 @@ class ChannelController(private val sdkListener: SdkChannelListener) : ChannelLi
         override fun onGetAllMembersError(error: String) {
 
         }
+
+        override fun onUserStatusChanged(user: UserStatus) {
+
+        }
     }
 
     private fun addUsersToChannels() {
@@ -131,8 +133,6 @@ class ChannelController(private val sdkListener: SdkChannelListener) : ChannelLi
         }
 
         return users
-
-//        channelRepository.getUsersInChannel(channelId)
     }
 
     fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel> {
@@ -168,13 +168,7 @@ class ChannelController(private val sdkListener: SdkChannelListener) : ChannelLi
 
     override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
 
-
-        Log.e(TAG, "result")
         this.channels = channels
-
-        channels.forEachIndexed { index, channel ->
-            Log.e(TAG, "$index: ${channel.id} ${channel.name}")
-        }
     }
 
     override fun onGetNewChannelsSuccess(channels: ArrayList<Channel>) {

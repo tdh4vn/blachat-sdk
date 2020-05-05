@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.controllers
 
+import androidx.lifecycle.MutableLiveData
 import com.blameo.chatsdk.models.pojos.Channel
 
 
@@ -11,6 +12,9 @@ class ChannelVMlStore private constructor(){
         if (channelVMMap == null)
            channelVMMap = HashMap()
     }
+
+    var newChannel: MutableLiveData<Channel>  = MutableLiveData()
+
 
     private object Holder { val INSTANCE = ChannelVMlStore() }
 
@@ -27,5 +31,17 @@ class ChannelVMlStore private constructor(){
         vm = ConversationViewModel(channel)
         channelVMMap?.set(channel.id, vm)
         return vm
+    }
+
+    fun getChannelByID(id: String): ConversationViewModel{
+        return channelVMMap?.get(id)!!
+    }
+
+    fun addNewChannel(channel: Channel){
+        var vm = channelVMMap?.get(channel.id)
+        if(vm == null){
+            newChannel.value = channel
+        }
+        getChannelViewModel(channel)
     }
 }

@@ -3,6 +3,7 @@ package com.blameo.chatsdk
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.results.UserStatus
 
 open class ChatListener {
 
@@ -53,6 +54,10 @@ open class ChatListener {
 
     interface GetAllMembersListener{
         fun onSuccess(users: ArrayList<User>)
+    }
+
+    interface UserStatusChangeListener {
+        fun onStatusChanged(userStatus: UserStatus)
     }
 
 

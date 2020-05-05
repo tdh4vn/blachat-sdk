@@ -1,6 +1,7 @@
 package com.blameo.chatsdk
 
 import android.content.Context
+import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.controllers.*
@@ -9,6 +10,7 @@ import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.pojos.RemoteUserChannel
 import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.repositories.local.*
 import com.blameo.chatsdk.repositories.remote.net.APIProvider
 import com.google.gson.Gson
@@ -23,6 +25,7 @@ import kotlin.collections.ArrayList
 
 
 private var shareInstance: BlameoChatSdk? = null
+private var timer: Timer? = null
 
 interface OnTypingListener {
     fun onTyping()
@@ -43,31 +46,32 @@ interface OnNewChannelListener {
 
 class BlameoChatSdk : ChatListener() {
 
-    lateinit var token: String
-    lateinit var tokenWs: String
+    private lateinit var token: String
+    private lateinit var tokenWs: String
     lateinit var uId: String
-    lateinit var wsURL: String
-    lateinit var channel: String
-    lateinit var currentChannelID: String
+    private lateinit var wsURL: String
+    private lateinit var channel: String
+    private lateinit var currentChannelID: String
     lateinit var context: Context
 
     val TAG = "BlameoChat"
 
-    lateinit var getChannelsListener: GetChannelsListener
-    lateinit var getMessagesListener: GetMessagesListener
-    lateinit var createChannelListener: CreateChannelListener
-    lateinit var createMessageListener: CreateMessageListener
-    lateinit var markSeenMessageListener: MarkSeenMessageListener
-    lateinit var markReceiveMessageListener: MarkReceiveMessageListener
-    lateinit var channelController: ChannelController
-    lateinit var messageController: MessageController
-    lateinit var userController: UserController
-    lateinit var typingListener: OnTypingListener
-    lateinit var onEventListener: OnEventListener
-    lateinit var onCursorChangeListener: OnCursorChangeListener
-    lateinit var onNewChannelListener: OnNewChannelListener
-    lateinit var onGetAllMembersListener: GetAllMembersListener
-    lateinit var onInviteUsersToChannelListener: InviteUsersToChannelListener
+    private lateinit var getChannelsListener: GetChannelsListener
+    private lateinit var getMessagesListener: GetMessagesListener
+    private lateinit var createChannelListener: CreateChannelListener
+    private lateinit var createMessageListener: CreateMessageListener
+    private lateinit var markSeenMessageListener: MarkSeenMessageListener
+    private lateinit var markReceiveMessageListener: MarkReceiveMessageListener
+    private lateinit var channelController: ChannelController
+    private lateinit var messageController: MessageController
+    private lateinit var userController: UserController
+    private lateinit var typingListener: OnTypingListener
+    private lateinit var onEventListener: OnEventListener
+    private lateinit var onCursorChangeListener: OnCursorChangeListener
+    private lateinit var onNewChannelListener: OnNewChannelListener
+    private lateinit var onGetAllMembersListener: GetAllMembersListener
+    private lateinit var onInviteUsersToChannelListener: InviteUsersToChannelListener
+    private lateinit var onUserStatusChangeListener: UserStatusChangeListener
 
     lateinit var localChannels: LocalChannelRepository
     lateinit var localMessages: LocalMessageRepository
@@ -168,6 +172,10 @@ class BlameoChatSdk : ChatListener() {
 
         }
 
+        override fun onUserStatusChanged(user: UserStatus) {
+            onUserStatusChangeListener.onStatusChanged(user)
+        }
+
     }
 
     companion object {
@@ -225,6 +233,11 @@ class BlameoChatSdk : ChatListener() {
             channelController.putStopTypingInChannel(channelID)
     }
 
+    fun subcribeUserStatusListener(listener: UserStatusChangeListener){
+        onUserStatusChangeListener = listener
+        pingStatus()
+    }
+
     private fun initDB() {
         localChannels = LocalChannelRepositoryImpl(context)
         localMessages = LocalMessageRepositoryImpl(context)
@@ -234,6 +247,14 @@ class BlameoChatSdk : ChatListener() {
     fun initContext(activity: AppCompatActivity) {
         context = activity
         initDB()
+    }
+
+
+    fun clearLocalDB(context: Context){
+        LocalChannelRepositoryImpl(context).clearAllLocalChannels()
+        LocalMessageRepositoryImpl(context).clearAllLocalMessages()
+        LocalUserRepositoryImpl(context).clearAllLocalUsers()
+        LocalUserInChannelRepositoryImpl(context).clearAllLocalUIC()
     }
 
     fun getAllMembers(listener: GetAllMembersListener) {
@@ -298,6 +319,18 @@ class BlameoChatSdk : ChatListener() {
         messageController.sendReceivedMessageEvent(channelId, messageId, authorId)
     }
 
+    private fun pingStatus(){
+
+        timer = Timer()
+        timer?.schedule(object : TimerTask(){
+            override fun run() {
+
+                userController.getUsersStatus()
+                userController.updateStatus()
+            }
+        }, 0, 60000)
+    }
+
     fun initSession(
         baseUrl: String, ws: String,
         token: String, tokenWs: String,
@@ -311,6 +344,7 @@ class BlameoChatSdk : ChatListener() {
         this.channel = "chat#$uid"
         connectSocket()
         initController()
+
     }
 
     private fun initController() {
@@ -470,11 +504,10 @@ class BlameoChatSdk : ChatListener() {
             .pingInterval(30, TimeUnit.SECONDS)
             .build()
         val request: Request = Request.Builder().url("ws://159.65.2.104:9000/ws").build()
+
         request.headers("Authorization' : 'Bearer $token")
         val listener = EchoWebSocketListener()
         val ws: WebSocket = client.newWebSocket(request, listener)
-
-//        client.dispatcher().executorService().shutdown()
     }
 
     private class EchoWebSocketListener : WebSocketListener() {
