@@ -34,9 +34,11 @@ assembleDebug:
       - app/build/outputs/
 
 uploadApk:
+  image: byrnedo/alpine-curl
   stage: deploy
   script:
     - cd app/build/outputs/apk/debug
     - mv app-debug.apk ChatSDK-Android.apk
     - ls
     - curl --location --request POST 'http://filecenter.blameo.work/chat-sdk' --form 'file=@ChatSDK-Android.apk'
+    - https://api.telegram.org/bot757567042:AAEylf4EbHgmPjhqCU62oYkxMwUIvSirWBk/sendMessage?chat_id=-1001103749005&text=ChatSDK-Debug%20APK%20%5BDownload%5D%28http%3A%2F%2Ffilecenter.blameo.work%2Fchat-sdk%2FChatSDK-Android.apk%29
