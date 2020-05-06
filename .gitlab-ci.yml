@@ -36,9 +36,8 @@ assembleDebug:
 uploadApk:
   image: ubuntu:16.04
   stage: deploy
-  before_script:
-    - apt install -y curl
   script:
+    - apt install -y curl
     - cd app/build/outputs/apk/debug
     - mv app-debug.apk ChatSDK-Android.apk
     - ls
