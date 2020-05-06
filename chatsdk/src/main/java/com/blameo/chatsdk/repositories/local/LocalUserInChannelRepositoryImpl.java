@@ -4,17 +4,12 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
 import android.util.Log;
 
-import com.blameo.chatsdk.models.pojos.Channel;
 import com.blameo.chatsdk.models.pojos.Message;
 import com.blameo.chatsdk.models.pojos.RemoteUserChannel;
 import com.blameo.chatsdk.models.pojos.UserInChannel;
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 
 public class LocalUserInChannelRepositoryImpl extends LocalRepository implements LocalUserInChannelRepository {
@@ -142,19 +137,19 @@ public class LocalUserInChannelRepositoryImpl extends LocalRepository implements
     }
 
     @Override
-    public ArrayList<RemoteUserChannel> getAllUserIdsInChannel(String channelId) {
+    public ArrayList<RemoteUserChannel> getUsersInChannel(String channelId) {
         ArrayList<RemoteUserChannel> uIds = new ArrayList<>();
 
         String selectQuery = "SELECT * FROM " + Constant.UIC_TABLE_NAME
                 + " where " + Constant.UIC_CHANNEL_ID + " ='" + channelId + "'";
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if(cursor == null || !cursor.moveToFirst()) return uIds;
 
         do {
-            RemoteUserChannel  uc = new RemoteUserChannel(cursor.getString(2), cursor.getString(3), cursor.getString(4));
+            RemoteUserChannel uc = new RemoteUserChannel(cursor.getString(2), cursor.getString(3), cursor.getString(4));
             uIds.add(uc);
         } while (cursor.moveToNext());
 

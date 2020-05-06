@@ -3,7 +3,7 @@ package com.blameo.chatsdk.repositories.remote.net
 import com.blameo.chatsdk.models.bodies.ChannelsBody
 import com.blameo.chatsdk.models.bodies.CreateChannelBody
 import com.blameo.chatsdk.models.bodies.UsersBody
-import com.blameo.chatsdk.models.pojos.InviteUserToChannelBody
+import com.blameo.chatsdk.models.bodies.InviteUserToChannelBody
 import com.blameo.chatsdk.models.results.*
 import retrofit2.Call
 import retrofit2.http.*

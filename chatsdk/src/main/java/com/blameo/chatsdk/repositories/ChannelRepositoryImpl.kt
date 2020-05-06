@@ -8,27 +8,11 @@ import com.blameo.chatsdk.repositories.remote.net.APIProvider
 import com.blameo.chatsdk.repositories.remote.ChannelRemoteRepository
 import com.blameo.chatsdk.repositories.remote.ChannelRemoteRepositoryImpl
 import com.blameo.chatsdk.controllers.ChannelListener
-import com.blameo.chatsdk.models.bodies.ChannelsBody
 import com.blameo.chatsdk.models.pojos.RemoteUserChannel
-import com.blameo.chatsdk.models.results.GetMembersOfMultiChannelResult
 import com.blameo.chatsdk.models.results.MembersInChannel
 import com.blameo.chatsdk.repositories.local.*
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
-import java.util.*
 import kotlin.collections.ArrayList
-
-interface ChannelRepository {
-    fun getChannels()
-    fun createChannel(body: CreateChannelBody)
-    fun getUsersInChannel(id: String)
-    fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel>
-    fun putTypingInChannel(cId: String)
-    fun putStopTypingInChannel(cId: String)
-    fun updateLastMessage(channelId: String, messageId: String)
-    fun addNewChannel(channel: Channel)
-    fun getLocalChannelById(id: String): Channel
-    fun inviteUsersToChannel(channelId: String, userIds: ArrayList<String>)
-}
 
 interface ChannelResultListener {
     fun onGetRemoteChannelsSuccess(channels: ArrayList<Channel>)
@@ -60,9 +44,9 @@ class ChannelRepositoryImpl(
         val localChannels = localChannelRepository.channels
         Log.e(TAG, "local : ${localChannels.size}")
 
-        if(localChannels.size == 0)
+        if(localChannels.size == 0) {
             remoteChannels.getChannels("")
-        else {
+        } else {
             channelListener.onGetChannelsSuccess(localChannels)
             getLocalMembersOfMultiChannel(localChannels)
 //            remoteChannels.getNewerChannels(ids[0])
@@ -86,7 +70,7 @@ class ChannelRepositoryImpl(
     }
 
     override fun getLocalUsersInChannel(channelId: String): ArrayList<RemoteUserChannel> {
-        return localUIC.getAllUserIdsInChannel(channelId)
+        return localUIC.getUsersInChannel(channelId)
     }
 
     override fun putTypingInChannel(cId: String) {
@@ -141,8 +125,8 @@ class ChannelRepositoryImpl(
         channels.forEach {
             val membersInChannel = MembersInChannel()
             membersInChannel.channelId = it.id
-            val uics = localUIC.getAllUserIdsInChannel(it.id)
-            if(uics != null) {
+            val uics = localUIC.getUsersInChannel(it.id)
+            if (uics != null) {
                 membersInChannel.userChannels = uics
                 data.add(membersInChannel)
             }

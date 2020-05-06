@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public interface LocalUserInChannelRepository {
 
-    ArrayList<RemoteUserChannel> getAllUserIdsInChannel(String channelId);
+    ArrayList<RemoteUserChannel> getUsersInChannel(String channelId);
 
     ArrayList<UserInChannel> getAllUICs();
 

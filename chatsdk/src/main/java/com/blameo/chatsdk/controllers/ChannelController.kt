@@ -92,7 +92,7 @@ class ChannelController(private val sdkListener: SdkChannelListener) : ChannelLi
             membersInChannels.forEach { membersInChannel ->
                 if (channel.id == membersInChannel.channelId) {
                     localUIC.saveUserIdsToChannel(channel.id, membersInChannel.userChannels)
-                    if (membersInChannel.userChannels.size == 2) {
+                    if (channel.type == Channel.DIRECT_CHANNEL) {
                         membersInChannel.userChannels.forEach {
                             if (it.memberId != userId) {
                                 val partner = usersMap[it.memberId]
@@ -202,6 +202,7 @@ class ChannelController(private val sdkListener: SdkChannelListener) : ChannelLi
     override fun onGetMembersOfMultiChannelSuccess(data: ArrayList<MembersInChannel>) {
         val map: HashMap<String, String> = hashMapOf()
         membersInChannels.addAll(data)
+
         data.forEach {
             uicMap[it.channelId] = it.userChannels
             it.userChannels.forEach { user ->

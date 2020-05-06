@@ -1,6 +1,5 @@
 package com.blameo.chatsdk.repositories.remote
 
-import android.util.Log
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
 import com.blameo.chatsdk.models.results.BaseResult

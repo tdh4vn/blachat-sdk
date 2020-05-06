@@ -1,6 +1,5 @@
 package com.blameo.chatsdk.repositories
 
-import android.text.TextUtils
 import android.util.Log
 import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.controllers.MessageListener
@@ -12,18 +11,6 @@ import com.blameo.chatsdk.repositories.remote.MessageRemoteRepositoryImpl
 import com.blameo.chatsdk.repositories.remote.net.APIProvider
 import java.util.*
 import kotlin.collections.ArrayList
-
-interface MessageRepository {
-    fun getMessages(channelId: String, lastMessageId: String)
-    fun getMessageByIdLocal(id: String): Message
-    fun createMessage(body: CreateMessageBody)
-    fun sendSeenMessageEvent(channelId: String, messageId: String, authorId: String)
-    fun sendReceivedMessageEvent(channelId: String, messageId: String, authorId: String)
-    fun receiveEventNewMessage(message: Message)
-    fun receiveEventSeenMessage(messageId: String)
-    fun receiveEventReceiveMessage(messageId: String)
-    fun syncUnsentMessage()
-}
 
 interface MessageResultListener {
     fun onGetRemoteMessagesSuccess(messages: ArrayList<Message>)

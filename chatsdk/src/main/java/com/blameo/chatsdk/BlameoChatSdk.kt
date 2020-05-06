@@ -1,7 +1,6 @@
 package com.blameo.chatsdk
 
 import android.content.Context
-import android.os.Handler
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.controllers.*
@@ -428,7 +427,8 @@ class BlameoChatSdk : ChatListener() {
                             c.type,
                             c.updatedAt,
                             c.createdAt,
-                            c.last_message_id)
+                            c.last_message_id
+                        )
                         channelController.addNewChannel(channel)
                         onNewChannelListener.onNewChannel(channel)
                     }

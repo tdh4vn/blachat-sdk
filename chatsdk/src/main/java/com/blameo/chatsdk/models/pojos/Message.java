@@ -9,9 +9,9 @@ import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Map;
 
-public class Message extends MessageResult implements Serializable {
+public class Message implements Serializable {
 
     @SerializedName("id")
     private String id;
@@ -44,10 +44,10 @@ public class Message extends MessageResult implements Serializable {
     private boolean isSystemMessage;
 
 //    @SerializedName("custom_data")
-//    private HashMap<String, Object> customData;
+//    private HashString customData;
 
     @SerializedName("custom_data")
-    private String customData;
+    protected String customData;
 
 
     public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, Date seenAt, boolean isSystemMessage, String customData) {
@@ -98,7 +98,7 @@ public class Message extends MessageResult implements Serializable {
         this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 6));
         this.sentAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 7));
         this.seenAt = ChatSdkDateFormatUtil.parse(cursor.getString(offset + 8));
-//        this.customData = GsonUtil.jsonToMap(cursor.getString(offset + 9));
+        this.customData = cursor.getString(9);
     }
 
     public Message() {
@@ -190,11 +190,6 @@ public class Message extends MessageResult implements Serializable {
 
     public String getSeenAtString() {
         return ChatSdkDateFormatUtil.parse(seenAt);
-    }
-
-    public String getCustomDataString() {
-//        return GsonUtil.mapToJSON(customData);
-        return customData;
     }
 
     public boolean isSystemMessage() {

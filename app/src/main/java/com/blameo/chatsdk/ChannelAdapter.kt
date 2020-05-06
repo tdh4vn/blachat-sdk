@@ -2,19 +2,15 @@ package com.blameo.chatsdk
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color.red
 import android.text.TextUtils
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.models.pojos.Channel
 import com.blameo.chatsdk.screens.ChatActivity
-import com.blameo.chatsdk.utils.DateFormatUtils
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.ConversationViewModel
 import com.blameo.chatsdk.controllers.UserVMStore

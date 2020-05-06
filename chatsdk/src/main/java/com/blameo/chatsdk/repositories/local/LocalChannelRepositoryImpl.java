@@ -4,12 +4,9 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.nfc.Tag;
 import android.util.Log;
 
 import com.blameo.chatsdk.models.pojos.Channel;
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
 import java.text.ParseException;
 import java.util.ArrayList;

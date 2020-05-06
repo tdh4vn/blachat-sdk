@@ -3,13 +3,12 @@ package com.blameo.chatsdk.models.pojos;
 import android.database.Cursor;
 
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 
 public class Channel implements Serializable {
 
@@ -31,14 +30,11 @@ public class Channel implements Serializable {
     @SerializedName("created_at")
     private Date createdAt;
 
+    @SerializedName("last_message_id")
     private String lastMessageId;
 
-    @Expose(serialize = false, deserialize = false)
-    @SerializedName("last_message")
-    private Message lastMessage;
-
     @SerializedName("custom_data")
-    private String customData;
+    protected String customData;
 
     public Channel(Cursor cursor) throws ParseException {
         this.id = cursor.getString(0);
@@ -48,7 +44,6 @@ public class Channel implements Serializable {
          this.updatedAt = ChatSdkDateFormatUtil.parse(cursor.getString(4));
          this.createdAt = ChatSdkDateFormatUtil.parse(cursor.getString(5));
          this.lastMessageId = cursor.getString(6);
-         this.lastMessage = new Message(cursor, 7);
     }
 
     public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId) {
@@ -69,7 +64,6 @@ public class Channel implements Serializable {
         this.updatedAt = updatedAt;
         this.createdAt = createdAt;
         this.lastMessageId = lastMessageId;
-        this.lastMessage = lastMessage;
     }
 
     public String getId() {
@@ -136,17 +130,6 @@ public class Channel implements Serializable {
         this.lastMessageId = lastMessageId;
     }
 
-    public Message getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(Message lastMessage) {
-        this.lastMessage = lastMessage;
-    }
-
-    public String getCustomData() {
-        return customData;
-    }
 
     public void setCustomData(String customData) {
         this.customData = customData;

@@ -1,6 +1,5 @@
 package com.blameo.chatsdk.screens
 
-import android.content.DialogInterface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log

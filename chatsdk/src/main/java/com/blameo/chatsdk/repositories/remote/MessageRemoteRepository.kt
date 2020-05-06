@@ -2,9 +2,6 @@ package com.blameo.chatsdk.repositories.remote
 
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
 import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.results.GetMessageByIDResult
-import com.blameo.chatsdk.models.results.GetMessagesResult
-import io.reactivex.Single
 
 interface MessageRemoteRepository {
 

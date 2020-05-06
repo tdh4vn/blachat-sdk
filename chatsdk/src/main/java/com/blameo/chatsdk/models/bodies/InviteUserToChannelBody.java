@@ -1,4 +1,4 @@
-package com.blameo.chatsdk.models.pojos;
+package com.blameo.chatsdk.models.bodies;
 
 import com.google.gson.annotations.SerializedName;
 
