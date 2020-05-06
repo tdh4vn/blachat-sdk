@@ -34,7 +34,7 @@ assembleDebug:
       - app/build/outputs/
 
 uploadApk:
-  image: byrnedo/alpine-curl
+  image: ubuntu:16.04
   stage: deploy
   script:
     - cd app/build/outputs/apk/debug
