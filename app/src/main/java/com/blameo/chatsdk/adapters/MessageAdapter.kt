@@ -50,8 +50,7 @@ class MessageAdapter(
             MyMessageViewHolder(LayoutInflater.from(parent.context).inflate(
                 R.layout.my_message_viewholder,
                 parent,
-                false
-            )
+                false)
             )
         else PartnerMessageViewHolder(
             LayoutInflater.from(parent.context).inflate(

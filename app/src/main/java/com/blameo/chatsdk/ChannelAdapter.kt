@@ -65,9 +65,9 @@ class ChannelAdapter(val context: Context) :
             val userStatus = userStore.getUserViewModel(UserStatus(partnerId, 1))
             userStatus.status.observeForever { status ->
                 if(status){
-                    holder.imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_green_light))
+                    holder.imgStatus.setBackgroundResource(R.drawable.shape_bubble_online)
                 }else
-                    holder.imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_red_light))
+                    holder.imgStatus.setBackgroundResource(R.drawable.shape_bubble_offline)
             }
         }
     }
@@ -78,7 +78,7 @@ class ChannelAdapter(val context: Context) :
         var tvContent: TextView = view.findViewById(R.id.tvContent)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
         var tvTime: TextView = view.findViewById(R.id.tvTime)
-        var imgStatus: ImageView = view.findViewById(R.id.imgStatus)
+        var imgStatus: View = view.findViewById(R.id.imgStatus)
 
         fun bindChannel(channelVM: ConversationViewModel, options: DisplayImageOptions) {
 
@@ -87,7 +87,7 @@ class ChannelAdapter(val context: Context) :
             else
                 imgAvatar.setImageResource(R.mipmap.ic_launcher)
             tvName.text = channelVM.channel_name.value.toString()
-            tvContent.text = channelVM.last_message.value.toString()
+            tvContent.text = if(!TextUtils.isEmpty(channelVM.last_message.value.toString())) channelVM.last_message.value.toString() else ""
 
             tvTime.text = channelVM.channel_updated.value.toString()
         }

@@ -76,23 +76,23 @@ class CreateChannelActivity : AppCompatActivity() {
 
     private fun showDialog(){
 
-        val editText = EditText(this)
-        val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
-        editText.layoutParams = lp
+        var editText: EditText = EditText(this)
+
 
         val dialog = AlertDialog.Builder(this)
+            .setView(R.layout.custom_create_channel_dialog)
             .setTitle("Set conversation name")
             .setCancelable(false)
             .setPositiveButton("OK") { dialog, which ->
-                createChannel(editText.text.toString().trim())
+                createChannel(editText.text.toString())
             }
             .setNegativeButton("Cancel") { dialog, which ->
 
-            }
-
-        dialog.setView(editText)
+            }.create()
 
         dialog.show()
+
+        editText = dialog.findViewById(R.id.edtName)!!
     }
 
     private fun createChannel(name: String){

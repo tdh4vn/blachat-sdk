@@ -87,7 +87,7 @@ class MemberAdapter(val context: Context, private val users: ArrayList<User>, pr
         var tvName: TextView = view.findViewById(R.id.tvName)
         var imgCheck: ImageView = view.findViewById(R.id.imgSelected)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
-        var imgStatus: ImageView = view.findViewById(R.id.imgStatus)
+        var imgStatus: View= view.findViewById(R.id.imgStatus)
 
         fun bindUser(user: User, userStatus: UserViewModel, options: DisplayImageOptions, context: Context) {
             if(!TextUtils.isEmpty(user.name))
@@ -97,9 +97,9 @@ class MemberAdapter(val context: Context, private val users: ArrayList<User>, pr
 
             userStatus.status.observeForever { status ->
                 if(status){
-                    imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_green_light))
+                    imgStatus.setBackgroundResource(R.drawable.shape_bubble_online)
                 }else
-                    imgStatus.setColorFilter(context.resources.getColor(android.R.color.holo_red_light))
+                    imgStatus.setBackgroundResource(R.drawable.shape_bubble_offline)
             }
 
         }

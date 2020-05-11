@@ -90,82 +90,36 @@
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <RelativeLayout
-        android:id="@+id/bottomBar"
+    <com.stfalcon.chatkit.messages.MessagesList
+        app:incomingImageTimeTextSize="10sp"
+        app:incomingTimeTextSize="10sp"
+        app:outcomingImageTimeTextSize="10sp"
+        app:outcomingTimeTextSize="10sp"
+        app:outcomingTimeTextColor="@color/grey"
+        app:dateHeaderTextSize="12sp"
+        android:layout_below="@+id/appbar"
+        android:id="@+id/messagesList"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/input" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@+id/input"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@color/gray_light"/>
+
+    <com.stfalcon.chatkit.messages.MessageInput
+        android:id="@+id/input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/white"
-        android:padding="15dp">
+        app:attachmentButtonDefaultIconColor="@color/green"
+        app:attachmentButtonDefaultIconPressedColor="@color/green_dark"
+        app:inputHint="@string/hint_enter_a_message"
+        app:showAttachmentButton="true"/>
 
-        <ImageView
-            android:id="@+id/btn_send_message"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_menu_send"
-            android:tint="@color/no_text"
-            android:textStyle="bold" />
 
-        <RelativeLayout
-            android:layout_centerInParent="true"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginEnd="12dp"
-            android:layout_marginRight="12dp"
-            android:layout_toLeftOf="@id/btn_send_message"
-            android:layout_toStartOf="@id/btn_send_message"
-            android:background="@drawable/background_stoke_round_white"
-            android:paddingEnd="12dp"
-            android:paddingRight="12dp">
-
-            <ImageView
-                android:id="@+id/btnSendImage"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:src="@drawable/baseline_photo_camera_black_36dp"
-                android:tint="#858E99" />
-
-            <EditText
-                android:id="@+id/edtMessageContent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_centerInParent="true"
-                android:layout_marginLeft="20dp"
-                android:layout_marginStart="20dp"
-                android:layout_toLeftOf="@id/btnSendImage"
-                android:layout_toStartOf="@id/btnSendImage"
-                android:backgroundTint="@android:color/transparent"
-                android:hint="Type message here..."
-                android:maxLines="1"
-                android:padding="0dp"
-                android:textSize="13sp" />
-        </RelativeLayout>
-    </RelativeLayout>
-
-    <LinearLayout
-        android:layout_above="@id/bottomBar"
-        android:layout_below="@id/appbar"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ProgressBar
-            android:layout_marginTop="8dp"
-            android:layout_gravity="center"
-            android:indeterminateTint="@color/colorPrimary"
-            android:id="@+id/progressBar"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:visibility="visible" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/listMessage"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
-    </LinearLayout>
 </RelativeLayout>
