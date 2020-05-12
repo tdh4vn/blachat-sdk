@@ -39,11 +39,17 @@ public class CustomIncomingImageMessageViewHolder
             }
         });
 
-        tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+        if(message.getMessageStatus() != null){
 
-        if(message.getMessageStatus().isShowing())
-            tvSeenBy.setVisibility(View.VISIBLE);
-        else
-            tvSeenBy.setVisibility(View.GONE);
+            tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+
+            if(message.getMessageStatus().isShowing())
+                tvSeenBy.setVisibility(View.VISIBLE);
+            else
+                tvSeenBy.setVisibility(View.GONE);
+        }
+
+
+
     }
 }

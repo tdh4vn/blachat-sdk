@@ -27,12 +27,15 @@ public class CustomOutcomingImageMessageViewHolder
 
         time.setText(message.getStatus() + " " + time.getText());
 
-        tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+        if(message.getMessageStatus() != null){
 
-        if(message.getMessageStatus().isShowing())
-            tvSeenBy.setVisibility(View.VISIBLE);
-        else
-            tvSeenBy.setVisibility(View.GONE);
+            tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+
+            if(message.getMessageStatus().isShowing())
+                tvSeenBy.setVisibility(View.VISIBLE);
+            else
+                tvSeenBy.setVisibility(View.GONE);
+        }
     }
 
     //Override this method to have ability to pass custom data in ImageLoader for loading image(not avatar).

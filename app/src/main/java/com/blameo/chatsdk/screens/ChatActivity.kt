@@ -321,6 +321,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
     override fun onClick(dialog: DialogInterface?, which: Int) {
         val m = Message("2", myID, "", "", 1, "")
+        m.sentAt = Date()
         when(which){
             0 -> {
 
@@ -332,7 +333,6 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
                 addNewMessage(m, 2)
             }
             1 ->{
-                m.sentAt = Date()
                 m.content = "This is a System message"
                 addNewMessage(m, 3)
             }
