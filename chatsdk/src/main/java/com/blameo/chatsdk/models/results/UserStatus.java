@@ -1,6 +1,5 @@
 package com.blameo.chatsdk.models.results;
 
-import com.blameo.chatsdk.models.pojos.User;
 import com.google.gson.annotations.SerializedName;
 
 public class UserStatus {

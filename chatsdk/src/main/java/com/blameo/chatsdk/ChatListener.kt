@@ -1,8 +1,8 @@
 package com.blameo.chatsdk
 
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.Message
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
 
 open class ChatListener {

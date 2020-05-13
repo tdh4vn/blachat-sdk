@@ -1,10 +1,10 @@
 package com.blameo.chatsdk.models.bla;
 
-import com.blameo.chatsdk.models.pojos.Message;
-import com.blameo.chatsdk.models.pojos.User;
+import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.utils.GsonUtil;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 
 public class BlaMessage extends Message {
@@ -27,11 +27,31 @@ public class BlaMessage extends Message {
         this.receivedBy = receivedBy;
     }
 
-    public HashMap<String, Object> getCustomData() {
-        return GsonUtil.jsonToMap(customData);
+    public BlaMessage(String id, String authorId, String channelId, String content, Date createdAt, Date updatedAt, Date sentAt, int isSystemMessage, HashMap<String, Object> customData, ArrayList<BlaUser> seenBy, ArrayList<BlaUser> receivedBy) {
+        super(id, authorId, channelId, content, createdAt, updatedAt, sentAt, isSystemMessage, customData);
+        this.seenBy = seenBy;
+        this.receivedBy = receivedBy;
     }
 
-    public void setCustomData(HashMap<String, Object> customData) {
-        this.customData = GsonUtil.mapToJSON(customData);
+    public BlaMessage(ArrayList<BlaUser> seenBy, ArrayList<BlaUser> receivedBy) {
+        this.seenBy = seenBy;
+        this.receivedBy = receivedBy;
+    }
+
+    public BlaMessage(String id, String authorId, String channelId, String content, Date createdAt, Date updatedAt, Date sentAt, int isSystemMessage, HashMap<String, Object> customData) {
+        super(id, authorId, channelId, content, createdAt, updatedAt, sentAt, isSystemMessage, customData);
+    }
+
+    public BlaMessage(Message message) {
+        super(message.getId(),
+                message.getAuthorId(),
+                message.getChannelId(),
+                message.getContent(),
+                message.getCreatedAt(),
+                message.getUpdatedAt(),
+                message.getSentAt(),
+                message.getIsSystemMessage(),
+                message.getCustomData());
+
     }
 }

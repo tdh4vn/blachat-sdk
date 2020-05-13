@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.controllers.UserViewModel
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader

@@ -4,8 +4,8 @@ import android.text.TextUtils
 import androidx.lifecycle.MutableLiveData
 import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.ChatListener
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.utils.DateFormatUtils
 
 class ConversationViewModel(val channel: Channel) {

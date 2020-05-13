@@ -1,7 +1,7 @@
 package com.blameo.chatsdk.controllers
 
 import androidx.lifecycle.MutableLiveData
-import com.blameo.chatsdk.models.pojos.Channel
+import com.blameo.chatsdk.models.entities.Channel
 
 
 class ChannelVMlStore private constructor(){

@@ -12,8 +12,8 @@ import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
 import com.blameo.chatsdk.controllers.ChannelVMlStore
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.User
 import kotlinx.android.synthetic.main.activity_create_channel.*
 
 class CreateChannelActivity : AppCompatActivity() {

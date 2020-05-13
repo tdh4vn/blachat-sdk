@@ -9,8 +9,8 @@ import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.User
 import com.nostra13.universalimageloader.core.ImageLoader
 import kotlinx.android.synthetic.main.activity_about_channel.*
 import kotlinx.android.synthetic.main.activity_about_channel.toolbar

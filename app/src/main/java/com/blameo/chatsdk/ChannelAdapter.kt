@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.blameo.chatsdk.models.pojos.Channel
+import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.screens.ChatActivity
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.ConversationViewModel

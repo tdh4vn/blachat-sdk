@@ -5,17 +5,21 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blameo.chatsdk.blachat.BlaChatSDK
+import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.bla.BlaChannel
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.screens.CreateChannelActivity
 import kotlinx.android.synthetic.main.activity_main.*
+import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var chatSdk: BlameoChatSdk
+    lateinit var chatSdk: BlaChatSDK
     lateinit var adapter: ChannelAdapter
     private val TAG = "MAIN"
 
@@ -87,39 +91,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        chatSdk = BlameoChatSdk.getInstance()
-        chatSdk.initContext(this)
-        chatSdk.initSession(baseUrl, ws, token, tokenWs, myId)
+        chatSdk = BlaChatSDK.getInstance()
+        chatSdk.init(applicationContext, myId, token);
 
         //call sync message to resent unsent message to server
-        chatSdk.syncMessage()
-
         adapter = ChannelAdapter(this@MainActivity)
         rv_channels.adapter = adapter
         rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
 
-        chatSdk.getChannels(object: ChatListener.GetChannelsListener{
-            override fun onChannelChanged(channel: Channel) {
-
+        chatSdk.getChannels(null, 20, object: Callback<List<BlaChannel>> {
+            override fun onSuccess(result: List<BlaChannel>?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
-            override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
-                Log.e(TAG, "size ${channels.size}")
-
-                adapter.channels.addAll(channels)
-                adapter.notifyDataSetChanged()
-
+            override fun onFail(e: Exception?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
             }
 
-        })
-
-        chatSdk.addOnNewChannelListener(object : OnNewChannelListener{
-            override fun onNewChannel(channel: Channel) {
-                Log.i(TAG, "new channel id: ${channel.id}")
-                adapter.channels.add(0, channel)
-                adapter.notifyDataSetChanged()
-
-            }
         })
 
         btn_create_channel.setOnClickListener {

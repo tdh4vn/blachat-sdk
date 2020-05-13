@@ -2,7 +2,7 @@ package com.blameo.chatsdk.models.events;
 
 public class Event {
     private String type;
-    private Object payload;
+    private String payload;
 
     public String getType() {
         return type;
@@ -12,11 +12,11 @@ public class Event {
         this.type = type;
     }
 
-    public Object getPayload() {
+    public String getPayload() {
         return payload;
     }
 
-    public void setPayload(Object payload) {
+    public void setPayload(String payload) {
         this.payload = payload;
     }
 

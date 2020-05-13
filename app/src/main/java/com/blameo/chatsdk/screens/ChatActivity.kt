@@ -18,9 +18,9 @@ import com.blameo.chatsdk.adapters.MessageAdapter
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.models.events.CursorEvent
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.entities.Message
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
 import com.nostra13.universalimageloader.core.ImageLoader

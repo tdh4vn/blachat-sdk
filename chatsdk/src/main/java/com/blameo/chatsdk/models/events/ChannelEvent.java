@@ -1,6 +1,5 @@
 package com.blameo.chatsdk.models.events;
 
-import com.blameo.chatsdk.models.pojos.CustomData;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -8,7 +7,7 @@ import java.util.Date;
 
 
 //TODO: check xem co thay ChannelEvent thanh Channel dc ko
-public class ChannelEvent extends CustomData implements Serializable {
+public class ChannelEvent implements Serializable {
     @SerializedName("id")
     private String id;
 

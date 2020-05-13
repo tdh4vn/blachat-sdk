@@ -7,17 +7,18 @@ public class Constant {
     public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
 
 
-    public static final String DB_FILE_NAME = "CHAT_SDK_DB";
+    public static final String DB_FILE_NAME = "BLA_CHAT_DB";
 
     // CHANNEL
     public static final String CHANNEL_TABLE_NAME = "CHANNELS";
     public static final String CHANNEL_ID = "ID";
-    public static final String CHANNEL_COLUMN_NAME = "NAME";
-    public static final String CHANNEL_COLUMN_AVATAR = "AVATAR";
+    public static final String CHANNEL_NAME = "NAME";
+    public static final String CHANNEL_AVATAR = "AVATAR";
     public static final String CHANNEL_TYPE = "TYPE";
-    public static final String CHANNEL_COLUMN_UPDATED_AT = "UPDATED_AT";
-    public static final String CHANNEL_COLUMN_CREATED_AT = "CREATED_AT";
+    public static final String CHANNEL_UPDATED_AT = "UPDATED_AT";
+    public static final String CHANNEL_CREATED_AT = "CREATED_AT";
     public static final String CHANNEL_LAST_MESSAGE_ID = "LAST_MESSAGE_ID";
+    public static final String CHANNEL_CUSTOM_DATA = "CUSTOM_DATA";
 
 
     // MESSAGE
@@ -31,7 +32,8 @@ public class Constant {
     public static final String MESSAGE_CREATED_AT = "CREATED_AT";
     public static final String MESSAGE_SENT_AT = "SENT_AT";
     public static final String MESSAGE_SEEN_AT = "SEEN_AT";
-    public static final String MESSAGE_CUSTOM_DATA = "CUSTOM_DATE";
+    public static final String MESSAGE_IS_SYSTEM = "IS_SYSTEM";
+    public static final String MESSAGE_CUSTOM_DATA = "CUSTOM_DATA";
 
 
     // USER
@@ -50,6 +52,21 @@ public class Constant {
     public static final String UIC_USER_ID = "USER_ID";
     public static final String UIC_LAST_RECEIVE = "LAST_RECEIVE";
     public static final String UIC_LAST_SEEN = "LAST_SEEN";
+
+
+    //USER REACT MESSAGE
+    public static final String REACT_MESSAGE_TABLE_NAME = "REACT_MESSAGE";
+    public static final String REACT_USER_ID = "USER_ID";
+    public static final String REACT_MESSAGE_ID = "MESSAGE_ID";
+    public static final String REACT_TYPE = "TYPE";
+    public static final String REACT_DATE = "DATE";
+
+
+    //SENT MESSAGE STATE
+    public static final String SENT_MESSAGE_TABLE_NAME = "SENT_MESSAGE_STATE";
+    public static final String SENT_MESSAGE_ID = "MESSAGE_ID";
+    public static final String SENT_USER_ID = "MESSAGE_ID";
+    public static final String SENT_STATE = "STATE";
 
 
 }

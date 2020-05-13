@@ -10,8 +10,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
-import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.models.entities.Message
+import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.utils.DateFormatUtils
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
