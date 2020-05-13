@@ -41,9 +41,9 @@ class AboutChannelActivity : AppCompatActivity() {
                 rv_members.layoutManager = layoutManager
                 layoutManager.stackFromEnd = true
                 rv_members.adapter = adapter
-                users.forEachIndexed { index, it ->
-                    Log.e(TAG, "users in channel: $index ${it.name}")
-                }
+//                users.forEachIndexed { index, it ->
+//                    Log.e(TAG, "users in channel: $index ${it.name}")
+//                }
             }
         })
     }
@@ -55,6 +55,7 @@ class AboutChannelActivity : AppCompatActivity() {
         toolbar.setNavigationOnClickListener {
             finish()
         }
+
         supportActionBar?.title = "Members"
         chatSdk = BlameoChatSdk.getInstance()
         channel = intent.getSerializableExtra("CHANNEL") as Channel

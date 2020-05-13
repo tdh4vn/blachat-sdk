@@ -29,6 +29,10 @@ android {
 
 }
 
+ext{
+    shapeImageViewVersion = '0.9.3'
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
@@ -43,6 +47,9 @@ dependencies {
     implementation project(":chatsdk")
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
     implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.github.stfalcon:chatkit:0.3.3'
+    implementation "com.squareup.picasso:picasso:2.5.2"
+    implementation "com.github.siyamed:android-shape-imageview:$shapeImageViewVersion"
 
     implementation libs.rxJava
     implementation libs.rxAndroid

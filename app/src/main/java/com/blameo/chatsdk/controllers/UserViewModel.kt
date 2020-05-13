@@ -6,8 +6,6 @@ import com.blameo.chatsdk.models.results.UserStatus
 class UserViewModel(val user: UserStatus) {
 
     var status : MutableLiveData<Boolean> = MutableLiveData()
-    var count = 0
-
 
     val TAG = "UVM"
 
@@ -19,6 +17,5 @@ class UserViewModel(val user: UserStatus) {
 
     fun updateStatus(s: Int){
         status.value = s == 2
-//        count++
     }
 }

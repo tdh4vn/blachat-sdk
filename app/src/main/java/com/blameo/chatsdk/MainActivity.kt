@@ -50,10 +50,9 @@ class MainActivity : AppCompatActivity() {
     private fun getMembers() {
         chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
             override fun onSuccess(users: ArrayList<User>) {
-                users.forEach {
+ //               users.forEach {
 //                    Log.i(TAG, "member: ${it.id} ${it.name}")
-
-                }
+//                }
             }
         })
 
