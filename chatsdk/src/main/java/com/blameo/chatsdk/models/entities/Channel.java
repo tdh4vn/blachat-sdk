@@ -1,24 +1,30 @@
 package com.blameo.chatsdk.models.entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.blameo.chatsdk.repositories.local.Converters;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+
+import kotlin.jvm.Transient;
 
 @Entity(tableName = Constant.CHANNEL_TABLE_NAME)
 public class Channel implements Serializable {
 
     @SerializedName("id")
     @PrimaryKey
+    @NonNull
+    @ColumnInfo(name = Constant.CHANNEL_ID)
     private String id;
 
     @SerializedName("name")
@@ -33,10 +39,12 @@ public class Channel implements Serializable {
     @ColumnInfo(name = Constant.CHANNEL_TYPE)
     private int type;
 
+    @TypeConverters(Converters.class)
     @SerializedName("updated_at")
     @ColumnInfo(name = Constant.CHANNEL_UPDATED_AT)
     private Date updatedAt;
 
+    @TypeConverters(Converters.class)
     @SerializedName("created_at")
     @ColumnInfo(name = Constant.CHANNEL_CREATED_AT)
     private Date createdAt;
@@ -49,12 +57,13 @@ public class Channel implements Serializable {
     @Ignore
     private List<Message> lastMessages;
 
+    @TypeConverters(Converters.class)
     @SerializedName("custom_data")
     @ColumnInfo(name = Constant.CHANNEL_CUSTOM_DATA)
-    protected String customData;
+    protected HashMap<String, Object> customData;
 
 
-    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, String customData) {
+    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, HashMap<String, Object> customData) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
@@ -101,14 +110,6 @@ public class Channel implements Serializable {
         return updatedAt;
     }
 
-    public String getUpdatedAtString() {
-        return ChatSdkDateFormatUtil.parse(updatedAt);
-    }
-
-    public String getCreatedAtString() {
-        return ChatSdkDateFormatUtil.parse(createdAt);
-    }
-
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -129,11 +130,11 @@ public class Channel implements Serializable {
         this.lastMessageId = lastMessageId;
     }
 
-    public void setCustomData(String customData) {
+    public void setCustomData(HashMap<String, Object> customData) {
         this.customData = customData;
     }
 
-    public String getCustomData() {
+    public HashMap<String, Object> getCustomData() {
         return customData;
     }
 

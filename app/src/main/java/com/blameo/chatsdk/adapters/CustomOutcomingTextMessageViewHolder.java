@@ -1,15 +1,14 @@
 package com.blameo.chatsdk.adapters;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.blameo.chatsdk.R;
-import com.blameo.chatsdk.models.Message;
+import com.blameo.chatsdk.models.CustomMessage;
 import com.stfalcon.chatkit.messages.MessageHolders;
 
 public class CustomOutcomingTextMessageViewHolder
-        extends MessageHolders.OutcomingTextMessageViewHolder<Message> {
+        extends MessageHolders.OutcomingTextMessageViewHolder<CustomMessage> {
 
     private TextView tvSeenBy;
 
@@ -19,7 +18,7 @@ public class CustomOutcomingTextMessageViewHolder
     }
 
     @Override
-    public void onBind(Message message) {
+    public void onBind(CustomMessage message) {
         super.onBind(message);
 
         time.setText(message.getStatus() + " " + time.getText());

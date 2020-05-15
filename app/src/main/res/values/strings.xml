@@ -13,9 +13,9 @@
     <string name="sample_title_holder">Custom view holder</string>
     <string name="sample_subtitle_holder">Custom view holder to extend default behaviour for a new features</string>
     <string name="sample_title_custom_content">Custom content type</string>
-    <string name="sample_subtitle_custom_content">Custom message content on the example of system message</string>
+    <string name="sample_subtitle_custom_content">Custom customMessage content on the example of system customMessage</string>
 
-    <string name="hint_enter_a_message">Type a message…</string>
+    <string name="hint_enter_a_message">Type a customMessage…</string>
     <string name="on_log_click_message">Your custom long click handler</string>
     <string name="action_delete">Delete</string>
     <string name="action_copy">Copy</string>
@@ -26,7 +26,7 @@
 
     <string-array name="view_types_dialog">
         <item name="image">Image (default)</item>
-        <item name="system">System message</item>
+        <item name="system">System customMessage</item>
     </string-array>
 
     <string name="start_typing_status">Start typing</string>

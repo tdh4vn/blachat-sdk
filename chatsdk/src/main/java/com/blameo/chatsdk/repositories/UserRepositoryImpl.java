@@ -1,18 +1,29 @@
 package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
+import android.os.Handler;
+import android.util.Log;
+
+import androidx.room.Update;
 
 import com.blameo.chatsdk.models.bla.BlaUser;
+import com.blameo.chatsdk.models.bodies.PostIDsBody;
+import com.blameo.chatsdk.models.bodies.UpdateStatusBody;
 import com.blameo.chatsdk.models.bodies.UsersBody;
 import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.results.GetUsersByIdsResult;
+import com.blameo.chatsdk.models.results.UserStatus;
+import com.blameo.chatsdk.models.results.UsersStatusResult;
 import com.blameo.chatsdk.repositories.local.BlaChatSDKDatabase;
 import com.blameo.chatsdk.repositories.local.dao.UserDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
+import com.blameo.chatsdk.repositories.remote.api.PresenceAPI;
 import com.blameo.chatsdk.utils.BlaChatTextUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import retrofit2.Response;
@@ -21,10 +32,17 @@ public class UserRepositoryImpl implements UserRepository {
 
     private UserDao userDao;
     private BlaChatAPI blaChatAPI;
+    private PresenceAPI presenceAPI;
+    private HashMap<String, UserStatus> userStatusMap;
+    private String myId;
 
-    public UserRepositoryImpl(Context context) {
+    public UserRepositoryImpl(Context context, String myId) {
         userDao = BlaChatSDKDatabase.getInstance(context).userDao();
+        userStatusMap = new HashMap<>();
+        this.myId = myId;
         blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
+        presenceAPI = APIProvider.INSTANCE.getPresenceAPI();
+        updateOwnPresence();
     }
 
     @Override
@@ -75,4 +93,59 @@ public class UserRepositoryImpl implements UserRepository {
         User user = userDao.getUserById(id);
         return new BlaUser(user);
     }
+
+    @Override
+    public List<BlaUser> getUsersPresence() throws Exception {
+        List<User> allUsers = userDao.getAllUsers();
+        List<UserStatus> userStatuses;
+        List<BlaUser> result = new ArrayList<>();
+        HashMap<String, User> usersMap = new HashMap<>();
+
+        StringBuilder ids = new StringBuilder();
+        for (User user: allUsers) {
+            usersMap.put(user.getId(), user);
+            ids.append(user.getId()).append(", ");
+        }
+        PostIDsBody body = new PostIDsBody();
+        body.setIds(ids.toString());
+        Response<UsersStatusResult> response = presenceAPI.getUsersStatus(body).execute();
+        userStatuses = response.body().getData();
+        for (UserStatus currentStatus : userStatuses) {
+            UserStatus previousStatus = userStatusMap.get(currentStatus.getId());
+            if(previousStatus == null || !previousStatus.getId().equals(currentStatus.getId()))
+            {
+                userStatusMap.put(currentStatus.getId(), currentStatus);
+                BlaUser user = new BlaUser(usersMap.get(previousStatus.getId()));
+                user.setOnline(currentStatus.getStatus() == 2);
+                result.add(user);
+            }
+        }
+
+        Log.i("updaet", "response: "+result.size());
+        return result;
+    }
+
+    @Override
+    public void updateOwnPresence() {
+
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                UpdateStatusBody body = new UpdateStatusBody(myId, "2");
+                try {
+                    Response<UsersStatusResult> response = presenceAPI.updateStatus(body).execute();
+                    Log.i("updaet", "res: "+response.body().getData());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                handler.postDelayed(this, 10000);
+            }
+        });
+
+
+
+    }
+
 }

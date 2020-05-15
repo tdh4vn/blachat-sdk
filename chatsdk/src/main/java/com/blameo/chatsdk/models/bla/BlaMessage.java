@@ -27,8 +27,8 @@ public class BlaMessage extends Message {
         this.receivedBy = receivedBy;
     }
 
-    public BlaMessage(String id, String authorId, String channelId, String content, Date createdAt, Date updatedAt, Date sentAt, int isSystemMessage, HashMap<String, Object> customData, ArrayList<BlaUser> seenBy, ArrayList<BlaUser> receivedBy) {
-        super(id, authorId, channelId, content, createdAt, updatedAt, sentAt, isSystemMessage, customData);
+    public BlaMessage(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, boolean isSystemMessage, HashMap<String, Object> customData, ArrayList<BlaUser> seenBy, ArrayList<BlaUser> receivedBy) {
+        super(id, authorId, channelId, content, type, createdAt, updatedAt, sentAt, isSystemMessage, customData);
         this.seenBy = seenBy;
         this.receivedBy = receivedBy;
     }
@@ -38,8 +38,8 @@ public class BlaMessage extends Message {
         this.receivedBy = receivedBy;
     }
 
-    public BlaMessage(String id, String authorId, String channelId, String content, Date createdAt, Date updatedAt, Date sentAt, int isSystemMessage, HashMap<String, Object> customData) {
-        super(id, authorId, channelId, content, createdAt, updatedAt, sentAt, isSystemMessage, customData);
+    public BlaMessage(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, boolean isSystemMessage, HashMap<String, Object> customData) {
+        super(id, authorId, channelId, content, type, createdAt, updatedAt, sentAt, isSystemMessage, customData);
     }
 
     public BlaMessage(Message message) {
@@ -47,6 +47,7 @@ public class BlaMessage extends Message {
                 message.getAuthorId(),
                 message.getChannelId(),
                 message.getContent(),
+                message.getType(),
                 message.getCreatedAt(),
                 message.getUpdatedAt(),
                 message.getSentAt(),

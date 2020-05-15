@@ -51,9 +51,9 @@ public class EventHandlerImpl implements EventHandler {
 
     public EventHandlerImpl(String myId, Context context) {
         this.myId = myId;
-        this.channelController = new ChannelControllerImpl(context);
+        this.channelController = new ChannelControllerImpl(context, myId);
         this.messageRepository = new MessageRepositoryImpl(context);
-        this.userRepository = new UserRepositoryImpl(context);
+        this.userRepository = new UserRepositoryImpl(context, myId);
     }
 
     @Override

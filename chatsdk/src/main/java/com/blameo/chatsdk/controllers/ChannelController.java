@@ -5,6 +5,7 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 
+import java.io.IOException;
 import java.util.List;
 
 public interface ChannelController {
@@ -17,6 +18,6 @@ public interface ChannelController {
     List<BlaChannel> getChannels(String lastChannelId, long limit) throws Exception;
     BlaChannel updateChannel(BlaChannel newChannel);
     boolean deleteChannel(String channelID);
-    BlaChannel getChannelById(String channelID);
+    BlaChannel getChannelById(String channelID) throws Exception;
     BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
 }

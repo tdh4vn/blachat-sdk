@@ -2,6 +2,7 @@ package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
@@ -9,6 +10,7 @@ import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.results.GetMessageByIDResult;
+import com.blameo.chatsdk.models.results.GetMessagesResult;
 import com.blameo.chatsdk.repositories.local.BlaChatSDKDatabase;
 import com.blameo.chatsdk.repositories.local.dao.ChannelDao;
 import com.blameo.chatsdk.repositories.local.dao.MessageDao;
@@ -20,6 +22,7 @@ import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,6 +46,8 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     private BlaChatAPI blaChatAPI;
 
+    private String TAG = "mess_repo";
+
     public MessageRepositoryImpl(Context context) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
@@ -54,7 +59,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) {
+    public List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException {
         long lastUpdate = new Date().getTime();
         if (limit < 0) limit = 50;
         if (!TextUtils.isEmpty(lastMessageId)) {
@@ -65,10 +70,20 @@ public class MessageRepositoryImpl implements MessageRepository {
         }
 
         List<Message> messages = messageDao.getMessagesOfChannel(channelId, lastUpdate, limit);
+        if(messages.size()  == 0){
+            Response<GetMessagesResult> response =
+                    messageAPI.getMessagesInChannel(channelId, lastMessageId).execute();
+
+            messageDao.insertMany(response.body().getData());
+        }
+
+        Log.i(TAG, "local messages size: "+messages.size());
+
         List<BlaMessage> blaMessages = new ArrayList<>();
         for(Message message: messages) {
             blaMessages.add(new BlaMessage(message));
         }
+
         return blaMessages;
     }
 
@@ -79,10 +94,11 @@ public class MessageRepositoryImpl implements MessageRepository {
                 authorId,
                 channelId,
                 content,
+                1,
                 new Date(),
                 new Date(),
                 new Date(0),
-                0,
+                false,
                 customData
         );
         messageDao.insert(message);
@@ -94,7 +110,6 @@ public class MessageRepositoryImpl implements MessageRepository {
         Response<GetMessageByIDResult> response = messageAPI.createMessage(new CreateMessageBody(
                 0,
                 blaMessage.getContent(),
-                ChatSdkDateFormatUtil.parse(blaMessage.getSentAt()),
                 blaMessage.getChannelId()
         )).execute();
 

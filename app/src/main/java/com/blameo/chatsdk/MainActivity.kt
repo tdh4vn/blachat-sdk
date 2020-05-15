@@ -11,9 +11,8 @@ import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.models.bla.BlaChannel
 import com.blameo.chatsdk.models.entities.Channel
-import com.blameo.chatsdk.models.entities.User
-import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.screens.CreateChannelActivity
+import com.blameo.chatsdk.utils.UserSP
 import kotlinx.android.synthetic.main.activity_main.*
 import java.lang.Exception
 
@@ -48,27 +47,28 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getMembers() {
-        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
-            override fun onSuccess(users: ArrayList<User>) {
- //               users.forEach {
-//                    Log.i(TAG, "member: ${it.id} ${it.name}")
-//                }
-            }
-        })
-
-        chatSdk.subcribeUserStatusListener(object : ChatListener.UserStatusChangeListener{
-            override fun onStatusChanged(userStatus: UserStatus) {
-                Log.e(TAG, "user changed: ${userStatus.id} ${userStatus.status}")
-                val user = userVMStore.getUserViewModel(userStatus)
-                user.updateStatus(userStatus.status)
-            }
-        })
+//        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+//            override fun onSuccess(users: ArrayList<User>) {
+// //               users.forEach {
+////                    Log.i(TAG, "member: ${it.id} ${it.name}")
+////                }
+//            }
+//        })
+//
+//        chatSdk.subcribeUserStatusListener(object : ChatListener.UserStatusChangeListener{
+//            override fun onStatusChanged(userStatus: UserStatus) {
+//                Log.e(TAG, "user changed: ${userStatus.id} ${userStatus.status}")
+//                val user = userVMStore.getUserViewModel(userStatus)
+//                user.updateStatus(userStatus.status)
+//            }
+//        })
     }
 
     private fun getUser() {
         myId = intent.getStringExtra("USER_ID")!!
         token = intent.getStringExtra("TOKEN")!!
         tokenWs = intent.getStringExtra("TOKEN_WS")!!
+        UserSP.getInstance().id = myId
     }
 
 
@@ -100,11 +100,15 @@ class MainActivity : AppCompatActivity() {
 
         chatSdk.getChannels(null, 20, object: Callback<List<BlaChannel>> {
             override fun onSuccess(result: List<BlaChannel>?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                adapter.channels = result as ArrayList<BlaChannel>
+
+                result.forEach {
+                    Log.i(TAG, ""+it.lastMessage)
+                }
             }
 
             override fun onFail(e: Exception?) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
             }
 
         })
@@ -112,8 +116,6 @@ class MainActivity : AppCompatActivity() {
         btn_create_channel.setOnClickListener {
             startActivity(Intent(this, CreateChannelActivity::class.java))
         }
-
-
     }
 
 }

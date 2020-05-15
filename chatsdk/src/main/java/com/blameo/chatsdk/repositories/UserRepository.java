@@ -10,4 +10,8 @@ public interface UserRepository {
     List<BlaUser> getAllUser();
 
     BlaUser getUserById(String id);
+
+    List<BlaUser> getUsersPresence() throws Exception;
+
+    void updateOwnPresence() throws Exception;
 }

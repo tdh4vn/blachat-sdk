@@ -1,10 +1,13 @@
 package com.blameo.chatsdk.models.entities;
 
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
+import com.blameo.chatsdk.repositories.local.Converters;
 
 import java.util.Date;
 
@@ -15,14 +18,18 @@ import java.util.Date;
 public class UserInChannel {
 
     @ColumnInfo(name = Constant.UIC_CHANNEL_ID)
+    @NonNull
     private String channelId;
 
     @ColumnInfo(name = Constant.UIC_USER_ID)
+    @NonNull
     private String userId;
 
+    @TypeConverters(Converters.class)
     @ColumnInfo(name = Constant.UIC_LAST_RECEIVE)
     private Date lastReceive;
 
+    @TypeConverters(Converters.class)
     @ColumnInfo(name = Constant.UIC_LAST_SEEN)
     private Date lastSeen;
 

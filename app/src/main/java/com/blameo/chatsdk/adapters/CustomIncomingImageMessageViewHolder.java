@@ -6,7 +6,7 @@ import android.widget.TextView;
 import com.blameo.chatsdk.R;
 import com.blameo.chatsdk.controllers.UserVMStore;
 import com.blameo.chatsdk.controllers.UserViewModel;
-import com.blameo.chatsdk.models.Message;
+import com.blameo.chatsdk.models.CustomMessage;
 import com.blameo.chatsdk.models.results.UserStatus;
 import com.stfalcon.chatkit.messages.MessageHolders;
 
@@ -14,7 +14,7 @@ import com.stfalcon.chatkit.messages.MessageHolders;
  * Created by troy379 on 05.04.17.
  */
 public class CustomIncomingImageMessageViewHolder
-        extends MessageHolders.IncomingImageMessageViewHolder<Message> {
+        extends MessageHolders.IncomingImageMessageViewHolder<CustomMessage> {
 
     private View onlineIndicator;
     private UserVMStore store = UserVMStore.getInstance();
@@ -27,10 +27,10 @@ public class CustomIncomingImageMessageViewHolder
     }
 
     @Override
-    public void onBind(Message message) {
+    public void onBind(CustomMessage message) {
         super.onBind(message);
 
-        UserViewModel userVM = store.getUserViewModel(new UserStatus(message.getMyUser().getId(), 1));
+        UserViewModel userVM = store.getUserViewModel(new UserStatus(message.getMyCustomUser().getId(), 1));
         userVM.getStatus().observeForever(it -> {
             if (it) {
                 onlineIndicator.setBackgroundResource(R.drawable.shape_bubble_online);

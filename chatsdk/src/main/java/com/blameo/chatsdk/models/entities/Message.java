@@ -1,17 +1,16 @@
 package com.blameo.chatsdk.models.entities;
 
-import android.database.Cursor;
-
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.blameo.chatsdk.repositories.local.Converters;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -21,6 +20,7 @@ public class Message implements Serializable {
 
     @SerializedName("id")
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = Constant.MESSAGE_ID)
     private String id;
 
@@ -36,32 +36,41 @@ public class Message implements Serializable {
     @ColumnInfo(name = Constant.MESSAGE_CONTENT)
     private String content;
 
+    @SerializedName("type")
+    @ColumnInfo(name = Constant.MESSAGE_TYPE)
+    private int type;
+
+    @TypeConverters(Converters.class)
     @SerializedName("created_at")
     @ColumnInfo(name = Constant.MESSAGE_CREATED_AT)
     private Date createdAt;
 
+    @TypeConverters(Converters.class)
     @SerializedName("updated_at")
     @ColumnInfo(name = Constant.MESSAGE_UPDATED_AT)
     private Date updatedAt;
 
+    @TypeConverters(Converters.class)
     @SerializedName("sent_at")
     @ColumnInfo(name = Constant.MESSAGE_SENT_AT)
     private Date sentAt;
 
     @SerializedName("is_system_message")
     @ColumnInfo(name = Constant.MESSAGE_IS_SYSTEM)
-    private int isSystemMessage;
+    private boolean isSystemMessage;
 
+    @TypeConverters(Converters.class)
     @SerializedName("custom_data")
     @ColumnInfo(name = Constant.MESSAGE_CUSTOM_DATA)
-    protected HashMap<String, Object> customData;
+    private HashMap<String, Object> customData;
 
 
-    public Message(String id, String authorId, String channelId, String content, Date createdAt, Date updatedAt, Date sentAt, int isSystemMessage, HashMap<String, Object> customData) {
+    public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, boolean isSystemMessage, HashMap<String, Object> customData) {
         this.id = id;
         this.authorId = authorId;
         this.channelId = channelId;
         this.content = content;
+        this.type = type;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.sentAt = sentAt;
@@ -120,6 +129,7 @@ public class Message implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+
     public Date getSentAt() {
         return sentAt;
     }
@@ -128,19 +138,27 @@ public class Message implements Serializable {
         this.sentAt = sentAt;
     }
 
-    public int getIsSystemMessage() {
+    public boolean getIsSystemMessage() {
         return isSystemMessage;
     }
 
-    public void setIsSystemMessage(int isSystemMessage) {
+    public void setIsSystemMessage(boolean isSystemMessage) {
         this.isSystemMessage = isSystemMessage;
     }
 
-    public HashMap<String, Object> getCustomData() {
+    public HashMap<String, Object> getCustomData(){
         return customData;
     }
 
     public void setCustomData(HashMap<String, Object> customData) {
         this.customData = customData;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 }

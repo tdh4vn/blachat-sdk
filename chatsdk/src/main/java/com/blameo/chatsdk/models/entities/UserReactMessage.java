@@ -1,9 +1,12 @@
 package com.blameo.chatsdk.models.entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
+import com.blameo.chatsdk.repositories.local.Converters;
 
 import java.util.Date;
 
@@ -20,16 +23,19 @@ public class UserReactMessage {
     public static final int SEEN = 1;
     public static final int RECEIVE = 2;
 
-
     @ColumnInfo(name = Constant.REACT_MESSAGE_ID)
+    @NonNull
     private String messageId;
 
     @ColumnInfo(name = Constant.REACT_USER_ID)
+    @NonNull
     private String userId;
 
     @ColumnInfo(name = Constant.REACT_TYPE)
+    @NonNull
     private int type;
 
+    @TypeConverters(Converters.class)
     @ColumnInfo(name = Constant.REACT_DATE)
     private Date date;
 

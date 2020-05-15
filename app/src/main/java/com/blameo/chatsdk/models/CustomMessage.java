@@ -1,7 +1,5 @@
 package com.blameo.chatsdk.models;
 
-import android.text.TextUtils;
-
 import androidx.annotation.Nullable;
 
 import com.stfalcon.chatkit.commons.models.IMessage;
@@ -10,10 +8,10 @@ import com.stfalcon.chatkit.commons.models.MessageContentType;
 
 import java.util.Date;
 
-import static com.blameo.chatsdk.models.Message.MESSAGE_STATUS.SEEN;
+import static com.blameo.chatsdk.models.CustomMessage.MESSAGE_STATUS.SEEN;
 
 
-public class Message implements IMessage, MessageContentType.Image, MessageContentType {
+public class CustomMessage implements IMessage, MessageContentType.Image, MessageContentType {
 
     @Nullable
     @Override
@@ -33,24 +31,24 @@ public class Message implements IMessage, MessageContentType.Image, MessageConte
         SEEN, SENT, CREATED
     }
 
-    public User getMyUser() {
-        return myUser;
+    public CustomUser getMyCustomUser() {
+        return myCustomUser;
     }
 
-    public void setMyUser(User myUser) {
-        this.myUser = myUser;
+    public void setMyCustomUser(CustomUser myCustomUser) {
+        this.myCustomUser = myCustomUser;
     }
 
-    private User myUser;
+    private CustomUser myCustomUser;
     private Image image;
     private System system;
     private Status messageStatus;
 
     private MESSAGE_STATUS status;
 
-    private com.blameo.chatsdk.models.pojos.Message message;
+    private com.blameo.chatsdk.models.bla.BlaMessage message;
 
-    public Message(com.blameo.chatsdk.models.pojos.Message message) {
+    public CustomMessage(com.blameo.chatsdk.models.bla.BlaMessage message) {
         this.message = message;
     }
 
@@ -109,14 +107,11 @@ public class Message implements IMessage, MessageContentType.Image, MessageConte
 
 
     public String getStatus(){
-        if(!TextUtils.isEmpty(message.getSeenAtString())){
-            status = SEEN;
-            return "Seen at:";
-        }else if(!TextUtils.isEmpty(message.getSentAtString())){
+        if(message.getSentAt() != null){
             status = MESSAGE_STATUS.SENT;
             return "Sent at:";
         }
-        else if(!TextUtils.isEmpty(message.getCreatedAtString())){
+        else if(message.getCreatedAt() != null){
             status = MESSAGE_STATUS.CREATED;
             return "Created at:";
         }
@@ -135,7 +130,7 @@ public class Message implements IMessage, MessageContentType.Image, MessageConte
 
     @Override
     public IUser getUser() {
-        return myUser;
+        return myCustomUser;
     }
 
     public static class Image {
@@ -154,9 +149,6 @@ public class Message implements IMessage, MessageContentType.Image, MessageConte
             getStatus();
 
         switch (status){
-            case SEEN :{
-                return message.getSeenAt();
-            }
             case SENT: {
                 return message.getSentAt();
             }

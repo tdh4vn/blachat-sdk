@@ -2,11 +2,11 @@ package com.blameo.chatsdk.models;
 
 import com.stfalcon.chatkit.commons.models.IUser;
 
-public class User implements IUser {
+public class CustomUser implements IUser {
 
-    private com.blameo.chatsdk.models.pojos.User user;
+    private com.blameo.chatsdk.models.bla.BlaUser user;
 
-    public User(com.blameo.chatsdk.models.pojos.User user){
+    public CustomUser(com.blameo.chatsdk.models.bla.BlaUser user){
         this.user = user;
     }
 

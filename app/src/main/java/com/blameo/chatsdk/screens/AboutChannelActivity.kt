@@ -5,10 +5,10 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.blameo.chatsdk.BlameoChatSdk
 import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
+import com.blameo.chatsdk.blachat.BlaChatSDK
 import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.entities.User
 import com.nostra13.universalimageloader.core.ImageLoader
@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.activity_about_channel.toolbar
 class AboutChannelActivity : AppCompatActivity() {
 
     lateinit var adapter: MemberAdapter
-    lateinit var chatSdk: BlameoChatSdk
+    lateinit var chatSdk: BlaChatSDK
     private val TAG = "MEMBER"
     lateinit var channel: Channel
 
@@ -33,19 +33,19 @@ class AboutChannelActivity : AppCompatActivity() {
 
     private fun getMembers() {
 
-        chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
-            override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
-
-                adapter = MemberAdapter(this@AboutChannelActivity, users, BlameoChatSdk.getInstance().uId, 1)
-                val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
-                rv_members.layoutManager = layoutManager
-                layoutManager.stackFromEnd = true
-                rv_members.adapter = adapter
-//                users.forEachIndexed { index, it ->
-//                    Log.e(TAG, "users in channel: $index ${it.name}")
-//                }
-            }
-        })
+//        chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
+//            override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
+//
+//                adapter = MemberAdapter(this@AboutChannelActivity, users, BlameoChatSdk.getInstance().uId, 1)
+//                val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
+//                rv_members.layoutManager = layoutManager
+//                layoutManager.stackFromEnd = true
+//                rv_members.adapter = adapter
+////                users.forEachIndexed { index, it ->
+////                    Log.e(TAG, "users in channel: $index ${it.name}")
+////                }
+//            }
+//        })
     }
 
     private fun init() {
@@ -57,7 +57,7 @@ class AboutChannelActivity : AppCompatActivity() {
         }
 
         supportActionBar?.title = "Members"
-        chatSdk = BlameoChatSdk.getInstance()
+        chatSdk = BlaChatSDK.getInstance()
         channel = intent.getSerializableExtra("CHANNEL") as Channel
         if(!TextUtils.isEmpty(channel.name))
             tvName.text = channel.name

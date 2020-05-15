@@ -1,14 +1,15 @@
 package com.blameo.chatsdk.models.entities;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
+import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
-import com.blameo.chatsdk.utils.GsonUtil;
+import com.blameo.chatsdk.repositories.local.Converters;
 import com.google.gson.annotations.SerializedName;
 
-import java.util.Date;
 import java.util.HashMap;
 
 
@@ -17,6 +18,7 @@ public class User {
 
     @SerializedName("id")
     @PrimaryKey
+    @NonNull
     @ColumnInfo(name = Constant.USER_ID)
     private String id;
 
@@ -28,6 +30,7 @@ public class User {
     @ColumnInfo(name = Constant.USER_AVATAR)
     private String avatar;
 
+    @TypeConverters(Converters.class)
     @SerializedName("custom_data")
     @ColumnInfo(name = Constant.USER_CUSTOM_DATA)
     private HashMap<String, Object> customData;
@@ -35,11 +38,11 @@ public class User {
     public User() {
     }
 
-    public User(String id, String name, String avatar, HashMap<String, Object> customData) {
+    public User(String id, String name, String avatar, HashMap<String, Object> customDataMap) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
-        this.customData = customData;
+        this.customData = customDataMap;
     }
 
     public String getId() {
@@ -66,7 +69,7 @@ public class User {
         this.avatar = avatar;
     }
 
-    public HashMap<String, Object> getCustomData() {
+    public HashMap<String, Object> getCustomData(){
         return customData;
     }
 

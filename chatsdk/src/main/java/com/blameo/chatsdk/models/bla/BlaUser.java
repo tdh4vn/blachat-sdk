@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.models.bla;
 
 import com.blameo.chatsdk.models.entities.User;
+import com.blameo.chatsdk.repositories.local.Converters;
 
 import java.util.HashMap;
 

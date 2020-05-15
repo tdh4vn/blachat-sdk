@@ -7,18 +7,23 @@ import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.*
 import com.blameo.chatsdk.adapters.*
+import com.blameo.chatsdk.blachat.BlaChatSDK
+import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
-import com.blameo.chatsdk.models.events.CursorEvent
+import com.blameo.chatsdk.models.CustomMessage
+import com.blameo.chatsdk.models.CustomUser
+import com.blameo.chatsdk.models.bla.BlaMessage
+import com.blameo.chatsdk.models.bla.BlaMessageType
+import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.entities.Message
 import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil
+import com.blameo.chatsdk.utils.UserSP
 import com.squareup.picasso.Picasso
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.messages.MessageHolders
@@ -26,28 +31,27 @@ import com.stfalcon.chatkit.messages.MessageHolders.ContentChecker
 import com.stfalcon.chatkit.messages.MessageInput
 import com.stfalcon.chatkit.messages.MessageInput.TypingListener
 import com.stfalcon.chatkit.messages.MessagesListAdapter
-import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.activity_chat.imgAvatar
 import kotlinx.android.synthetic.main.activity_chat.imgStatus
 import kotlinx.android.synthetic.main.activity_chat.toolbar
 import kotlinx.android.synthetic.main.activity_chat.txtTitle
-import kotlinx.android.synthetic.main.activity_chat.txtTyping
 import kotlinx.android.synthetic.main.activity_chat_demo.*
 import kotlinx.android.synthetic.main.activity_chat_demo.tvAdd
+import java.lang.Exception
 import java.util.*
 
 
 class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
     MessagesListAdapter.OnLoadMoreListener, TypingListener, MessageInput.AttachmentsListener,
-    DialogInterface.OnClickListener, ContentChecker<com.blameo.chatsdk.models.Message>
+    DialogInterface.OnClickListener, ContentChecker<CustomMessage>
 {
 
-    lateinit var adapter: MessagesListAdapter<com.blameo.chatsdk.models.Message?>
+    lateinit var adapter: MessagesListAdapter<CustomMessage?>
     lateinit var channel: Channel
-    lateinit var chatSdk: BlameoChatSdk
+    lateinit var chatSdk: BlaChatSDK
     private val TAG = "CHAT"
     private var allMessages: ArrayList<Message> = arrayListOf()
-    private var usersMap: HashMap<String, User> = hashMapOf()
+    private var usersMap: HashMap<String, BlaUser> = hashMapOf()
     private var isLoading = true
     private val defaultImageUrl = "https://picsum.photos/seed/picsum/200/300"
     private var myID = ""
@@ -65,14 +69,16 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
             finish()
         }
 
-        myID = BlameoChatSdk.getInstance().uId
+        myID = UserSP.getInstance().id
 
         init()
     }
 
     private fun markSeenMessage(message: Message) {
 
-        chatSdk.sendSeenMessageEvent(message.channelId, message.id, message.authorId, this)
+//        chatSdk.sendSeenMessageEvent(message.channelId, message.id, message.authorId, this)
+
+        chatSdk.markSeenMessage(message.id, message.channelId, null)
 
     }
 
@@ -80,42 +86,79 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
         Log.i(TAG, "load message with id: $lastId")
 
-        chatSdk.getMessages(channel.id, lastId, object : ChatListener.GetMessagesListener {
-            override fun getMessagesSuccess(messages: ArrayList<Message>) {
-                Log.i(TAG, "${channel.id} has ${messages.size} in total")
-                val myMessages = arrayListOf<com.blameo.chatsdk.models.Message?>()
-                messages.forEach { it ->
-                    Log.i(TAG, "${it.content} ${it.id} ${it.createdAtString} ${it.sentAtString} ${it.seenAtString}")
-                    val message: com.blameo.chatsdk.models.Message = com.blameo.chatsdk.models.Message(it)
-                    val user: com.blameo.chatsdk.models.User = com.blameo.chatsdk.models.User(usersMap[it.authorId])
-                    var seenBy = "Seen by "
-                    it.seenBy.forEach {
-                        val name = it.name.split(Regex(" "))
-                        seenBy+= name[0]+", "
-                    }
-
-                    Log.e(TAG, "size: ${it.seenBy.size}")
-//                    if(it.isSystemMessage)
-//                        message.system = com.blameo.chatsdk.models.Message.System("",1)
-                    if(it.seenBy.size > 0)
-                        message.messageStatus = com.blameo.chatsdk.models.Message.Status(seenBy.substring(0, seenBy.length - 2))
-                    message.myUser = user
-                    myMessages.add(message)
+        chatSdk.getMessages(channel.id, lastId, 20, object : Callback<List<BlaMessage>>{
+            override fun onSuccess(result: List<BlaMessage>?) {
+                Log.i(TAG, "${channel.id} has ${result?.size} in total")
+                val myMessages = arrayListOf<CustomMessage?>()
+                result?.forEach { it ->
+                    Log.i(TAG, "${it.content} ${it.id} ${it.createdAt} ${it.sentAt}")
+                    val customMessage = CustomMessage(it)
+                    val customUser = CustomUser(usersMap[it.authorId])
+//                    var seenBy = "Seen by "
+//                    it.seenBy.forEach {
+//                        val name = it.name.split(Regex(" "))
+//                        seenBy+= name[0]+", "
+//                    }
+//
+//                    Log.e(TAG, "size: ${it.seenBy.size}")
+////                    if(it.isSystemMessage)
+////                        message.system = com.blameo.chatsdk.models.Message.System("",1)
+//                    if(it.seenBy.size > 0)
+//                        customMessage.messageStatus = CustomMessage.Status(seenBy.substring(0, seenBy.length - 2))
+                    customMessage.myCustomUser = customUser
+                    myMessages.add(customMessage)
                 }
 
-                if(messages.size > 0)
-                    isLoading = true
+                isLoading = result?.size!! > 0
+
+                Log.i(TAG, ""+myMessages.size)
 
                 adapter.addToEnd(myMessages, true)
 
-                allMessages.addAll(0, messages)
+                allMessages.addAll(0, result)
             }
 
-            override fun getMessageFailed(error: String) {
-                isLoading = false
+            override fun onFail(e: Exception?) {
 
             }
         })
+
+//        chatSdk.getMessages(channel.id, lastId, 20, object : ChatListener.GetMessagesListener {
+//            override fun getMessagesSuccess(messages: ArrayList<Message>) {
+//                Log.i(TAG, "${channel.id} has ${messages.size} in total")
+//                val myMessages = arrayListOf<com.blameo.chatsdk.models.Message?>()
+//                messages.forEach { it ->
+//                    Log.i(TAG, "${it.content} ${it.id} ${it.createdAtString} ${it.sentAtString} ${it.seenAtString}")
+//                    val message: com.blameo.chatsdk.models.Message = com.blameo.chatsdk.models.Message(it)
+//                    val user: com.blameo.chatsdk.models.User = com.blameo.chatsdk.models.User(usersMap[it.authorId])
+//                    var seenBy = "Seen by "
+//                    it.seenBy.forEach {
+//                        val name = it.name.split(Regex(" "))
+//                        seenBy+= name[0]+", "
+//                    }
+//
+//                    Log.e(TAG, "size: ${it.seenBy.size}")
+////                    if(it.isSystemMessage)
+////                        message.system = com.blameo.chatsdk.models.Message.System("",1)
+//                    if(it.seenBy.size > 0)
+//                        message.messageStatus = com.blameo.chatsdk.models.Message.Status(seenBy.substring(0, seenBy.length - 2))
+//                    message.myUser = user
+//                    myMessages.add(message)
+//                }
+//
+//                if(messages.size > 0)
+//                    isLoading = true
+//
+//                adapter.addToEnd(myMessages, true)
+//
+//                allMessages.addAll(0, messages)
+//            }
+//
+//            override fun getMessageFailed(error: String) {
+//                isLoading = false
+//
+//            }
+//        })
     }
 
     private fun init() {
@@ -150,10 +193,13 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
             R.layout.item_custom_outcoming_voice_message,
             this)
 
-        adapter = MessagesListAdapter<com.blameo.chatsdk.models.Message?>(myID, holdersConfig, imageLoader)
+
+        BlaUser(false).customData
+
+        adapter = MessagesListAdapter<CustomMessage?>(myID, holdersConfig, imageLoader)
         messagesList.setAdapter(adapter)
 
-        chatSdk = BlameoChatSdk.getInstance()
+        chatSdk = BlaChatSDK.getInstance()
         val id = intent.getStringExtra("CHANNEL")?:""
         val channelVM = ChannelVMlStore.getInstance().getChannelByID(id)
         channel = channelVM.channel
@@ -169,15 +215,24 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
         if (!TextUtils.isEmpty(channel.avatar))
             com.nostra13.universalimageloader.core.ImageLoader.getInstance().displayImage(channel.avatar, imgAvatar)
 
-        val messageListener = object : ChatListener.CreateMessageListener {
-            override fun createMessageSuccess(message: Message) {
-                addNewMessage(message, 1)
-            }
-        }
+//        val messageListener = object : ChatListener.CreateMessageListener {
+//            override fun createMessageSuccess(message: Message) {
+//                addNewMessage(message, 1)
+//            }
+//        }
 
         input.setInputListener {
             if(!TextUtils.isEmpty(input.inputEditText.text.toString().trim()))
-                chatSdk.createMessage(input.inputEditText.text.toString(), 1, channel.id, messageListener)
+                chatSdk.createMessage(input.inputEditText.text.toString(), channel.id, BlaMessageType.TEXT, null, object : Callback<BlaMessage>{
+                    override fun onSuccess(result: BlaMessage?) {
+                        Log.i(TAG, ""+result?.id)
+                        addNewMessage(result!!, 1)
+                    }
+
+                    override fun onFail(e: Exception?) {
+
+                    }
+                })
             true
         }
 
@@ -192,47 +247,47 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
         val handler = Handler()
 
-        chatSdk.addOnTypingListener(object : OnTypingListener {
-            override fun onTyping() {
-                runOnUiThread {
-                    txtTyping.visibility = View.VISIBLE
-                }
+//        chatSdk.addOnTypingListener(object : OnTypingListener {
+//            override fun onTyping() {
+//                runOnUiThread {
+//                    txtTyping.visibility = View.VISIBLE
+//                }
+//
+//                handler.postDelayed({
+//                    runOnUiThread {
+//                        txtTyping.visibility = View.GONE
+//                    }
+//                }, 3000)
+//            }
+//            override fun onStopTyping() {
+//                runOnUiThread {
+//                    txtTyping.visibility = View.GONE
+//                }
+//                handler.removeCallbacksAndMessages(null)
+//            }
+//        })
+//
+//        chatSdk.addOnEventListener(object : OnEventListener {
+//            override fun onNewMessage(message: Message) {
+//                addNewMessage(message, 1)
+//                markSeenMessage(message)
+//            }
+//        })
 
-                handler.postDelayed({
-                    runOnUiThread {
-                        txtTyping.visibility = View.GONE
-                    }
-                }, 3000)
-            }
-            override fun onStopTyping() {
-                runOnUiThread {
-                    txtTyping.visibility = View.GONE
-                }
-                handler.removeCallbacksAndMessages(null)
-            }
-        })
-
-        chatSdk.addOnEventListener(object : OnEventListener {
-            override fun onNewMessage(message: Message) {
-                addNewMessage(message, 1)
-                markSeenMessage(message)
-            }
-        })
-
-        chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
-            override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
-                val map: HashMap<String, User> = hashMapOf()
-                users.forEach {
-                    map[it.id] = it
-                    if(it.id != myID && partner == null){
-                        partner = it
-                    }
-                }
-                usersMap = map
-                getMessages("")
-            }
-        })
-
+//        chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
+//            override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
+//                val map: HashMap<String, User> = hashMapOf()
+//                users.forEach {
+//                    map[it.id] = it
+//                    if(it.id != myID && partner == null){
+//                        partner = it
+//                    }
+//                }
+//                usersMap = map
+//                getMessages("")
+//            }
+//        })
+//
         adapter.setLoadMoreListener(this)
         input.setAttachmentsListener(this)
         adapter.setOnMessageClickListener {
@@ -241,42 +296,61 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
                 adapter.update(it)
             }
         }
-
-
-
-
-        chatSdk.addOnCursorChangeListener(object : OnCursorChangeListener {
-            override fun onCursorChange(type: String, cursor: CursorEvent) {
-                Log.i(TAG, "type: $type ${cursor.channel_id}")
-                if (channel.id != cursor.channel_id) return
-                if (type == "SEEN") {
-                    runOnUiThread {
-                        allMessages.forEach {
-                            if (it.id == cursor.message_id) {
-                                Log.i(TAG, "message id: ${it.id}")
-                                it.seenAt = ChatSdkDateFormatUtil.parse(cursor.time)
-                                val m: com.blameo.chatsdk.models.Message = com.blameo.chatsdk.models.Message(it)
-                                adapter.update(m)
-                                return@forEach
-                            }
-                        }
+        chatSdk.getUsersInChannel(channel.id, object : Callback<List<BlaUser>>{
+            override fun onSuccess(result: List<BlaUser>?) {
+                val map: HashMap<String, BlaUser> = hashMapOf()
+                result?.forEach {
+                    map[it.id] = it
+                    if(it.id != myID && partner == null){
+                        partner = it
                     }
                 }
+
+                Log.i(TAG, "users in ${result?.size}")
+                usersMap = map
+                getMessages("")
+            }
+
+            override fun onFail(e: Exception?) {
+
             }
         })
+
+
+
+
+//        chatSdk.addOnCursorChangeListener(object : OnCursorChangeListener {
+//            override fun onCursorChange(type: String, cursor: CursorEvent) {
+//                Log.i(TAG, "type: $type ${cursor.channel_id}")
+//                if (channel.id != cursor.channel_id) return
+//                if (type == "SEEN") {
+//                    runOnUiThread {
+//                        allMessages.forEach {
+//                            if (it.id == cursor.message_id) {
+//                                Log.i(TAG, "message id: ${it.id}")
+//                                it.seenAt = ChatSdkDateFormatUtil.parse(cursor.time)
+//                                val m: com.blameo.chatsdk.models.Message = com.blameo.chatsdk.models.Message(it)
+//                                adapter.update(m)
+//                                return@forEach
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        })
     }
 
-    private fun addNewMessage(message: Message, type: Int) {
+    private fun addNewMessage(message: BlaMessage, type: Int) {
         allMessages.add(0, message)
-        val m: com.blameo.chatsdk.models.Message = com.blameo.chatsdk.models.Message(message)
-        val user: com.blameo.chatsdk.models.User = com.blameo.chatsdk.models.User(usersMap[message.authorId])
-        m.myUser = user
+        val m = CustomMessage(message)
+        val customUser = CustomUser(usersMap[message.authorId])
+        m.myCustomUser = customUser
 
         if(type == 2)
-            m.setImage(com.blameo.chatsdk.models.Message.Image(defaultImageUrl))
+            m.setImage(CustomMessage.Image(defaultImageUrl))
         else if(type == 3){
             m.setSystem(
-                com.blameo.chatsdk.models.Message.System(
+                CustomMessage.System(
                     "http://example.com",
                     250
                 )
@@ -304,11 +378,11 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
     }
 
     override fun onStartTyping() {
-        chatSdk.sendTypingEvent(false, channel.id)
+//        chatSdk.sendTypingEvent(false, channel.id)
     }
 
     override fun onStopTyping() {
-        chatSdk.sendTypingEvent(true, channel.id)
+ //       chatSdk.sendTypingEvent(true, channel.id)
     }
 
     override fun onAddAttachments() {
@@ -320,11 +394,10 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
     }
 
     override fun onClick(dialog: DialogInterface?, which: Int) {
-        val m = Message("2", myID, "", "", 1, "")
-        m.sentAt = Date()
+        val m = BlaMessage("2", myID, "", "", 1,
+            Date(), null, null, false, null)
         when(which){
             0 -> {
-
                 if(count%2==0){
                     m.authorId = partner?.id
                 }
@@ -341,9 +414,9 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
     }
 
-    override fun hasContentFor(message: com.blameo.chatsdk.models.Message?, type: Byte): Boolean {
+    override fun hasContentFor(customMessage: CustomMessage?, type: Byte): Boolean {
         when (type) {
-            CONTENT_TYPE_VOICE -> return message!!.system != null
+            CONTENT_TYPE_VOICE -> return customMessage!!.system != null
         }
         return false
     }

@@ -2,6 +2,7 @@ package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
@@ -55,12 +56,14 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     private BlaChatAPI blaChatAPI;
 
+    private String TAG = "channel_repo";
+
     public ChannelRepositoryImpl(Context context) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
         this.userInChannelDao = BlaChatSDKDatabase.getInstance(context).userInChannelDao();
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
-
+        this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
     }
 
@@ -96,6 +99,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 lastUpdate = lastChannel.getUpdatedAt().getTime();
             }
         }
+
         List<ChannelWithLastMessage> channels = channelDao.getChannelsWithLastMessage(lastUpdate, limit);
 
         if (channels.isEmpty()) {
@@ -105,7 +109,9 @@ public class ChannelRepositoryImpl implements ChannelRepository {
             ).execute();
             List<Channel> channelRemote = response.body().getData();
 
-            if (response.isSuccessful() && !channelRemote.isEmpty()) {
+            channelDao.saveChannel(response.body().getData());
+
+            if (response.isSuccessful() && channelRemote != null && !channelRemote.isEmpty()) {
 
                 channelDao.insertMany(channelRemote);
                 Set<String> userIds = new HashSet<>();
@@ -114,7 +120,21 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 ArrayList<Message> messagesFromChannels = new ArrayList<>();
                 for (Channel channel: channelRemote) {
 
-                    messagesFromChannels.addAll(channel.getLastMessages());
+                    ChannelWithLastMessage channelWithLastMessage = new ChannelWithLastMessage();
+                    channelWithLastMessage.channel = channel;
+
+                    if(channel.getLastMessages() != null)
+                    {
+//                        Log.i(TAG, "messages: "+channel.getId() + " " + channel.getLastMessages().size());
+                        messagesFromChannels.addAll(channel.getLastMessages());
+                        if(channel.getLastMessages().size() > 0)
+                            channelWithLastMessage.lastMessage = channel.getLastMessages()
+                                    .get(channel.getLastMessages().size() - 1);
+                        channel.setLastMessageId(channelWithLastMessage.lastMessage.getId());
+                    }
+ //                   else{
+ //                       Log.i(TAG, "messages: "+channel.getId() + " has no messages");
+  //                  }
 
                     messageDao.insertMany(messagesFromChannels);
 
@@ -129,6 +149,8 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                             userInChannels.addAll(membersInChannelRemoteDTO.toUserInChannel());
                         }
                     }
+
+                    channels.add(channelWithLastMessage);
                 }
 
                 userInChannelDao.insertMany(userInChannels);
@@ -145,8 +167,16 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
         ArrayList<BlaChannel> blaChannels = new ArrayList<>();
         for (ChannelWithLastMessage c: channels) {
+            Log.i(TAG, "add "+c.channel.getId());
+            if(c.channel.getUpdatedAt() != null){
+                Log.i(TAG, "c: update: "+c.channel.getUpdatedAt());
+            }
+            if(c.lastMessage != null)
+                Log.i(TAG, "last id: "+c.lastMessage.getId());
             blaChannels.add(new BlaChannel(c.channel, c.lastMessage));
         }
+
+        Log.i(TAG, "total channel size: "+blaChannels.size());
         return blaChannels;
     }
 
@@ -191,6 +221,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         } else {
             throw new Exception(result.message());
         }
+
     }
 
     @Override

@@ -4,7 +4,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.blameo.chatsdk.R;
-import com.blameo.chatsdk.models.Message;
+import com.blameo.chatsdk.models.CustomMessage;
 import com.stfalcon.chatkit.messages.MessageHolders;
 import com.stfalcon.chatkit.utils.DateFormatter;
 
@@ -12,7 +12,7 @@ import com.stfalcon.chatkit.utils.DateFormatter;
  * Created by troy379 on 05.04.17.
  */
 public class OutcomingVoiceMessageViewHolder
-        extends MessageHolders.OutcomingTextMessageViewHolder<Message> {
+        extends MessageHolders.OutcomingTextMessageViewHolder<CustomMessage> {
 
     private TextView tvTime;
     private TextView tvContent;
@@ -24,7 +24,7 @@ public class OutcomingVoiceMessageViewHolder
     }
 
     @Override
-    public void onBind(Message message) {
+    public void onBind(CustomMessage message) {
         super.onBind(message);
         tvContent.setText(message.getText());
         tvTime.setText(DateFormatter.format(message.getCreatedAt(), DateFormatter.Template.TIME));

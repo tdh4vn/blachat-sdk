@@ -4,12 +4,13 @@ import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.entities.Message;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public interface MessageRepository {
-    List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit);
+    List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException;
     BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, HashMap<String, Object> customData);
     BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
     BlaMessage saveMessage(Message message);

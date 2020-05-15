@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.MainActivity
 import com.blameo.chatsdk.R
 import kotlinx.android.synthetic.main.activity_home.*
-import java.io.*
 
 class HomeActivity : AppCompatActivity() {
 
@@ -21,7 +20,6 @@ class HomeActivity : AppCompatActivity() {
             "wLTg2NWUtMTJhOTY3MWUzM2I0IiwiY2xpZW50IjoiY2E5NTU5ZWUtNjUwMC00OTcwLTg2NWUtMTJhOTY3MWUzM2I0IiwiZXhwIjoxNTg" +
             "5Nzg3MTM2LCJzdWIiOiJjYTk1NTllZS02NTAwLTQ5NzAtODY1ZS0xMmE5NjcxZTMzYjQiLCJ1c2VySWQiOiJjYTk1NTllZS02NTA" +
             "wLTQ5NzAtODY1ZS0xMmE5NjcxZTMzYjQifQ.RA_VJD5RXvdDOF5Ar9IaEQKENzxusdiRYaAu6Pvmw_8"
-
 
     private val tokenWs_user3 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6MzM2OTY0MzItND" +
             "Q0MC00NzhiLTk3ODctOGFiOWRiYjFmMzgwIiwiY2xpZW50IjoiMzM2OTY0MzItNDQ0MC00NzhiLTk3ODctOGFiOWRiYjFmM" +
@@ -44,6 +42,8 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+
 
         val intent = Intent(this, MainActivity::class.java)
         btn_user1.setOnClickListener {

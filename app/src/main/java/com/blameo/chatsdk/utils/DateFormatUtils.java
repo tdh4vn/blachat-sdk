@@ -33,4 +33,8 @@ public class DateFormatUtils {
         }
         return outputFormat.format(date);
     }
+
+    public String getNewDateFormat(Date date){
+        return outputFormat.format(date);
+    }
 }

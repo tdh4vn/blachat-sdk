@@ -25,7 +25,7 @@ public class Constant {
     public static final String MESSAGE_TABLE_NAME = "MESSAGES";
     public static final String MESSAGE_ID = "ID";
     public static final String MESSAGE_AUTHOR_ID = "AUTHOR_ID";
-    public static final String MESSAGE_CHANNEL_ID = "CHANEL_ID";
+    public static final String MESSAGE_CHANNEL_ID = "CHANNEL_ID";
     public static final String MESSAGE_CONTENT = "CONTENT";
     public static final String MESSAGE_TYPE = "TYPE";
     public static final String MESSAGE_UPDATED_AT = "UPDATED_AT";

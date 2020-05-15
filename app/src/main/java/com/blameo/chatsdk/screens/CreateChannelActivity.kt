@@ -7,7 +7,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.blameo.chatsdk.BlameoChatSdk
+import com.blameo.chatsdk.blachat.BlaChatSDK
 import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.activity_create_channel.*
 class CreateChannelActivity : AppCompatActivity() {
 
     lateinit var adapter: MemberAdapter
-    lateinit var chatSdk: BlameoChatSdk
+    lateinit var chatSdk: BlaChatSDK
     private val TAG = "CREATE"
     private val uIds: ArrayList<String> = arrayListOf()
 
@@ -37,31 +37,31 @@ class CreateChannelActivity : AppCompatActivity() {
             finish()
         }
 
-        chatSdk = BlameoChatSdk.getInstance()
-
-        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
-            override fun onSuccess(users: ArrayList<User>) {
-                adapter = MemberAdapter(this@CreateChannelActivity, users, BlameoChatSdk.getInstance().uId, 2)
-                adapter.setListener(object : MemberAdapter.SelectUserListener{
-                    override fun onAdd(id: String) {
-                        uIds.add(id)
-                        Log.i(TAG, "add $id ${uIds.size}")
-                    }
-
-                    override fun onRemove(id: String) {
-                        uIds.remove(id)
-                        Log.i(TAG, "remove : $id ${uIds.size}")
-                    }
-                })
-                val layoutManager = LinearLayoutManager(this@CreateChannelActivity)
-                rv_members.layoutManager = layoutManager
-                layoutManager.stackFromEnd = true
-                rv_members.adapter = adapter
-                users.forEachIndexed { index, it ->
-                    Log.e(TAG, "users in channel: $index ${it.name}")
-                }
-            }
-        })
+//        chatSdk = BlameoChatSdk.getInstance()
+//
+//        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+//            override fun onSuccess(users: ArrayList<User>) {
+//                adapter = MemberAdapter(this@CreateChannelActivity, users, BlameoChatSdk.getInstance().uId, 2)
+//                adapter.setListener(object : MemberAdapter.SelectUserListener{
+//                    override fun onAdd(id: String) {
+//                        uIds.add(id)
+//                        Log.i(TAG, "add $id ${uIds.size}")
+//                    }
+//
+//                    override fun onRemove(id: String) {
+//                        uIds.remove(id)
+//                        Log.i(TAG, "remove : $id ${uIds.size}")
+//                    }
+//                })
+//                val layoutManager = LinearLayoutManager(this@CreateChannelActivity)
+//                rv_members.layoutManager = layoutManager
+//                layoutManager.stackFromEnd = true
+//                rv_members.adapter = adapter
+//                users.forEachIndexed { index, it ->
+//                    Log.e(TAG, "users in channel: $index ${it.name}")
+//                }
+//            }
+//        })
 
         btn_create_channel.setOnClickListener {
             if(uIds.size == 0)  return@setOnClickListener
@@ -96,13 +96,13 @@ class CreateChannelActivity : AppCompatActivity() {
 
     private fun createChannel(name: String){
 
-        chatSdk.createChannel(uIds, name,
-            1, object: ChatListener.CreateChannelListener{
-                override fun createChannelSuccess(channel: Channel) {
-                    Log.e(TAG, "create channel id success: ${channel.id} ${channel.name}")
-                    ChannelVMlStore.getInstance().addNewChannel(channel)
-                    finish()
-                }
-            })
+//        chatSdk.createChannel(uIds, name,
+//            1, object: ChatListener.CreateChannelListener{
+//                override fun createChannelSuccess(channel: Channel) {
+//                    Log.e(TAG, "create channel id success: ${channel.id} ${channel.name}")
+//                    ChannelVMlStore.getInstance().addNewChannel(channel)
+//                    finish()
+//                }
+//            })
     }
 }

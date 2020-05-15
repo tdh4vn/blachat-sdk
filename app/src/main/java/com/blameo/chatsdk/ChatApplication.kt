@@ -3,6 +3,7 @@ package com.blameo.chatsdk
 import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
@@ -10,10 +11,10 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 import com.nostra13.universalimageloader.core.assist.QueueProcessingType
 
+
 class ChatApplication : Application() {
 
     private val TAG = "application"
-
 
     private var config: ImageLoaderConfiguration.Builder? = null
     private lateinit var context: Context
@@ -29,13 +30,14 @@ class ChatApplication : Application() {
         .cacheOnDisc(true)
         .build()
 
+    private object Holder {val INSTANCE = ChatApplication()}
+
+
     companion object {
 
-        @SuppressLint("StaticFieldLeak")
-        private lateinit var shareInstance: ChatApplication
-
+        @JvmStatic
         fun getInstance(): ChatApplication {
-            return shareInstance
+            return Holder.INSTANCE
         }
     }
 
@@ -43,12 +45,18 @@ class ChatApplication : Application() {
         return options
     }
 
-    fun getContext(): Context {
-        return context
+    fun getContext(): String {
+        return TAG
+    }
+
+    fun getSP(): SharedPreferences{
+        return getSharedPreferences("user_sp", Context.MODE_PRIVATE)
     }
 
     override fun onCreate() {
         super.onCreate()
+
+        context = applicationContext
 
 
         if (config == null) {

@@ -4,6 +4,7 @@ package com.blameo.chatsdk.models.bla;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
 import java.util.Date;
+import java.util.HashMap;
 
 public class BlaChannel extends Channel {
 
@@ -39,7 +40,7 @@ public class BlaChannel extends Channel {
         }
     }
 
-    public BlaChannel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, String customData, BlaMessage lastMessage) {
+    public BlaChannel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, HashMap<String, Object> customData, BlaMessage lastMessage) {
         super(id, name, avatar, type, updatedAt, createdAt, lastMessageId, customData);
         this.lastMessage = lastMessage;
     }

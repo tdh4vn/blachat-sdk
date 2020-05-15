@@ -1,7 +1,6 @@
 package com.blameo.chatsdk.controllers;
 
 import android.content.Context;
-import android.icu.lang.UScript;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
@@ -20,6 +19,7 @@ import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,8 +33,8 @@ public class ChannelControllerImpl implements ChannelController {
 
     private MessageRepository messageRepository;
 
-    public ChannelControllerImpl(Context context){
-        userRepository = new UserRepositoryImpl(context);
+    public ChannelControllerImpl(Context context, String myId){
+        userRepository = new UserRepositoryImpl(context, myId);
         channelRepository = new ChannelRepositoryImpl(context);
         messageRepository = new MessageRepositoryImpl(context);
     }
@@ -108,6 +108,11 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public boolean deleteChannel(String channelID) {
         return channelRepository.deleteChannel(channelID);
+    }
+
+    @Override
+    public BlaChannel getChannelById(String channelID) throws IOException {
+        return channelRepository.getChannelById(channelID);
     }
 
     @Override

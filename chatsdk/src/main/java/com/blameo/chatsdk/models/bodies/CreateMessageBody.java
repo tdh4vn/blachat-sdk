@@ -11,9 +11,6 @@ public class CreateMessageBody {
     @SerializedName("message")
     private String content;
 
-    @SerializedName("sent_at")
-    private String sentAt;
-
     @SerializedName("channel_id")
     private String channelId;
 
@@ -23,10 +20,9 @@ public class CreateMessageBody {
         this.channelId = channelId;
     }
 
-    public CreateMessageBody(int type, String content, String sentAt, String channelId) {
+    public CreateMessageBody(int type, String content, String channelId) {
         this.type = type;
         this.content = content;
-        this.sentAt = sentAt;
         this.channelId = channelId;
     }
 
@@ -53,13 +49,5 @@ public class CreateMessageBody {
 
     public void setChannelId(String channelId) {
         this.channelId = channelId;
-    }
-
-    public String getSentAt() {
-        return sentAt;
-    }
-
-    public void setSentAt(String sentAt) {
-        this.sentAt = sentAt;
     }
 }

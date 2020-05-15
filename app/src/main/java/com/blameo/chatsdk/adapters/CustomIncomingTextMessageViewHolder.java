@@ -3,21 +3,15 @@ package com.blameo.chatsdk.adapters;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelStore;
-
 import com.blameo.chatsdk.R;
 import com.blameo.chatsdk.controllers.UserVMStore;
 import com.blameo.chatsdk.controllers.UserViewModel;
-import com.blameo.chatsdk.models.Message;
+import com.blameo.chatsdk.models.CustomMessage;
 import com.blameo.chatsdk.models.results.UserStatus;
 import com.stfalcon.chatkit.messages.MessageHolders;
 
 public class CustomIncomingTextMessageViewHolder
-        extends MessageHolders.IncomingTextMessageViewHolder<Message> {
+        extends MessageHolders.IncomingTextMessageViewHolder<CustomMessage> {
 
     private View onlineIndicator;
     private UserVMStore store = UserVMStore.getInstance();
@@ -30,10 +24,10 @@ public class CustomIncomingTextMessageViewHolder
     }
 
     @Override
-    public void onBind(Message message) {
+    public void onBind(CustomMessage message) {
         super.onBind(message);
 
-        UserViewModel userVM = store.getUserViewModel(new UserStatus(message.getMyUser().getId(), 1));
+        UserViewModel userVM = store.getUserViewModel(new UserStatus(message.getMyCustomUser().getId(), 1));
         userVM.getStatus().observeForever(it -> {
             if (it) {
                 onlineIndicator.setBackgroundResource(R.drawable.shape_bubble_online);
@@ -50,12 +44,12 @@ public class CustomIncomingTextMessageViewHolder
             }
         });
 
-        tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+//        tvSeenBy.setText(message.getMessageStatus().getSeenBy());
 
-        if(message.getMessageStatus().isShowing())
-            tvSeenBy.setVisibility(View.VISIBLE);
-        else
-            tvSeenBy.setVisibility(View.GONE);
+//        if(message.getMessageStatus().isShowing())
+//            tvSeenBy.setVisibility(View.VISIBLE);
+//        else
+//            tvSeenBy.setVisibility(View.GONE);
     }
 
     public static class Payload {

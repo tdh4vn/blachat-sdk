@@ -14,6 +14,7 @@ import com.blameo.chatsdk.screens.ChatActivity
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.ConversationViewModel
 import com.blameo.chatsdk.controllers.UserVMStore
+import com.blameo.chatsdk.models.bla.BlaChannel
 import com.blameo.chatsdk.models.results.UserStatus
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
@@ -32,7 +33,7 @@ class ChannelAdapter(val context: Context) :
         .cacheOnDisc(true)
         .build()
 
-    var channels: ArrayList<Channel> = arrayListOf()
+    var channels: ArrayList<BlaChannel> = arrayListOf()
 
     private val vmStore: ChannelVMlStore = ChannelVMlStore.getInstance()
     private val userStore: UserVMStore = UserVMStore.getInstance()

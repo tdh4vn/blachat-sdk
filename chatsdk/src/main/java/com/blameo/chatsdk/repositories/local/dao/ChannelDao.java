@@ -21,7 +21,6 @@ public abstract class ChannelDao implements BaseDao<Channel> {
             " LIMIT :limit")
     public abstract List<Channel> getChannels(long lastUpdate, long limit);
 
-
     @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME +
             " WHERE " + Constant.CHANNEL_UPDATED_AT + " < :lastUpdate" +
             " ORDER BY " + Constant.CHANNEL_UPDATED_AT + " DESC " +
@@ -48,7 +47,7 @@ public abstract class ChannelDao implements BaseDao<Channel> {
         //Inject last message id to save
 
         for (Channel channel: channels) {
-            if (channel.getLastMessages().size() > 0) {
+            if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
                 channel.setLastMessageId(channel.getLastMessages().get(channel.getLastMessages().size() - 1).getId());
             }
         }
