@@ -14,7 +14,8 @@ public class GsonDateFormatter implements JsonDeserializer<Date> {
     @Override
     public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         long epoch = json.getAsLong();
-        Log.e("AAAA", ""+epoch);
-        return new Date(epoch);
+        if(epoch > 10000000000L)
+            return new Date(epoch);
+        return new Date(epoch * 1000);
     }
 }

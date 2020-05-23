@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.adapters;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -53,7 +54,7 @@ public class CustomIncomingTextMessageViewHolder
     }
 
     public static class Payload {
-        public OnAvatarClickListener avatarClickListener;
+        OnAvatarClickListener avatarClickListener;
     }
 
     public interface OnAvatarClickListener {

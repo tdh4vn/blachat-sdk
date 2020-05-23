@@ -12,10 +12,10 @@ class UserViewModel(val user: UserStatus) {
     var errorStream = MutableLiveData<String>()
 
     init {
-        status.value = user.status == 2
+        status.postValue(user.status == 2)
     }
 
-    fun updateStatus(s: Int){
-        status.value = s == 2
+    fun updateStatus(isOnline: Boolean){
+        status.postValue(isOnline)
     }
 }

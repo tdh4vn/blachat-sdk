@@ -40,9 +40,6 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
-
-
     <androidx.recyclerview.widget.RecyclerView
         android:layout_below="@+id/appbar"
         android:id="@+id/rv_members"

@@ -2,6 +2,7 @@ package com.blameo.chatsdk.models;
 
 import androidx.annotation.Nullable;
 
+import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
@@ -50,6 +51,10 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
 
     public CustomMessage(com.blameo.chatsdk.models.bla.BlaMessage message) {
         this.message = message;
+    }
+
+    public BlaMessage getMessage(){
+        return message;
     }
 
     public void setImage(Image image) {

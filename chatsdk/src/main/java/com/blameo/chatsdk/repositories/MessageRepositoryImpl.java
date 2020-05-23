@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
+import android.graphics.BlendMode;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -8,6 +9,7 @@ import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
 import com.blameo.chatsdk.models.entities.Message;
+import com.blameo.chatsdk.models.entities.MessageWithUserReact;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.results.GetMessageByIDResult;
 import com.blameo.chatsdk.models.results.GetMessagesResult;
@@ -24,6 +26,7 @@ import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -62,26 +65,48 @@ public class MessageRepositoryImpl implements MessageRepository {
     public List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException {
         long lastUpdate = new Date().getTime();
         if (limit < 0) limit = 50;
+
+//        Log.i(TAG, "EXPORT MESSAGE DB");
+//
+//        ArrayList<Message> allMessages = (ArrayList<Message>) messageDao.getAllMessageInChannel(channelId);
+//        for (Message m: allMessages) {
+//            Log.i(TAG, m.getChannelId() + " " +m.getId() + " "+m.getContent() + " "+m.getCreatedAt());
+//        }
+
+        Log.i(TAG, "last id: "+lastMessageId + " "+lastUpdate);
         if (!TextUtils.isEmpty(lastMessageId)) {
             Message lastMessage = messageDao.getMessageById(lastMessageId);
             if (lastMessage != null){
-                lastUpdate = lastMessage.getSentAt().getTime();
+
+                lastUpdate = lastMessage.getSentAt().getTime()/1000;
+                Log.i(TAG, ""+lastUpdate);
             }
         }
 
         List<Message> messages = messageDao.getMessagesOfChannel(channelId, lastUpdate, limit);
+        Log.i(TAG, "local messages size: "+messages.size());
+
         if(messages.size()  == 0){
             Response<GetMessagesResult> response =
                     messageAPI.getMessagesInChannel(channelId, lastMessageId).execute();
 
+
+            messages = response.body().getData();
             messageDao.insertMany(response.body().getData());
+        }else {
+            Collections.reverse(messages);
         }
 
-        Log.i(TAG, "local messages size: "+messages.size());
+        Log.i(TAG, "remote messages size: "+messages.size());
 
         List<BlaMessage> blaMessages = new ArrayList<>();
         for(Message message: messages) {
             blaMessages.add(new BlaMessage(message));
+            List<MessageWithUserReact> messageWithUserReacts = messageDao.getUserReactMessageByID(message.getId());
+//            Log.i(TAG, "message with users react: "+ messageWithUserReacts.size());
+//            for (MessageWithUserReact messageWithUserReact : messageWithUserReacts){
+//                Log.i(TAG, " "+messageWithUserReact.message.getId() + " "+messageWithUserReact.users.size());
+//            }
         }
 
         return blaMessages;
@@ -97,16 +122,19 @@ public class MessageRepositoryImpl implements MessageRepository {
                 1,
                 new Date(),
                 new Date(),
-                new Date(0),
+                null,
                 false,
                 customData
         );
+
+        Log.i(TAG, "create ok "+ message.getId());
         messageDao.insert(message);
         return new BlaMessage(message);
     }
 
     @Override
     public BlaMessage sendMessage(BlaMessage blaMessage) throws Exception {
+
         Response<GetMessageByIDResult> response = messageAPI.createMessage(new CreateMessageBody(
                 0,
                 blaMessage.getContent(),
@@ -115,6 +143,7 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         if (response.isSuccessful() && response.body() != null) {
             messageDao.updateIdMessage(blaMessage, response.body().getMessage());
+            Log.i(TAG, "update message: " +blaMessage.getId());
             return new BlaMessage(response.body().getMessage());
         }
 
@@ -161,7 +190,7 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public boolean sendReceiveEvent(String channelId, String messageId, String authorId) throws Exception {
-        Response response = messageAPI.markSeenMessage(new MarkStatusMessageBody(
+        Response response = messageAPI.markReceiveMessage(new MarkStatusMessageBody(
                 messageId,
                 channelId,
                 authorId
@@ -172,5 +201,15 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public BlaMessage getMessageById(String messageId) {
         return new BlaMessage(messageDao.getMessageById(messageId));
+    }
+
+    @Override
+    public void syncUnSentMessages() throws Exception {
+        List<Message> unsentMessages = messageDao.getUnSentMessages();
+
+        Log.i(TAG, "unsent messages: "+unsentMessages.size());
+        for (Message m: unsentMessages) {
+            sendMessage(new BlaMessage(m));
+        }
     }
 }

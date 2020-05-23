@@ -21,9 +21,14 @@ import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.blameo.chatsdk.utils.GsonDateFormatter;
+import com.blameo.chatsdk.utils.GsonHashMapFormatter;
 import com.google.gson.Gson;
-
+import com.google.gson.GsonBuilder;
+import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,10 +52,17 @@ public class EventHandlerImpl implements EventHandler {
 
     private String myId;
 
-    private Gson gson = new Gson();
+    private Gson gson;
 
     public EventHandlerImpl(String myId, Context context) {
         this.myId = myId;
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(Date.class, new GsonDateFormatter());
+        gsonBuilder.registerTypeAdapter(HashMap.class, new GsonHashMapFormatter());
+        gsonBuilder.setLenient();
+
+        this.gson = gsonBuilder.create();
         this.channelController = new ChannelControllerImpl(context, myId);
         this.messageRepository = new MessageRepositoryImpl(context);
         this.userRepository = new UserRepositoryImpl(context, myId);
@@ -81,12 +93,11 @@ public class EventHandlerImpl implements EventHandler {
         executorService.submit(() -> {
             try {
                 String data = new String(event.getData(), StandardCharsets.UTF_8);
-                Log.i("BLACHAT", "Message from " + sub.getChannel() + ": " + data);
 
                 Event p = gson.fromJson(data, Event.class);
                 switch (p.getType()) {
                     case "typing_event": {
-                        Payload typing = gson.fromJson(p.getPayload(), Payload.class);
+                        Payload typing = gson.fromJson(p.getPayload().toString(), Payload.class);
 
                         BlaChannel channel = channelController.getChannelById(typing.channel_id);
                         BlaUser user = userRepository.getUserById(typing.user_id);
@@ -96,19 +107,27 @@ public class EventHandlerImpl implements EventHandler {
                                 channelEventListener.onTyping(channel, user, typing.is_typing ? BlaTypingEvent.START : BlaTypingEvent.STOP);
                             }
                         }
+                        break;
                     }
                     case "new_message": {
-                        Message message = gson.fromJson(p.getPayload(), Message.class);
-                        if (message.getAuthorId().equals(myId)) {
+
+                        JSONObject jsonObject = new JSONObject(data);
+
+                        Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
+
+                        if (!message.getAuthorId().equals(myId)) {
                             BlaMessage blaMessage = messageRepository.saveMessage(message);
                             for (BlaMessageListener listener: messageListeners) {
                                 listener.onNewMessage(blaMessage);
+                                channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
+                                messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
                             }
                         }
+                        break;
                     }
 
                     case "mark_seen": {
-                        CursorEvent cursorEvent = gson.fromJson(p.getPayload(), CursorEvent.class);
+                        CursorEvent cursorEvent = gson.fromJson(p.getPayload().toString(), CursorEvent.class);
                         BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
                         BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
                         BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
@@ -120,10 +139,11 @@ public class EventHandlerImpl implements EventHandler {
                                 listener.onUserSeenMessage(channel, user, message);
                             }
                         }
+                        break;
                     }
 
                     case "mark_receive": {
-                        CursorEvent cursorEvent = gson.fromJson(p.getPayload(), CursorEvent.class);
+                        CursorEvent cursorEvent = gson.fromJson(p.getPayload().toString(), CursorEvent.class);
                         BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
                         BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
                         BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
@@ -135,18 +155,22 @@ public class EventHandlerImpl implements EventHandler {
                                 listener.onUserReceiveMessage(channel, user, message);
                             }
                         }
+                        break;
                     }
 
                     case "new_channel": {
-                        Channel channel = gson.fromJson(p.getPayload(), Channel.class);
 
-                        channelController.onNewChannel(channel);
+                        JSONObject jsonObject = new JSONObject(data);
+                        Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
 
                         if (channel != null) {
+                            if(channelController.checkChannelIsExist(channel.getId()))    return;
+                            channelController.onNewChannel(channel);
                             for (BlaChannelEventListener listener: channelEventListeners) {
                                 listener.onNewChannel(new BlaChannel(channel));
                             }
                         }
+                        break;
                     }
                 }
             } catch (Exception e) {

@@ -9,17 +9,24 @@ import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
 import com.blameo.chatsdk.blachat.BlaChatSDK
+import com.blameo.chatsdk.blachat.Callback
+import com.blameo.chatsdk.controllers.ChannelVMlStore
+import com.blameo.chatsdk.controllers.ConversationViewModel
+import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.entities.User
+import com.blameo.chatsdk.utils.UserSP
 import com.nostra13.universalimageloader.core.ImageLoader
 import kotlinx.android.synthetic.main.activity_about_channel.*
 import kotlinx.android.synthetic.main.activity_about_channel.toolbar
+import java.lang.Exception
 
 class AboutChannelActivity : AppCompatActivity() {
 
     lateinit var adapter: MemberAdapter
     lateinit var chatSdk: BlaChatSDK
     private val TAG = "MEMBER"
+    private var channelVM: ConversationViewModel? = null
     lateinit var channel: Channel
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,19 +40,27 @@ class AboutChannelActivity : AppCompatActivity() {
 
     private fun getMembers() {
 
-//        chatSdk.getUsersInChannel(channel.id, object : ChatListener.GetUsersInChannelListener {
-//            override fun onGetUsersByIdsSuccess(channelId: String, users: ArrayList<User>) {
-//
-//                adapter = MemberAdapter(this@AboutChannelActivity, users, BlameoChatSdk.getInstance().uId, 1)
-//                val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
-//                rv_members.layoutManager = layoutManager
-//                layoutManager.stackFromEnd = true
-//                rv_members.adapter = adapter
-////                users.forEachIndexed { index, it ->
-////                    Log.e(TAG, "users in channel: $index ${it.name}")
-////                }
-//            }
-//        })
+        if (channelVM?.memmbers == null)
+            chatSdk.getUsersInChannel(channel.id, object : Callback<List<BlaUser>> {
+                override fun onSuccess(result: List<BlaUser>?) {
+                    initAdapter(result!!)
+                }
+
+                override fun onFail(e: Exception?) {
+
+                }
+            })
+        else
+            initAdapter(channelVM?.memmbers!!)
+    }
+
+
+    private fun initAdapter(users: List<BlaUser>) {
+        adapter = MemberAdapter(this@AboutChannelActivity, users, UserSP.getInstance().id, 1)
+        val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
+        rv_members.layoutManager = layoutManager
+        layoutManager.stackFromEnd = true
+        rv_members.adapter = adapter
     }
 
     private fun init() {
@@ -59,10 +74,11 @@ class AboutChannelActivity : AppCompatActivity() {
         supportActionBar?.title = "Members"
         chatSdk = BlaChatSDK.getInstance()
         channel = intent.getSerializableExtra("CHANNEL") as Channel
-        if(!TextUtils.isEmpty(channel.name))
-            tvName.text = channel.name
-        if(!TextUtils.isEmpty(channel.avatar))
-            ImageLoader.getInstance().displayImage(channel.avatar, imgAvatar)
+        channelVM = ChannelVMlStore.getInstance().getChannelByID(channel.id)
+        if (!TextUtils.isEmpty(channelVM?.channel_name?.value))
+            tvName.text = channelVM?.channel_name?.value
+        if (!TextUtils.isEmpty(channelVM?.channel_avatar?.value))
+            ImageLoader.getInstance().displayImage(channelVM?.channel_avatar?.value, imgAvatar)
 
     }
 }

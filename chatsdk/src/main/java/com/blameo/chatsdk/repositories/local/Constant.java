@@ -6,7 +6,6 @@ public class Constant {
     public static final int DATABASE_VERSION = 2;
     public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
 
-
     public static final String DB_FILE_NAME = "BLA_CHAT_DB";
 
     // CHANNEL
@@ -19,7 +18,6 @@ public class Constant {
     public static final String CHANNEL_CREATED_AT = "CREATED_AT";
     public static final String CHANNEL_LAST_MESSAGE_ID = "LAST_MESSAGE_ID";
     public static final String CHANNEL_CUSTOM_DATA = "CUSTOM_DATA";
-
 
     // MESSAGE
     public static final String MESSAGE_TABLE_NAME = "MESSAGES";
@@ -65,7 +63,7 @@ public class Constant {
     //SENT MESSAGE STATE
     public static final String SENT_MESSAGE_TABLE_NAME = "SENT_MESSAGE_STATE";
     public static final String SENT_MESSAGE_ID = "MESSAGE_ID";
-    public static final String SENT_USER_ID = "MESSAGE_ID";
+    public static final String SENT_USER_ID = "USER_ID";
     public static final String SENT_STATE = "STATE";
 
 

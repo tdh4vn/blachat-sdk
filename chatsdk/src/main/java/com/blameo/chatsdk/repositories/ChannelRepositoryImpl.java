@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -27,11 +28,18 @@ import com.blameo.chatsdk.repositories.local.dao.ChannelDao;
 import com.blameo.chatsdk.repositories.local.dao.MessageDao;
 import com.blameo.chatsdk.repositories.local.dao.UserDao;
 import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
+import com.blameo.chatsdk.repositories.local.dao.UserReactMessageDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +73,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
         this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
+//        exportDB();
     }
 
     @Override
@@ -125,16 +134,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
                     if(channel.getLastMessages() != null)
                     {
-//                        Log.i(TAG, "messages: "+channel.getId() + " " + channel.getLastMessages().size());
                         messagesFromChannels.addAll(channel.getLastMessages());
                         if(channel.getLastMessages().size() > 0)
-                            channelWithLastMessage.lastMessage = channel.getLastMessages()
-                                    .get(channel.getLastMessages().size() - 1);
+                            channelWithLastMessage.lastMessage = channel.getLastMessages().get(0);
                         channel.setLastMessageId(channelWithLastMessage.lastMessage.getId());
                     }
- //                   else{
- //                       Log.i(TAG, "messages: "+channel.getId() + " has no messages");
-  //                  }
 
                     messageDao.insertMany(messagesFromChannels);
 
@@ -167,16 +171,9 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
         ArrayList<BlaChannel> blaChannels = new ArrayList<>();
         for (ChannelWithLastMessage c: channels) {
-            Log.i(TAG, "add "+c.channel.getId());
-            if(c.channel.getUpdatedAt() != null){
-                Log.i(TAG, "c: update: "+c.channel.getUpdatedAt());
-            }
-            if(c.lastMessage != null)
-                Log.i(TAG, "last id: "+c.lastMessage.getId());
             blaChannels.add(new BlaChannel(c.channel, c.lastMessage));
         }
 
-        Log.i(TAG, "total channel size: "+blaChannels.size());
         return blaChannels;
     }
 
@@ -215,13 +212,12 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 userIds, name, blaChannelType.getValue(), avatar
         )).execute();
         if (result.isSuccessful() && result.body() != null) {
-            com.blameo.chatsdk.models.entities.Channel channel = result.body().getData();
+            Channel channel = result.body().getData();
             channelDao.insert(channel);
             return new BlaChannel(channel, null);
         } else {
             throw new Exception(result.message());
         }
-
     }
 
     @Override
@@ -264,5 +260,8 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         channelDao.insert(channel);
     }
 
-
+    @Override
+    public boolean checkChannelIsExist(String channelId) {
+        return channelDao.getChannelById(channelId) != null;
+    }
 }

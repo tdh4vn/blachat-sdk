@@ -28,8 +28,8 @@ public class BlaUser extends User {
 
     public BlaUser(User user) {
         super(user.getId(),
-                user.getAvatar(),
                 user.getName(),
+                user.getAvatar(),
                 user.getCustomData());
     }
 

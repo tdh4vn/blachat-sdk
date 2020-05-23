@@ -46,6 +46,9 @@ public class UserReactMessage {
         this.date = date;
     }
 
+    public UserReactMessage() {
+    }
+
     public String getMessageId() {
         return messageId;
     }

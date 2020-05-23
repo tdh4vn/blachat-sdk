@@ -39,7 +39,7 @@ class ChannelVMlStore private constructor(){
     fun addNewChannel(channel: BlaChannel){
         val vm = channelVMMap?.get(channel.id)
         if(vm == null){
-            newChannel.value = channel
+            newChannel.postValue(channel)
         }
         getChannelViewModel(channel)
     }

@@ -1,0 +1,25 @@
+package com.blameo.chatsdk.models.entities;
+
+import androidx.room.Embedded;
+import androidx.room.Junction;
+import androidx.room.Relation;
+
+import com.blameo.chatsdk.repositories.local.Constant;
+
+import java.util.List;
+
+public class MessageWithUserReact {
+    @Embedded
+    public Message message;
+
+    @Relation(
+            parentColumn = Constant.MESSAGE_ID,
+            entityColumn = Constant.USER_ID,
+            associateBy = @Junction(
+                    value = UserReactMessage.class,
+                    parentColumn = Constant.REACT_MESSAGE_ID,
+                    entityColumn = Constant.REACT_USER_ID
+            )
+    )
+    public List<User> users;
+}

@@ -36,4 +36,6 @@ public interface ChannelRepository {
     void saveUsersInChannel(List<UserInChannel> userInChannelList);
 
     void saveChannel(Channel channel);
+
+    boolean checkChannelIsExist(String channelId);
 }

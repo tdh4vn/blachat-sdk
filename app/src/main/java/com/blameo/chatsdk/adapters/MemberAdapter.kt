@@ -2,6 +2,7 @@ package com.blameo.chatsdk.adapters
 
 import android.content.Context
 import android.text.TextUtils
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +12,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.controllers.UserViewModel
+import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 
-class MemberAdapter(val context: Context, private val users: ArrayList<User>, private val myId: String, private val type: Int) :
+class MemberAdapter(val context: Context, private val users: List<BlaUser>, private val myId: String, private val type: Int) :
     RecyclerView.Adapter<MemberAdapter.MemberVH>() {
 
 

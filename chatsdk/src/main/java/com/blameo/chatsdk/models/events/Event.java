@@ -1,8 +1,10 @@
 package com.blameo.chatsdk.models.events;
 
+import org.json.JSONObject;
+
 public class Event {
     private String type;
-    private String payload;
+    private JSONObject payload;
 
     public String getType() {
         return type;
@@ -12,11 +14,11 @@ public class Event {
         this.type = type;
     }
 
-    public String getPayload() {
+    public JSONObject getPayload() {
         return payload;
     }
 
-    public void setPayload(String payload) {
+    public void setPayload(JSONObject payload) {
         this.payload = payload;
     }
 

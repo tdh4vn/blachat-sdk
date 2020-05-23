@@ -5,6 +5,7 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 
 import com.blameo.chatsdk.models.entities.Message;
+import com.blameo.chatsdk.models.entities.MessageWithUserReact;
 import com.blameo.chatsdk.repositories.local.Constant;
 
 import java.util.List;
@@ -12,10 +13,10 @@ import java.util.List;
 @Dao
 public abstract class MessageDao implements BaseDao<Message> {
 
-    @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
+    @Query("SELECT * FROM " + "(select * from "+ Constant.MESSAGE_TABLE_NAME + " order by " + Constant.MESSAGE_CREATED_AT + " DESC "+" limit :limit)" + Constant.MESSAGE_TABLE_NAME +
             " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId " +
             " AND " + Constant.MESSAGE_CREATED_AT + " < :lastCreatedAt " +
-            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " ASC " +
+           " ORDER BY " + Constant.MESSAGE_CREATED_AT + " ASC " +
             " LIMIT :limit")
     public abstract List<Message> getMessagesOfChannel(String channelId, long lastCreatedAt, long limit);
 
@@ -28,4 +29,26 @@ public abstract class MessageDao implements BaseDao<Message> {
         delete(oldMessage);
         insert(newMessage);
     }
+
+    @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
+            " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId "+
+            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " DESC ")
+    public abstract List<Message> getAllMessageInChannel(String channelId);
+
+
+//    @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
+//            " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId "+
+//            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " DESC ")
+//    public abstract List<MessageWithUserReact> getAllMessageInChannel(String channelId);
+
+    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME +
+            " WHERE " + Constant.MESSAGE_SENT_AT +  " IS NULL")
+    public abstract List<Message> getUnSentMessages();
+
+    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME + " WHERE " + Constant.MESSAGE_ID + " = :id LIMIT 1")
+    public abstract List<MessageWithUserReact> getUserReactMessageByID(String id);
+
+
+//    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME + " WHERE " + Constant.MESSAGE_ID + " = :id LIMIT 1")
+//    public abstract MessageWithUserReact getUserReactMessageByID(String id);
 }

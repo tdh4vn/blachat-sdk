@@ -1,9 +1,11 @@
 package com.blameo.chatsdk.controllers;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
+import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaTypingEvent;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
@@ -27,6 +29,7 @@ import java.util.List;
 
 public class ChannelControllerImpl implements ChannelController {
 
+    private static final String TAG = "CHANNEL_CONTROLLER";
     private UserRepository userRepository;
 
     private ChannelRepository channelRepository;
@@ -47,6 +50,7 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public List<BlaUser> getUsersInChannel(String channelId) throws Exception {
         ChannelWithUser channelWithUser = channelRepository.getLocalUserInChannel(channelId);
+
         if (channelWithUser != null && channelWithUser.members != null) {
             if (channelWithUser.members.size() > 0) {
                 List<BlaUser> users = new ArrayList<>();
@@ -119,4 +123,15 @@ public class ChannelControllerImpl implements ChannelController {
     public BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
         return channelRepository.createChannel(name, avatar, userIds, blaChannelType);
     }
+
+    @Override
+    public void updateLastMessageOfChannel(String channelId, String messageId) {
+        channelRepository.updateLastMessage(channelId, messageId);
+    }
+
+    @Override
+    public boolean checkChannelIsExist(String channelId) {
+        return channelRepository.checkChannelIsExist(channelId);
+    }
+
 }

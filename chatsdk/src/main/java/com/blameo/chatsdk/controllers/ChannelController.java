@@ -2,6 +2,7 @@ package com.blameo.chatsdk.controllers;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
+import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 
@@ -20,4 +21,6 @@ public interface ChannelController {
     boolean deleteChannel(String channelID);
     BlaChannel getChannelById(String channelID) throws Exception;
     BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
+    void updateLastMessageOfChannel(String channelId, String messageId);
+    boolean checkChannelIsExist(String channelId);
 }

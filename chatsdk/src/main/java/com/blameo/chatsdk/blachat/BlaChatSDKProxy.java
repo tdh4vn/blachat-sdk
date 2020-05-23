@@ -19,7 +19,7 @@ public interface BlaChatSDKProxy {
     void init(Context context, String userId, String token);
     void addMessageListener(BlaMessageListener blaMessageListener);
     void addEventChannelListener(BlaChannelEventListener blaChannelEventListener);
-    void addPresenceListener(BlaPresenceListener blaPresenceListener);
+    void addPresenceListener(BlaPresenceListener blaPresenceListener) throws Exception;
     void getChannels(String channelId, Long offset, Callback<List<BlaChannel>> callback);
     void getUsersInChannel(String channelId, Callback<List<BlaUser>> callback);
     void getUsers(ArrayList<String> userIds, Callback<List<BlaUser>> callback) throws Exception;
@@ -37,4 +37,5 @@ public interface BlaChatSDKProxy {
     void inviteUserToChannel(List<String> usersID, String channelId, Callback<Void> callback);
     void removeUserFromChannel(String userID, String channelId, Callback<Void> callback);
     void getUsersPresence(Callback<List<BlaUser>> callback) throws Exception;
+    void getAllUsers(Callback<List<BlaUser>> callback);
 }

@@ -31,7 +31,7 @@ object APIProvider {
 
     fun setSession(baseUrl: String, token: String) {
         this.baseUrl = "$baseUrl:9000/v1/"
-        currentToken = token
+        currentToken = "Bearer $token"
         this.presenceUrl = "$baseUrl:8081/"
     }
 
@@ -77,11 +77,16 @@ object APIProvider {
                     .readTimeout(120, TimeUnit.SECONDS)
                     .build()
 
+                val gson = GsonBuilder()
+                    .registerTypeAdapter(HashMap::class.java, GsonHashMapFormatter())
+                    .registerTypeAdapter(Date::class.java, GsonDateFormatter())
+                    .create()
+
 
                 retrofitMessage = Retrofit.Builder()
                     .baseUrl(this.baseUrl +"messages/")
                     .client(httpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build()
             }
@@ -100,11 +105,16 @@ object APIProvider {
                     .readTimeout(120, TimeUnit.SECONDS)
                     .build()
 
+                val gson = GsonBuilder()
+                    .registerTypeAdapter(HashMap::class.java, GsonHashMapFormatter())
+                    .registerTypeAdapter(Date::class.java, GsonDateFormatter())
+                    .create()
+
 
                 retrofitPresence = Retrofit.Builder()
                     .baseUrl(presenceUrl!!)
                     .client(httpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                     .build()
             }

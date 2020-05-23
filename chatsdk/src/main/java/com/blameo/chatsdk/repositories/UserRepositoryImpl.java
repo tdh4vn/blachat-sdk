@@ -2,10 +2,12 @@ package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.room.Update;
 
+import com.blameo.chatsdk.blachat.BlaPresenceListener;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.PostIDsBody;
 import com.blameo.chatsdk.models.bodies.UpdateStatusBody;
@@ -30,6 +32,7 @@ import retrofit2.Response;
 
 public class UserRepositoryImpl implements UserRepository {
 
+    private static final String TAG = "USER_REPO";
     private UserDao userDao;
     private BlaChatAPI blaChatAPI;
     private PresenceAPI presenceAPI;
@@ -52,11 +55,11 @@ public class UserRepositoryImpl implements UserRepository {
         List<String> missIdUser = new ArrayList<>();
         List<String> idExists = new ArrayList<>();
 
-        for (User user: users) {
+        for (User user : users) {
             idExists.add(user.getId());
         }
 
-        for (String id: uIds) {
+        for (String id : uIds) {
             if (!BlaChatTextUtils.containsInList(id, idExists)) {
                 missIdUser.add(id);
             }
@@ -70,8 +73,10 @@ public class UserRepositoryImpl implements UserRepository {
             users.addAll(response.body().getData());
         }
 
+        userDao.insertMany(users);
 
-        for (User user: users) {
+
+        for (User user : users) {
             result.add(new BlaUser(user));
         }
 
@@ -79,12 +84,27 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<BlaUser> getAllUser() {
+    public List<BlaUser> getAllUser() throws IOException {
         List<User> users = userDao.getAllUsers();
         List<BlaUser> result = new ArrayList<>();
-        for (User user: users) {
+
+        Log.i(TAG, "" + users.size());
+        for (User user : users) {
+            Log.i(TAG, "" + user.getId() + " " + user.getName());
             result.add(new BlaUser(user));
         }
+        Response<GetUsersByIdsResult> response = blaChatAPI.getAllMembers().execute();
+        if(response.isSuccessful() && response.body().getData() != null){
+            result.clear();
+            for (User user : response.body().getData()) {
+                Log.i(TAG, "" + user.getId() + " " + user.getName());
+                result.add(new BlaUser(user));
+            }
+            userDao.insertMany(response.body().getData());
+        }
+
+        Log.i(TAG, "" + result.size());
+
         return result;
     }
 
@@ -96,32 +116,34 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<BlaUser> getUsersPresence() throws Exception {
+
         List<User> allUsers = userDao.getAllUsers();
         List<UserStatus> userStatuses;
         List<BlaUser> result = new ArrayList<>();
         HashMap<String, User> usersMap = new HashMap<>();
 
         StringBuilder ids = new StringBuilder();
-        for (User user: allUsers) {
+        for (User user : allUsers) {
             usersMap.put(user.getId(), user);
-            ids.append(user.getId()).append(", ");
+            ids.append(user.getId()).append(",");
         }
+
         PostIDsBody body = new PostIDsBody();
         body.setIds(ids.toString());
+
         Response<UsersStatusResult> response = presenceAPI.getUsersStatus(body).execute();
         userStatuses = response.body().getData();
         for (UserStatus currentStatus : userStatuses) {
             UserStatus previousStatus = userStatusMap.get(currentStatus.getId());
-            if(previousStatus == null || !previousStatus.getId().equals(currentStatus.getId()))
-            {
+            if (previousStatus == null || previousStatus.getStatus() != currentStatus.getStatus()) {
                 userStatusMap.put(currentStatus.getId(), currentStatus);
-                BlaUser user = new BlaUser(usersMap.get(previousStatus.getId()));
+                BlaUser user = new BlaUser(usersMap.get(currentStatus.getId()));
                 user.setOnline(currentStatus.getStatus() == 2);
                 result.add(user);
             }
         }
 
-        Log.i("updaet", "response: "+result.size());
+        Log.i("updaet", "response: " + result.size());
         return result;
     }
 
@@ -135,7 +157,6 @@ public class UserRepositoryImpl implements UserRepository {
                 UpdateStatusBody body = new UpdateStatusBody(myId, "2");
                 try {
                     Response<UsersStatusResult> response = presenceAPI.updateStatus(body).execute();
-                    Log.i("updaet", "res: "+response.body().getData());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -143,9 +164,15 @@ public class UserRepositoryImpl implements UserRepository {
                 handler.postDelayed(this, 10000);
             }
         });
-
-
-
     }
 
+    @Override
+    public List<BlaUser>  getAllUsersStates() {
+        try {
+            return getUsersPresence();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

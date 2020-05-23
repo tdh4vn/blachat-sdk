@@ -19,4 +19,5 @@ public interface MessageRepository {
     boolean sendSeenEvent(String channelId, String messageId, String authorId) throws Exception;
     boolean sendReceiveEvent(String chanelId, String messageId, String authorId) throws Exception;
     BlaMessage getMessageById(String messageId);
+    void syncUnSentMessages() throws Exception;
 }

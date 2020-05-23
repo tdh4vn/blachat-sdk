@@ -15,6 +15,7 @@ import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.ConversationViewModel
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.models.bla.BlaChannel
+import com.blameo.chatsdk.models.bla.BlaChannelType
 import com.blameo.chatsdk.models.results.UserStatus
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
@@ -58,7 +59,6 @@ class ChannelAdapter(val context: Context) :
         }
 
         channelVM.partnerId.observeForever { partnerId ->
-//            Log.e("ADAPTER", "partner id: $partnerId" )
             val userStatus = userStore.getUserViewModel(UserStatus(partnerId, 1))
             userStatus.status.observeForever { status ->
                 if(status){
@@ -79,14 +79,26 @@ class ChannelAdapter(val context: Context) :
 
         fun bindChannel(channelVM: ConversationViewModel, options: DisplayImageOptions) {
 
-            if (!TextUtils.isEmpty(channelVM.channel_avatar.value.toString()))
-                ImageLoader.getInstance().displayImage(channelVM.channel_avatar.value.toString(), imgAvatar, options)
-            else
-                imgAvatar.setImageResource(R.mipmap.ic_launcher)
-            tvName.text = channelVM.channel_name.value.toString()
-            tvContent.text = if(!TextUtils.isEmpty(channelVM.last_message.value.toString())) channelVM.last_message.value.toString() else ""
+            channelVM.channel_avatar.observeForever {
+                if (!TextUtils.isEmpty(it))
+                    ImageLoader.getInstance().displayImage(it, imgAvatar, options)
+                else
+                    imgAvatar.setImageResource(R.mipmap.ic_launcher)
+            }
 
-            tvTime.text = channelVM.channel_updated.value.toString()
+            channelVM.channel_name.observeForever {
+                tvName.text = it
+            }
+
+
+            channelVM.last_message.observeForever {
+                tvContent.text = if(!TextUtils.isEmpty(it)) it else ""
+            }
+
+            channelVM.channel_updated.observeForever {
+                tvTime.text = it
+            }
+
         }
     }
 }
