@@ -15,7 +15,7 @@
     <string name="sample_title_custom_content">Custom content type</string>
     <string name="sample_subtitle_custom_content">Custom customMessage content on the example of system customMessage</string>
 
-    <string name="hint_enter_a_message">Type a customMessage…</string>
+    <string name="hint_enter_a_message">Type a message…</string>
     <string name="on_log_click_message">Your custom long click handler</string>
     <string name="action_delete">Delete</string>
     <string name="action_copy">Copy</string>

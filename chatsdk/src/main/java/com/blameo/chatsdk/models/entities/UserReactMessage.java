@@ -19,7 +19,6 @@ import java.util.Date;
         }
 )
 public class UserReactMessage {
-
     public static final int SEEN = 1;
     public static final int RECEIVE = 2;
 
@@ -80,4 +79,5 @@ public class UserReactMessage {
     public void setDate(Date date) {
         this.date = date;
     }
+
 }

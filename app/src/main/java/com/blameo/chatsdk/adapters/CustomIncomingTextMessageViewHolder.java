@@ -16,12 +16,10 @@ public class CustomIncomingTextMessageViewHolder
 
     private View onlineIndicator;
     private UserVMStore store = UserVMStore.getInstance();
-    private TextView tvSeenBy;
 
     public CustomIncomingTextMessageViewHolder(View itemView, Object payload) {
         super(itemView, payload);
         onlineIndicator = itemView.findViewById(R.id.onlineIndicator);
-        tvSeenBy = itemView.findViewById(R.id.seenBy);
     }
 
     @Override
@@ -44,13 +42,6 @@ public class CustomIncomingTextMessageViewHolder
                 payload.avatarClickListener.onAvatarClick();
             }
         });
-
-//        tvSeenBy.setText(message.getMessageStatus().getSeenBy());
-
-//        if(message.getMessageStatus().isShowing())
-//            tvSeenBy.setVisibility(View.VISIBLE);
-//        else
-//            tvSeenBy.setVisibility(View.GONE);
     }
 
     public static class Payload {

@@ -15,6 +15,7 @@ import com.blameo.chatsdk.controllers.UserViewModel
 import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
+import com.blameo.chatsdk.utils.UserSP
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
@@ -57,6 +58,14 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
         return users.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
     override fun onBindViewHolder(holder: MemberVH, position: Int) {
 
         val member = users[position]
@@ -67,13 +76,13 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
         {
             holder.itemView.isEnabled = false
             holder.itemView.isClickable = false
-            holder.imgCheck.visibility = View.GONE
+            holder.imgCheck.visibility = View.INVISIBLE
         }
 
         holder.itemView.setOnClickListener {
             if(selectUserListener != null) {
                 if(holder.imgCheck.visibility == View.VISIBLE) {
-                    holder.imgCheck.visibility = View.GONE
+                    holder.imgCheck.visibility = View.INVISIBLE
                     selectUserListener?.onRemove(member.id)
                 }
                 else{

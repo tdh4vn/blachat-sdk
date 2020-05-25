@@ -27,8 +27,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +41,7 @@ import io.github.centrifugal.centrifuge.Subscription;
 
 public class EventHandlerImpl implements EventHandler {
 
+    private static final String TAG = "EVENT" ;
     private Vector<BlaMessageListener> messageListeners = new Vector<>();
 
     private Vector<BlaChannelEventListener> channelEventListeners = new Vector<>();
@@ -95,9 +99,14 @@ public class EventHandlerImpl implements EventHandler {
                 String data = new String(event.getData(), StandardCharsets.UTF_8);
 
                 Event p = gson.fromJson(data, Event.class);
+
+                Log.i("EVENT", ""+p.getType() + " "+p.getPayload() + "\n" + data);
+
                 switch (p.getType()) {
                     case "typing_event": {
-                        Payload typing = gson.fromJson(p.getPayload().toString(), Payload.class);
+
+                        JSONObject jsonObject = new JSONObject(data);
+                        Payload typing = gson.fromJson(jsonObject.get("payload").toString(), Payload.class);
 
                         BlaChannel channel = channelController.getChannelById(typing.channel_id);
                         BlaUser user = userRepository.getUserById(typing.user_id);
@@ -127,12 +136,15 @@ public class EventHandlerImpl implements EventHandler {
                     }
 
                     case "mark_seen": {
-                        CursorEvent cursorEvent = gson.fromJson(p.getPayload().toString(), CursorEvent.class);
+
+                        JSONObject jsonObject = new JSONObject(data);
+                        CursorEvent cursorEvent = gson.fromJson(jsonObject.get("payload").toString(), CursorEvent.class);
+                        Log.i(TAG, "abc "+cursorEvent.actor_id + " "+cursorEvent.channel_id + " "+cursorEvent.message_id);
                         BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
                         BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
                         BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
-                        messageRepository.userSeenMyMessage(user.getId(), message.getId(), ChatSdkDateFormatUtil.parse(cursorEvent.time));
+                        messageRepository.userSeenMyMessage(user.getId(), message.getId(), new Date(cursorEvent.time));
 
                         if (channel != null) {
                             for (BlaChannelEventListener listener: channelEventListeners) {
@@ -143,15 +155,20 @@ public class EventHandlerImpl implements EventHandler {
                     }
 
                     case "mark_receive": {
-                        CursorEvent cursorEvent = gson.fromJson(p.getPayload().toString(), CursorEvent.class);
+                        JSONObject jsonObject = new JSONObject(data);
+                        CursorEvent cursorEvent = gson.fromJson(jsonObject.get("payload").toString(), CursorEvent.class);
+                        Log.i(TAG, "rec "+cursorEvent.actor_id + " "+cursorEvent.channel_id + " "+cursorEvent.message_id);
                         BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
                         BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
                         BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
-                        messageRepository.userReceiveMyMessage(user.getId(), message.getId(), ChatSdkDateFormatUtil.parse(cursorEvent.time));
+                        messageRepository.userReceiveMyMessage(user.getId(), message.getId(), new Date(cursorEvent.time));
 
                         if (channel != null) {
                             for (BlaChannelEventListener listener: channelEventListeners) {
+                                ArrayList<BlaUser> users = new ArrayList<>();
+                                users.add(user);
+                                message.setReceivedBy(users);
                                 listener.onUserReceiveMessage(channel, user, message);
                             }
                         }

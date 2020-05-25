@@ -1,5 +1,7 @@
 package com.blameo.chatsdk.adapters;
 
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -23,9 +25,11 @@ public class CustomOutcomingTextMessageViewHolder
 
         time.setText(message.getStatus() + " " + time.getText());
 
-
         if(message.getMessageStatus() != null){
-            tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+            if(!TextUtils.isEmpty(message.getMessageStatus().getSeenBy()))
+                tvSeenBy.setText(message.getMessageStatus().getSeenBy());
+            else
+                tvSeenBy.setText(message.getMessageStatus().getReceivedBy());
 
             if(message.getMessageStatus().isShowing())
                 tvSeenBy.setVisibility(View.VISIBLE);

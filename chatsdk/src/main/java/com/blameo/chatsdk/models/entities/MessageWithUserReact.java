@@ -11,6 +11,21 @@ import java.util.List;
 public class MessageWithUserReact {
     @Embedded
     public Message message;
+//    public MessageWithUserReact messageWithUserReact;
+//
+//    @Relation(
+//            entity = User.class,
+//            entityColumn = Constant.USER_ID,
+//            parentColumn = Constant.REACT_USER_ID
+//    )
+//    public List<User> user;
+//
+//    @Relation(
+//            entity = Message.class,
+//            entityColumn = Constant.MESSAGE_ID,
+//            parentColumn = Constant.REACT_MESSAGE_ID
+//    )
+//    public Message messages;
 
     @Relation(
             parentColumn = Constant.MESSAGE_ID,
@@ -22,4 +37,9 @@ public class MessageWithUserReact {
             )
     )
     public List<User> users;
+
+//    @Relation(
+//            associateBy = @Junction(UserReactMessage.class)
+//    )
+//    public List<UserReactMessage> userReactMessages;
 }

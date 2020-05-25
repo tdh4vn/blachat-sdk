@@ -4,5 +4,5 @@ public class CursorEvent {
     public String actor_id;
     public String channel_id;
     public String message_id;
-    public String time;
+    public Long time;
 }

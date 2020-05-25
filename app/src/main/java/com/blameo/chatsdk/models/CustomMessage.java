@@ -3,12 +3,14 @@ package com.blameo.chatsdk.models;
 import androidx.annotation.Nullable;
 
 import com.blameo.chatsdk.models.bla.BlaMessage;
+import com.blameo.chatsdk.models.bla.BlaUser;
 import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
 
 import java.util.Date;
 
+import static com.blameo.chatsdk.models.CustomMessage.MESSAGE_STATUS.RECEIVE;
 import static com.blameo.chatsdk.models.CustomMessage.MESSAGE_STATUS.SEEN;
 
 
@@ -29,7 +31,7 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
     }
 
     public enum MESSAGE_STATUS {
-        SEEN, SENT, CREATED
+        SEEN, RECEIVE, SENT, CREATED
     }
 
     public CustomUser getMyCustomUser() {
@@ -47,9 +49,9 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
 
     private MESSAGE_STATUS status;
 
-    private com.blameo.chatsdk.models.bla.BlaMessage message;
+    private BlaMessage message;
 
-    public CustomMessage(com.blameo.chatsdk.models.bla.BlaMessage message) {
+    public CustomMessage(BlaMessage message) {
         this.message = message;
     }
 
@@ -92,13 +94,20 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
 
         private boolean isShowing;
         private String seenBy;
+        private String receivedBy;
 
-        public Status(String seenBy) {
+        public Status(String receivedBy, String seenBy, boolean isShowing) {
+            this.receivedBy = receivedBy;
             this.seenBy = seenBy;
+            this.isShowing = isShowing;
         }
 
         public String getSeenBy() {
             return seenBy;
+        }
+
+        public void setSeenBy(String seenBy){
+            this.seenBy = seenBy;
         }
 
         public boolean isShowing() {
@@ -107,6 +116,14 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
 
         public void setShowing(boolean isShowing){
             this.isShowing = isShowing;
+        }
+
+        public String getReceivedBy() {
+            return receivedBy;
+        }
+
+        public void setReceivedBy(String receivedBy) {
+            this.receivedBy = receivedBy;
         }
     }
 
@@ -120,6 +137,7 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
             status = MESSAGE_STATUS.CREATED;
             return "Created at:";
         }
+
         return "";
     }
 
@@ -135,7 +153,7 @@ public class CustomMessage implements IMessage, MessageContentType.Image, Messag
 
     @Override
     public IUser getUser() {
-        return myCustomUser;
+        return myCustomUser == null ? new CustomUser(new BlaUser("","", "", null)) : myCustomUser;
     }
 
     public static class Image {

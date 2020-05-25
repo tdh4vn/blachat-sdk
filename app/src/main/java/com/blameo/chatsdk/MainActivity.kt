@@ -1,38 +1,39 @@
 package com.blameo.chatsdk
 
-import android.Manifest
+import android.app.Dialog
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.telecom.Call
+import android.os.Handler
+import android.text.TextUtils
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.blameo.chatsdk.adapters.CustomDialogViewHolder
 import com.blameo.chatsdk.blachat.BlaChannelEventListener
 import com.blameo.chatsdk.blachat.BlaChatSDK
 import com.blameo.chatsdk.blachat.BlaMessageListener
-import com.blameo.chatsdk.blachat.BlaPresenceListener
 import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
+import com.blameo.chatsdk.models.CustomChannel
 import com.blameo.chatsdk.models.bla.BlaChannel
 import com.blameo.chatsdk.models.bla.BlaMessage
 import com.blameo.chatsdk.models.bla.BlaTypingEvent
 import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.results.UserStatus
+import com.blameo.chatsdk.screens.ChatActivity
 import com.blameo.chatsdk.screens.CreateChannelActivity
-import com.blameo.chatsdk.utils.DateFormatUtils
 import com.blameo.chatsdk.utils.UserSP
+import com.squareup.picasso.Picasso
+import com.stfalcon.chatkit.commons.ImageLoader
+import com.stfalcon.chatkit.dialogs.DialogsListAdapter
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.item_custom_outcoming_voice_message.view.*
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(),  DialogsListAdapter.OnDialogClickListener<CustomChannel>,
+DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
     lateinit var chatSdk: BlaChatSDK
     lateinit var adapter: ChannelAdapter
@@ -83,38 +84,68 @@ class MainActivity : AppCompatActivity() {
 
     private fun init() {
 
+
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener {
             finish()
         }
 
+        val imageLoader = ImageLoader { imageView, url, _ ->
+            if(!TextUtils.isEmpty(url))
+                Picasso.with(this).load(url).into(imageView)
+            else
+                imageView.setImageResource(R.drawable.default_avatar)
+        }
+
+        val channelAdapter = DialogsListAdapter<CustomChannel>(
+            R.layout.item_custom_dialog_view_holder,
+            CustomDialogViewHolder::class.java,
+            imageLoader
+        )
+
+        val handler = Handler()
+
         userVMStore = UserVMStore.getInstance()
 
         val channelVMStore = ChannelVMlStore.getInstance()
         channelVMStore.newChannel.observeForever {
-            runOnUiThread {
-                adapter.channels.add(0, it)
-                adapter.notifyDataSetChanged()
+            handler.post {
+                channelAdapter.addItem(0, CustomChannel(it))
+//                adapter.channels.add(0, it)
+//                adapter.notifyDataSetChanged()
                 channelVMStore.addNewChannel(it)
             }
         }
 
         chatSdk = BlaChatSDK.getInstance()
+
         chatSdk.init(applicationContext, myId, token)
 
+
+
+
+        channelAdapter.setOnDialogClickListener(this)
+        channelAdapter.setOnDialogLongClickListener(this)
+        dialogsList.setAdapter(channelAdapter)
+
         //call sync message to resent unsent message to server
-        adapter = ChannelAdapter(this@MainActivity)
-        rv_channels.adapter = adapter
-        rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
+//        adapter = ChannelAdapter(this@MainActivity)
+//        rv_channels.adapter = adapter
+//        rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
 
         chatSdk.getChannels(null, 20, object: Callback<List<BlaChannel>> {
             override fun onSuccess(result: List<BlaChannel>?) {
-                adapter.channels = result as ArrayList<BlaChannel>
+ //               adapter.channels = result as ArrayList<BlaChannel>
+                val dialogs = arrayListOf<CustomChannel>()
 
-                result.forEach {
-                    Log.i(TAG, ""+it.lastMessage)
+                result?.forEach {
+                    Log.i(TAG, "" + it.lastMessage)
+                    dialogs.add(CustomChannel(it))
                 }
+
+                channelAdapter.setItems(dialogs)
+
             }
 
             override fun onFail(e: Exception?) {
@@ -151,7 +182,16 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val channelVM = channelVMStore.getChannelByID(blaMessage?.channelId!!)
                     channelVM.updateNewMessage(blaMessage)
-                }catch (e: java.lang.Exception){
+//                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, object : Callback<Void>{
+//                        override fun onSuccess(result: Void?) {
+//
+//                        }
+//
+//                        override fun onFail(e: Exception?) {
+//
+//                        }
+//                    })
+                }catch (e: Exception){
                     e.printStackTrace()
                 }
 
@@ -187,6 +227,7 @@ class MainActivity : AppCompatActivity() {
                 user: BlaUser?,
                 message: BlaMessage?
             ) {
+                Log.i(TAG, "user receive "+channel?.id + " "+ user?.id + " "+message?.id)
             }
 
             override fun onDeleteChannel(channel: BlaChannel?) {
@@ -200,10 +241,12 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onNewChannel(channel: BlaChannel?) {
-                adapter.channels.add(0, channel!!)
-                runOnUiThread {
-                    adapter.notifyDataSetChanged()
+//                adapter.channels.add(0, channel!!)
+                handler.post {
+                    channelAdapter.addItem(0, CustomChannel(channel))
                 }
+
+
             }
 
             override fun onUserSeenMessage(
@@ -211,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                 user: BlaUser?,
                 message: BlaMessage?
             ) {
-
+                Log.i(TAG, "user seen "+channel?.id + " "+ user?.id + " "+message?.id)
             }
 
             override fun onUpdateChannel(channel: BlaChannel?) {
@@ -222,6 +265,15 @@ class MainActivity : AppCompatActivity() {
 
             }
         })
+    }
+
+    override fun onDialogClick(channel: CustomChannel?) {
+        startActivity(Intent(this, ChatActivity::class.java)
+            .putExtra("CHANNEL", channel?.id))
+    }
+
+    override fun onDialogLongClick(dialog: CustomChannel?) {
+
     }
 
 }

@@ -10,6 +10,7 @@ import com.blameo.chatsdk.models.bodies.CreateMessageBody;
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.MessageWithUserReact;
+import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.results.GetMessageByIDResult;
 import com.blameo.chatsdk.models.results.GetMessagesResult;
@@ -102,10 +103,21 @@ public class MessageRepositoryImpl implements MessageRepository {
         List<BlaMessage> blaMessages = new ArrayList<>();
         for(Message message: messages) {
             blaMessages.add(new BlaMessage(message));
-            List<MessageWithUserReact> messageWithUserReacts = messageDao.getUserReactMessageByID(message.getId());
-//            Log.i(TAG, "message with users react: "+ messageWithUserReacts.size());
-//            for (MessageWithUserReact messageWithUserReact : messageWithUserReacts){
-//                Log.i(TAG, " "+messageWithUserReact.message.getId() + " "+messageWithUserReact.users.size());
+            MessageWithUserReact messageWithUserReactReceive = messageDao.getUserReactMessageByID(message.getId());
+//            MessageWithUserReact messageWithUserReactSeen = messageDao.getUserReactMessageByID(message.getId());
+            Log.i(TAG, "rec "+messageWithUserReactReceive.message.getId() + " "+messageWithUserReactReceive.users.size());
+//            Log.i(TAG, "seen "+messageWithUserReactSeen.message.getId() + " "+messageWithUserReactSeen.users.size());
+            for (User user : messageWithUserReactReceive.users) {
+                Log.i(TAG, "rec "+user.getId() + " "+user.getName());
+            }
+//            for (User user : messageWithUserReactSeen.users) {
+//                Log.i(TAG, "seen "+user.getId() + " "+user.getName());
+//            }
+//            List<UserReactMessage> userReactMessages = userReactMessageDao.userReactMessageList(message.getId());
+//            Log.i(TAG, "users react size: "+userReactMessages.size());
+//            for (UserReactMessage userReactMessage : userReactMessages) {
+//                Log.i(TAG, "react: "+userReactMessage.getMessageId() + " "+userReactMessage.getUserId()
+//                + " "+userReactMessage.getType() + " "+ userReactMessage.getDate());
 //            }
         }
 
@@ -127,7 +139,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                 customData
         );
 
-        Log.i(TAG, "create ok "+ message.getId());
+//        Log.i(TAG, "create ok "+ message.getId());
         messageDao.insert(message);
         return new BlaMessage(message);
     }
@@ -142,8 +154,13 @@ public class MessageRepositoryImpl implements MessageRepository {
         )).execute();
 
         if (response.isSuccessful() && response.body() != null) {
-            messageDao.updateIdMessage(blaMessage, response.body().getMessage());
-            Log.i(TAG, "update message: " +blaMessage.getId());
+            Message newMessage = response.body().getMessage();
+            messageDao.updateIdMessage(blaMessage, newMessage);
+            channelDao.updateLastMessage(
+                    new ChannelDao.UpdateLastMessageOfChannel(
+                            newMessage.getChannelId(),
+                            newMessage.getId()));
+//            Log.i(TAG, "update message: " +blaMessage.getId());
             return new BlaMessage(response.body().getMessage());
         }
 
@@ -207,7 +224,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public void syncUnSentMessages() throws Exception {
         List<Message> unsentMessages = messageDao.getUnSentMessages();
 
-        Log.i(TAG, "unsent messages: "+unsentMessages.size());
+//        Log.i(TAG, "unsent messages: "+unsentMessages.size());
         for (Message m: unsentMessages) {
             sendMessage(new BlaMessage(m));
         }

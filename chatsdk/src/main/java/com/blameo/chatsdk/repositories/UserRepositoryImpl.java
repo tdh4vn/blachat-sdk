@@ -75,7 +75,6 @@ public class UserRepositoryImpl implements UserRepository {
 
         userDao.insertMany(users);
 
-
         for (User user : users) {
             result.add(new BlaUser(user));
         }
@@ -174,5 +173,10 @@ public class UserRepositoryImpl implements UserRepository {
             e.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userDao.insert(user);
     }
 }

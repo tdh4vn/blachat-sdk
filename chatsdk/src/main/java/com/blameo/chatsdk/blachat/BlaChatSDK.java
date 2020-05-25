@@ -228,8 +228,18 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
+    public void removeMessageListener(BlaMessageListener blaMessageListener) {
+        this.eventHandler.removeMessageListener(blaMessageListener);
+    }
+
+    @Override
     public void addEventChannelListener(BlaChannelEventListener blaChannelEventListener) {
         this.eventHandler.addEventChannelListener(blaChannelEventListener);
+    }
+
+    @Override
+    public void removeChannelListener(BlaChannelEventListener blaChannelEventListener) {
+        this.eventHandler.removeEventChannelListener(blaChannelEventListener);
     }
 
     @Override
@@ -445,10 +455,13 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                             customData
                     );
 
-                    callback.onSuccess(message);
+
+                    channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
                     Log.i(TAG, "create message: " + message.getId());
 
                     BlaMessage m = messageRepository.sendMessage(message);
+                    callback.onSuccess(m);
+                    channelController.updateLastMessageOfChannel(m.getChannelId(), m.getId());
 
                 } catch (Exception e) {
                     callback.onFail(e);

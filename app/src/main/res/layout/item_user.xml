@@ -10,6 +10,7 @@
         android:layout_margin="16dp"
         app:riv_corner_radius="28dp"
         android:id="@+id/imgAvatar"
+        android:scaleType="centerCrop"
         android:src="@drawable/default_avatar"
         android:layout_width="56dp"
         android:layout_height="56dp"/>

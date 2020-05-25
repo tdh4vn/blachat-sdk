@@ -18,7 +18,9 @@ public interface BlaChatSDKProxy {
 
     void init(Context context, String userId, String token);
     void addMessageListener(BlaMessageListener blaMessageListener);
+    void removeMessageListener(BlaMessageListener blaMessageListener);
     void addEventChannelListener(BlaChannelEventListener blaChannelEventListener);
+    void removeChannelListener(BlaChannelEventListener blaChannelEventListener);
     void addPresenceListener(BlaPresenceListener blaPresenceListener) throws Exception;
     void getChannels(String channelId, Long offset, Callback<List<BlaChannel>> callback);
     void getUsersInChannel(String channelId, Callback<List<BlaUser>> callback);

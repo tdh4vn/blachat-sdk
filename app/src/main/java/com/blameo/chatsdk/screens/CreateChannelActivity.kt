@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.screens
 
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
@@ -14,7 +15,6 @@ import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.models.bla.BlaChannel
 import com.blameo.chatsdk.models.bla.BlaChannelType
 import com.blameo.chatsdk.models.bla.BlaUser
-import com.blameo.chatsdk.utils.UserSP
 import kotlinx.android.synthetic.main.activity_create_channel.*
 
 class CreateChannelActivity : AppCompatActivity() {
@@ -32,6 +32,8 @@ class CreateChannelActivity : AppCompatActivity() {
     }
 
     private fun init() {
+
+        val handler = Handler()
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener {
@@ -40,11 +42,13 @@ class CreateChannelActivity : AppCompatActivity() {
 
         chatSdk = BlaChatSDK.getInstance()
 
+
+
         chatSdk.getAllUsers(object : Callback<List<BlaUser>> {
             override fun onSuccess(result: List<BlaUser>?) {
                 Log.i(TAG, "ok users " + result?.size)
 
-                runOnUiThread {
+                handler.post {
                     adapter = MemberAdapter(this@CreateChannelActivity, result!!, "1", 2)
                     adapter.setListener(object : MemberAdapter.SelectUserListener {
                         override fun onAdd(id: String) {
@@ -58,13 +62,10 @@ class CreateChannelActivity : AppCompatActivity() {
                         }
                     })
                     rv_members.layoutManager = LinearLayoutManager(this@CreateChannelActivity)
-                    Log.i(TAG, "ok users 3")
                     rv_members.adapter = adapter
-                    adapter.notifyDataSetChanged()
-                    Log.i(TAG, "ok users 4")
-                    result.forEachIndexed { index, it ->
-                        Log.e(TAG, "users in channel: $index ${it.name}")
-                    }
+//                    result.forEachIndexed { index, it ->
+//                        Log.e(TAG, "users in channel: $index ${it.name}")
+//                    }
                 }
             }
 

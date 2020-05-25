@@ -47,6 +47,14 @@ class ChannelAdapter(val context: Context) :
         return channels.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return position
+    }
+
     override fun onBindViewHolder(holder: ChannelVH, position: Int) {
 
         val channelVM = vmStore.getChannelViewModel(channels[position])

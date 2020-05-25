@@ -45,8 +45,11 @@ public abstract class MessageDao implements BaseDao<Message> {
             " WHERE " + Constant.MESSAGE_SENT_AT +  " IS NULL")
     public abstract List<Message> getUnSentMessages();
 
-    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME + " WHERE " + Constant.MESSAGE_ID + " = :id LIMIT 1")
-    public abstract List<MessageWithUserReact> getUserReactMessageByID(String id);
+    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME
+            + " WHERE " + Constant.MESSAGE_ID + " = :id "
+        //    + " AND " + Constant.REACT_TYPE + " = :type"
+            + " LIMIT 1")
+    public abstract MessageWithUserReact getUserReactMessageByID(String id);
 
 
 //    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME + " WHERE " + Constant.MESSAGE_ID + " = :id LIMIT 1")

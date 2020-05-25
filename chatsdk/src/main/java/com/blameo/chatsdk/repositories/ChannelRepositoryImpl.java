@@ -74,6 +74,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
 //        exportDB();
+        try {
+            blaChatAPI.getAllMembers().execute();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -194,9 +199,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         )).execute();
 
         assert response.body() != null;
-        channel = response.body().getData().get(0);
+        if(response.body().getData() != null && response.body().getData().size() > 0)
+            channel = response.body().getData().get(0);
 
-        channelDao.insert(channel);
+        if(channel != null)
+            channelDao.insert(channel);
 
         return new BlaChannel(channel);
     }

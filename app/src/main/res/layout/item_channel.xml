@@ -8,6 +8,7 @@
     <com.makeramen.roundedimageview.RoundedImageView
         android:layout_centerVertical="true"
         android:layout_margin="16dp"
+        android:scaleType="centerCrop"
         app:riv_corner_radius="28dp"
         android:id="@+id/imgAvatar"
         android:src="@drawable/default_avatar"
