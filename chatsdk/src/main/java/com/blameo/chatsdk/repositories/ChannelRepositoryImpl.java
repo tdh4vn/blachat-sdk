@@ -271,4 +271,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     public boolean checkChannelIsExist(String channelId) {
         return channelDao.getChannelById(channelId) != null;
     }
+
+    @Override
+    public void usersAddedToChannel(String channelId, List<String> userIds) {
+        for(String id: userIds) {
+            userInChannelDao.insert(new UserInChannel(channelId, id, new Date(), new Date()));
+        }
+    }
 }

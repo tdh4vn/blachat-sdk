@@ -18,6 +18,7 @@
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity android:name=".screens.CreateChannelActivity"></activity>
         <activity android:name=".screens.AboutChannelActivity" />
+        <activity android:name=".screens.InviteUsersActivity"/>
         <activity android:name=".MainActivity" />
         <activity android:name=".screens.ChatActivity" />
         <activity android:name=".screens.HomeActivity">

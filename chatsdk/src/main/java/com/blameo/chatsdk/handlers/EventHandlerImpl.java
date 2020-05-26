@@ -15,6 +15,7 @@ import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.events.CursorEvent;
 import com.blameo.chatsdk.models.events.Event;
+import com.blameo.chatsdk.models.events.InviteUsersEvent;
 import com.blameo.chatsdk.models.events.Payload;
 import com.blameo.chatsdk.repositories.MessageRepository;
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
@@ -124,14 +125,14 @@ public class EventHandlerImpl implements EventHandler {
 
                         Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
 
-                        if (!message.getAuthorId().equals(myId)) {
+//                        if (!message.getAuthorId().equals(myId)) {
                             BlaMessage blaMessage = messageRepository.saveMessage(message);
                             for (BlaMessageListener listener: messageListeners) {
                                 listener.onNewMessage(blaMessage);
                                 channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
                                 messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
                             }
-                        }
+//                        }
                         break;
                     }
 
@@ -187,6 +188,14 @@ public class EventHandlerImpl implements EventHandler {
                                 listener.onNewChannel(new BlaChannel(channel));
                             }
                         }
+                        break;
+                    }
+
+                    case "invite_user":{
+                        JSONObject jsonObject = new JSONObject(data);
+                        InviteUsersEvent inviteUsersEvent = gson.fromJson(jsonObject.get("payload").toString(), InviteUsersEvent.class);
+                        Log.i(TAG, "invite users: "+inviteUsersEvent.channelId + " "+inviteUsersEvent.userIds.size());
+                        channelController.usersAddedToChannel(inviteUsersEvent.channelId, inviteUsersEvent.userIds);
                         break;
                     }
                 }

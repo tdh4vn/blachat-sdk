@@ -1,5 +1,6 @@
 package com.blameo.chatsdk.screens
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -79,6 +80,11 @@ class AboutChannelActivity : AppCompatActivity() {
             tvName.text = channelVM?.channel_name?.value
         if (!TextUtils.isEmpty(channelVM?.channel_avatar?.value))
             ImageLoader.getInstance().displayImage(channelVM?.channel_avatar?.value, imgAvatar)
+
+        btn_invite.setOnClickListener {
+            startActivity(Intent(this, InviteUsersActivity::class.java)
+                .putExtra("CHANNEL_ID", channel.id))
+        }
 
     }
 }

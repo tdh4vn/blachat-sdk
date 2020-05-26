@@ -17,19 +17,25 @@ import com.blameo.chatsdk.models.bla.BlaChannelType
 import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.utils.UserSP
 import kotlinx.android.synthetic.main.activity_create_channel.*
+import kotlinx.android.synthetic.main.activity_create_channel.rv_members
+import kotlinx.android.synthetic.main.activity_create_channel.toolbar
+import kotlinx.android.synthetic.main.activity_invite_users.*
 
-class CreateChannelActivity : AppCompatActivity() {
+class InviteUsersActivity : AppCompatActivity() {
 
     lateinit var adapter: MemberAdapter
     lateinit var chatSdk: BlaChatSDK
     private val TAG = "CREATE"
     private val uIds: ArrayList<String> = arrayListOf()
+    private var channelId = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_create_channel)
+        setContentView(R.layout.activity_invite_users)
 
         init()
+
+        channelId = intent.getStringExtra("CHANNEL_ID")!!
     }
 
     private fun init() {
@@ -43,13 +49,16 @@ class CreateChannelActivity : AppCompatActivity() {
 
         chatSdk = BlaChatSDK.getInstance()
 
-
-
         chatSdk.getAllUsers(object : Callback<List<BlaUser>> {
             override fun onSuccess(result: List<BlaUser>?) {
 
                 handler.post {
-                    adapter = MemberAdapter(this@CreateChannelActivity, result!!, UserSP.getInstance().id, 2)
+                    adapter = MemberAdapter(
+                        this@InviteUsersActivity,
+                        result!!,
+                        UserSP.getInstance().id,
+                        2
+                    )
                     adapter.setListener(object : MemberAdapter.SelectUserListener {
                         override fun onAdd(id: String) {
                             uIds.add(id)
@@ -59,7 +68,7 @@ class CreateChannelActivity : AppCompatActivity() {
                             uIds.remove(id)
                         }
                     })
-                    rv_members.layoutManager = LinearLayoutManager(this@CreateChannelActivity)
+                    rv_members.layoutManager = LinearLayoutManager(this@InviteUsersActivity)
                     rv_members.adapter = adapter
                 }
             }
@@ -69,51 +78,21 @@ class CreateChannelActivity : AppCompatActivity() {
             }
         })
 
-        btn_create_channel.setOnClickListener {
-            if (uIds.size == 0) return@setOnClickListener
-            if (uIds.size == 1) {
-                createChannel("", BlaChannelType.DIRECT)
-            } else
-                showDialog()
+        btn_done.setOnClickListener {
+            if (uIds.size > 0)
+                inviteUsersToChannel()
         }
-
     }
 
-    private fun showDialog() {
-
-        var editText = EditText(this)
-
-
-        val dialog = AlertDialog.Builder(this)
-            .setView(R.layout.custom_create_channel_dialog)
-            .setTitle("Set conversation name")
-            .setCancelable(false)
-            .setPositiveButton("OK") { dialog, which ->
-                createChannel(editText.text.toString(), BlaChannelType.GROUP)
-            }
-            .setNegativeButton("Cancel") { dialog, which ->
-
-            }.create()
-
-        dialog.show()
-
-        editText = dialog.findViewById(R.id.edtName)!!
-    }
-
-    private fun createChannel(name: String, type: BlaChannelType) {
-
-        chatSdk.createChannel(name, "", uIds, type, object : Callback<BlaChannel> {
-            override fun onSuccess(channel: BlaChannel?) {
-                Log.e(TAG, "create channel success: ${channel?.id} ${channel?.name}")
-                runOnUiThread {
-                    ChannelVMlStore.getInstance().addNewChannel(channel!!)
-                    finish()
-                }
-
+    private fun inviteUsersToChannel() {
+        chatSdk.inviteUserToChannel(uIds, channelId, object : Callback<Void>{
+            override fun onSuccess(result: Void?) {
+                Log.i(TAG, "invite success")
+                finish()
             }
 
             override fun onFail(e: Exception?) {
-
+                e?.printStackTrace()
             }
         })
     }

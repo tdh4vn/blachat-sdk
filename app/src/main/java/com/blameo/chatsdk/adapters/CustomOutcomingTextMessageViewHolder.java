@@ -35,6 +35,8 @@ public class CustomOutcomingTextMessageViewHolder
                 tvSeenBy.setVisibility(View.VISIBLE);
             else
                 tvSeenBy.setVisibility(View.GONE);
+        }else{
+            tvSeenBy.setVisibility(View.GONE);
         }
 
     }

@@ -6,6 +6,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaMessage;
+import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
 import com.blameo.chatsdk.models.entities.Message;
@@ -67,13 +68,6 @@ public class MessageRepositoryImpl implements MessageRepository {
         long lastUpdate = new Date().getTime();
         if (limit < 0) limit = 50;
 
-//        Log.i(TAG, "EXPORT MESSAGE DB");
-//
-//        ArrayList<Message> allMessages = (ArrayList<Message>) messageDao.getAllMessageInChannel(channelId);
-//        for (Message m: allMessages) {
-//            Log.i(TAG, m.getChannelId() + " " +m.getId() + " "+m.getContent() + " "+m.getCreatedAt());
-//        }
-
         Log.i(TAG, "last id: "+lastMessageId + " "+lastUpdate);
         if (!TextUtils.isEmpty(lastMessageId)) {
             Message lastMessage = messageDao.getMessageById(lastMessageId);
@@ -102,27 +96,37 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         List<BlaMessage> blaMessages = new ArrayList<>();
         for(Message message: messages) {
-            blaMessages.add(new BlaMessage(message));
-            MessageWithUserReact messageWithUserReactReceive = messageDao.getUserReactMessageByID(message.getId());
-//            MessageWithUserReact messageWithUserReactSeen = messageDao.getUserReactMessageByID(message.getId());
-            Log.i(TAG, "rec "+messageWithUserReactReceive.message.getId() + " "+messageWithUserReactReceive.users.size());
-//            Log.i(TAG, "seen "+messageWithUserReactSeen.message.getId() + " "+messageWithUserReactSeen.users.size());
-            for (User user : messageWithUserReactReceive.users) {
-                Log.i(TAG, "rec "+user.getId() + " "+user.getName());
+            BlaMessage blaMessage = new BlaMessage(message);
+            MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(message.getId());
+            Log.i(TAG, "react "+messageWithUserReact.message.getId() + " "+
+                    messageWithUserReact.users.size() + " "+ messageWithUserReact.userReactMessages.size());
+            ArrayList<BlaUser> usersReceivedMesssage = new ArrayList<>();
+            ArrayList<BlaUser> usersSeenMessage = new ArrayList<>();
+            for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
+
+                BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
+
+                if(userReactMessage.getType() == UserReactMessage.RECEIVE){
+                    usersReceivedMesssage.add(targetUser);
+                }else
+                    usersSeenMessage.add(targetUser);
             }
-//            for (User user : messageWithUserReactSeen.users) {
-//                Log.i(TAG, "seen "+user.getId() + " "+user.getName());
-//            }
-//            List<UserReactMessage> userReactMessages = userReactMessageDao.userReactMessageList(message.getId());
-//            Log.i(TAG, "users react size: "+userReactMessages.size());
-//            for (UserReactMessage userReactMessage : userReactMessages) {
-//                Log.i(TAG, "react: "+userReactMessage.getMessageId() + " "+userReactMessage.getUserId()
-//                + " "+userReactMessage.getType() + " "+ userReactMessage.getDate());
-//            }
+            blaMessage.setReceivedBy(usersReceivedMesssage);
+            blaMessage.setSeenBy(usersSeenMessage);
+            blaMessages.add(blaMessage);
         }
 
         return blaMessages;
     }
+
+    private BlaUser getUserReactMessage(ArrayList<User> users, String targetUserId){
+        for(User user : users){
+            if(user.getId().equals(targetUserId))
+                return new BlaUser(user);
+        }
+        return null;
+    }
+
 
     @Override
     public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, HashMap<String, Object> customData) {

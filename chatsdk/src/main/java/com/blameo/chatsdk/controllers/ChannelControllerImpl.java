@@ -134,4 +134,9 @@ public class ChannelControllerImpl implements ChannelController {
         return channelRepository.checkChannelIsExist(channelId);
     }
 
+    @Override
+    public void usersAddedToChannel(String channelId, List<String> userIds) {
+        channelRepository.usersAddedToChannel(channelId, userIds);
+    }
+
 }

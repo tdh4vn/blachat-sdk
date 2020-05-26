@@ -38,4 +38,6 @@ public interface ChannelRepository {
     void saveChannel(Channel channel);
 
     boolean checkChannelIsExist(String channelId);
+
+    void usersAddedToChannel(String channelId, List<String> userIds);
 }

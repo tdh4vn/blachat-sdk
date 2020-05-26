@@ -23,4 +23,5 @@ public interface ChannelController {
     BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
     void updateLastMessageOfChannel(String channelId, String messageId);
     boolean checkChannelIsExist(String channelId);
+    void usersAddedToChannel(String channelId, List<String> userIds);
 }

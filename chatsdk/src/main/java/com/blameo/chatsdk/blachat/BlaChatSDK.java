@@ -102,10 +102,10 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         StrictMode.setThreadPolicy(policy);
         APIProvider.INSTANCE.setSession(BASE_API_URL, token);
 
+
         this.channelController = new ChannelControllerImpl(context, userId);
         this.messageRepository = new MessageRepositoryImpl(context);
         this.userRepository = new UserRepositoryImpl(context, userId);
-
         eventHandler = new EventHandlerImpl(id, context);
 
         realtimeDateInit();
@@ -480,19 +480,22 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     @Override
     public void deleteMessage(BlaMessage deletedMessage, Callback<BlaMessage> callback) {
-        //TODO: update message
+        //TODO: delete message
     }
 
     @Override
     public void inviteUserToChannel(List<String> usersID, String channelId, Callback<Void> callback) {
 
-        try {
-            channelController.inviteUsersToChannel(channelId, usersID);
-            callback.onSuccess(null);
-        } catch (Exception e) {
-            callback.onFail(e);
-            e.printStackTrace();
-        }
+        executors.submit(() -> {
+            try {
+                channelController.inviteUsersToChannel(channelId, usersID);
+                callback.onSuccess(null);
+            } catch (Exception e) {
+                callback.onFail(e);
+                e.printStackTrace();
+            }
+        });
+
     }
 
     @Override

@@ -12,6 +12,8 @@ public class BlaMessage extends Message {
     private ArrayList<BlaUser> receivedBy;
 
     public ArrayList<BlaUser> getSeenBy() {
+        if(seenBy == null)
+            seenBy = new ArrayList<>();
         return seenBy;
     }
 
@@ -20,6 +22,8 @@ public class BlaMessage extends Message {
     }
 
     public ArrayList<BlaUser> getReceivedBy() {
+        if(receivedBy == null)
+            receivedBy = new ArrayList<>();
         return receivedBy;
     }
 

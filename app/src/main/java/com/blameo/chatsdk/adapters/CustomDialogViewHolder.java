@@ -33,8 +33,6 @@ public class CustomDialogViewHolder
         super.onBind(channel);
         ConversationViewModel channelVM = ChannelVMlStore.getInstance().getChannelViewModel(channel.getChannel());
 
-        onlineIndicator.setVisibility(View.VISIBLE);
-
         channelVM.getPartnerId().observeForever(partnerId -> {
             Log.i("ADAPTER", " "+channel.getId() + " "+partnerId);
             UserViewModel userStatus = UserVMStore.getInstance().getUserViewModel(new UserStatus(partnerId, 1));

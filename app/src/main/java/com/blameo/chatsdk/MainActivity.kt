@@ -112,8 +112,6 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
         channelVMStore.newChannel.observeForever {
             handler.post {
                 channelAdapter.addItem(0, CustomChannel(it))
-//                adapter.channels.add(0, it)
-//                adapter.notifyDataSetChanged()
                 channelVMStore.addNewChannel(it)
             }
         }
@@ -122,21 +120,12 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
         chatSdk.init(applicationContext, myId, token)
 
-
-
-
         channelAdapter.setOnDialogClickListener(this)
         channelAdapter.setOnDialogLongClickListener(this)
         dialogsList.setAdapter(channelAdapter)
 
-        //call sync message to resent unsent message to server
-//        adapter = ChannelAdapter(this@MainActivity)
-//        rv_channels.adapter = adapter
-//        rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
-
         chatSdk.getChannels(null, 20, object: Callback<List<BlaChannel>> {
             override fun onSuccess(result: List<BlaChannel>?) {
- //               adapter.channels = result as ArrayList<BlaChannel>
                 val dialogs = arrayListOf<CustomChannel>()
 
                 result?.forEach {
@@ -182,15 +171,15 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
                 try {
                     val channelVM = channelVMStore.getChannelByID(blaMessage?.channelId!!)
                     channelVM.updateNewMessage(blaMessage)
-//                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, object : Callback<Void>{
-//                        override fun onSuccess(result: Void?) {
-//
-//                        }
-//
-//                        override fun onFail(e: Exception?) {
-//
-//                        }
-//                    })
+                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, object : Callback<Void>{
+                        override fun onSuccess(result: Void?) {
+
+                        }
+
+                        override fun onFail(e: Exception?) {
+
+                        }
+                    })
                 }catch (e: Exception){
                     e.printStackTrace()
                 }
@@ -241,7 +230,6 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             }
 
             override fun onNewChannel(channel: BlaChannel?) {
-//                adapter.channels.add(0, channel!!)
                 handler.post {
                     channelAdapter.addItem(0, CustomChannel(channel))
                 }

@@ -41,6 +41,7 @@ import kotlinx.android.synthetic.main.activity_chat.txtTitle
 import kotlinx.android.synthetic.main.activity_chat_demo.*
 import kotlinx.android.synthetic.main.activity_chat_demo.tvAdd
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
@@ -67,6 +68,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
             Log.i(TAG, "get new message ${blaMessage?.id}")
             if(blaMessage?.channelId == channel.id){
                 addNewMessage(blaMessage!!, 1)
+                Log.i(TAG, ""+blaMessage.type + " "+blaMessage.isSystemMessage)
                 markSeenMessage(blaMessage)
             }
 
@@ -110,7 +112,16 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
                 if(newMessage?.messageStatus == null){
                     newMessage?.messageStatus = CustomMessage.Status("Received by ${user?.name}", null, true)
                 }else{
-                    newMessage.messageStatus.receivedBy = "Received by ${user?.name}"
+                    if(TextUtils.isEmpty(newMessage.messageStatus.receivedBy))
+                        newMessage.messageStatus.receivedBy = "Received by ${user?.name}"
+                    else
+                    {
+                        Log.i(TAG, "user received before "+newMessage.messageStatus.receivedBy)
+                        if(!userIsInList(user?.id!!, newMessage.message.receivedBy))
+                            newMessage.messageStatus.receivedBy = newMessage.messageStatus.receivedBy.plus(", ${user.name}")
+                        Log.i(TAG, "user received after "+newMessage.messageStatus.receivedBy)
+
+                    }
                 }
 
                 messagesMap[message?.id!!] = newMessage!!
@@ -132,7 +143,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
         ) {
             if(channel?.id != this@ChatActivity.channel.id) return
             if (blaTypingEvent == BlaTypingEvent.START) {
-                runOnUiThread {
+                handlerTyping.post {
                     txtTyping.visibility = View.VISIBLE
                 }
 
@@ -142,7 +153,7 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
                     }
                 }, 3000)
             } else {
-                runOnUiThread {
+                handlerTyping.post {
                     txtTyping.visibility = View.GONE
                 }
                 handlerTyping.removeCallbacksAndMessages(null)
@@ -159,14 +170,22 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
             user: BlaUser?,
             message: BlaMessage?
         ) {
-            Log.i(TAG, "user seen "+channel?.id + " "+ user?.id + " "+message?.id)
             if(message?.channelId != channel?.id)   return
             val newMessage = messagesMap[message?.id]
             Log.i(TAG, "user seen "+channel?.id + " "+ user?.id + " "+message?.id+ " "+newMessage?.id+ " "+newMessage?.message?.content)
             if(newMessage?.messageStatus == null){
                 newMessage?.messageStatus = CustomMessage.Status(null, "Seen by ${user?.name}", true)
             }else{
-                newMessage.messageStatus.seenBy = "Seen by ${user?.name}"
+                newMessage.messageStatus.isShowing = true
+                if(TextUtils.isEmpty(newMessage.messageStatus.seenBy))
+                    newMessage.messageStatus.seenBy = "Seen by ${user?.name}"
+                else
+                {
+                    Log.i(TAG, "user seen before "+newMessage.messageStatus.seenBy)
+                    if(!userIsInList(user?.id!!, newMessage.message.seenBy))
+                        newMessage.messageStatus.seenBy = newMessage.messageStatus.seenBy.plus(", ${user?.name}")
+                    Log.i(TAG, "user seen after "+newMessage.messageStatus.seenBy)
+                }
             }
 
             messagesMap[message?.id!!] = newMessage!!
@@ -183,6 +202,14 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
         override fun onMemberJoin(channel: BlaChannel?, blaUser: BlaUser?) {
 
         }
+    }
+
+    private fun userIsInList(targetUserId: String, users: ArrayList<BlaUser>): Boolean{
+        users.forEach {
+            if( targetUserId == it.id)
+                return true
+        }
+        return false
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -219,7 +246,6 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
         chatSdk.getMessages(channel.id, lastId, 20, object : Callback<List<BlaMessage>> {
             override fun onSuccess(result: List<BlaMessage>?) {
-                Log.i(TAG, "${channel.id} has ${result?.size} in total")
                 val myMessages = arrayListOf<CustomMessage?>()
                 result?.forEach { it ->
                     Log.i(TAG, "${it.content} ${it.id} ${it.createdAt} ${it.sentAt}")
@@ -237,30 +263,37 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
                         )
                     }
 
-//                    var seenBy = "Seen by "
-//                    it.seenBy.forEach {
-//                        val name = it.name.split(Regex(" "))
-//                        seenBy+= name[0]+", "
-//                    }
-//
-//                    Log.e(TAG, "size: ${it.seenBy.size}")
-////                    if(it.isSystemMessage)
-////                        message.system = com.blameo.chatsdk.models.Message.System("",1)
-//                    if(it.seenBy.size > 0)
-//                        customMessage.messageStatus = CustomMessage.Status(seenBy.substring(0, seenBy.length - 2))
+                    val status = CustomMessage.Status(null, null, false)
+
+
+                    if(it.authorId == UserSP.getInstance().id){
+                        var receivedBy = "Received by "
+                        var seenBy = "Seen by "
+                        it.receivedBy.forEach {
+                            receivedBy+="${it.name}, "
+                        }
+
+                        it.seenBy.forEach {
+                            seenBy+="${it.name}, "
+                        }
+
+                        if(it.receivedBy.size > 0)
+                            status.receivedBy = receivedBy.substring(0, receivedBy.length - 2)
+
+                        if(it.seenBy.size > 0)
+                            status.seenBy = seenBy.substring(0, seenBy.length - 2)
+                    }
+
+                    customMessage.messageStatus = status
                     customMessage.myCustomUser = customUser
                     myMessages.add(customMessage)
                     messagesMap[customMessage.id] = customMessage
 
                 }
 
-
-
                 isLoading = result?.size!! > 0
 
-                Log.i(TAG, "" + myMessages.size)
-
-                runOnUiThread {
+                handler.post {
                     adapter.addToEnd(myMessages, false)
                 }
                 if(myMessages.size > 0) {
@@ -402,16 +435,18 @@ class ChatActivity : AppCompatActivity(), ChatListener.MarkSeenMessageListener,
 
         if (type == 2)
             m.setImage(CustomMessage.Image(defaultImageUrl))
-        else if (type == 3) {
+        else if (type == 3 || message.isSystemMessage) {
             m.setSystem(
                 CustomMessage.System(
                     "http://example.com",
                     250
                 )
             )
+            if(message.isSystemMessage)
+                m.myCustomUser = CustomUser(usersMap[UserSP.getInstance().id])
         }
 
-        runOnUiThread {
+        handler.post {
             adapter.addToStart(m, true)
             messagesMap[m.id] = m
         }
