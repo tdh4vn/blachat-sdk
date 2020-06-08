@@ -1,7 +1,7 @@
 package com.blameo.chatsdk.blachat;
 
-import com.blameo.chatsdk.models.bla.BlaUser;
+import com.blameo.chatsdk.models.bla.BlaUserPresence;
 
 public interface BlaPresenceListener {
-    void onUpdate(BlaUser user);
+    void onUpdate(BlaUserPresence user);
 }

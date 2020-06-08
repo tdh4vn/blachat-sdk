@@ -1,25 +1,31 @@
 package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
-import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
-import com.blameo.chatsdk.models.bla.BlaTypingEvent;
+import com.blameo.chatsdk.models.bla.EventType;
+import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.ChannelsBody;
 import com.blameo.chatsdk.models.bodies.CreateChannelBody;
 import com.blameo.chatsdk.models.bodies.InviteUserToChannelBody;
+import com.blameo.chatsdk.models.bodies.RemoveUserFromChannelBody;
+import com.blameo.chatsdk.models.bodies.UpdateChannelBody;
 import com.blameo.chatsdk.models.bodies.UsersBody;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.ChannelWithLastMessage;
 import com.blameo.chatsdk.models.entities.ChannelWithUser;
 import com.blameo.chatsdk.models.entities.Message;
+import com.blameo.chatsdk.models.entities.MessageWithUserReact;
+import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserInChannel;
+import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.results.BaseResult;
 import com.blameo.chatsdk.models.results.CreateChannelResult;
 import com.blameo.chatsdk.models.results.GetChannelResult;
+import com.blameo.chatsdk.models.results.GetChannelsResult;
 import com.blameo.chatsdk.models.results.GetMembersOfMultiChannelResult;
 import com.blameo.chatsdk.models.results.GetUsersByIdsResult;
 import com.blameo.chatsdk.models.results.MembersInChannelRemoteDTO;
@@ -28,20 +34,12 @@ import com.blameo.chatsdk.repositories.local.dao.ChannelDao;
 import com.blameo.chatsdk.repositories.local.dao.MessageDao;
 import com.blameo.chatsdk.repositories.local.dao.UserDao;
 import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
-import com.blameo.chatsdk.repositories.local.dao.UserReactMessageDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -74,11 +72,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
 //        exportDB();
-        try {
-            blaChatAPI.getAllMembers().execute();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            blaChatAPI.getAllMembers().execute();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
@@ -86,6 +84,8 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         Response<GetMembersOfMultiChannelResult> getMembersOfMultiChannelResultResponse = blaChatAPI.getMembersOfMultiChannel(new ChannelsBody(
                 channelIds
         )).execute();
+
+        Log.i(TAG, "channel repo : "+channelIds.get(0));
 
         if (getMembersOfMultiChannelResultResponse.isSuccessful()) {
             assert getMembersOfMultiChannelResultResponse.body() != null;
@@ -117,7 +117,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         List<ChannelWithLastMessage> channels = channelDao.getChannelsWithLastMessage(lastUpdate, limit);
 
         if (channels.isEmpty()) {
-            Response<GetChannelResult> response = blaChatAPI.getChannel(
+            Response<GetChannelsResult> response = blaChatAPI.getChannel(
                     limit,
                     lastChannelId
             ).execute();
@@ -176,15 +176,57 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
         ArrayList<BlaChannel> blaChannels = new ArrayList<>();
         for (ChannelWithLastMessage c: channels) {
-            blaChannels.add(new BlaChannel(c.channel, c.lastMessage));
+            BlaChannel channel = new BlaChannel(c.channel, c.lastMessage);
+
+            if(c.lastMessage != null){
+                MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(c.lastMessage.getId());
+                ArrayList<BlaUser> usersReceivedMesssage = new ArrayList<>();
+                ArrayList<BlaUser> usersSeenMessage = new ArrayList<>();
+                for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
+
+                    BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
+
+                    if(userReactMessage.getType() == UserReactMessage.RECEIVE){
+                        usersReceivedMesssage.add(targetUser);
+                    }else
+                        usersSeenMessage.add(targetUser);
+                }
+                channel.getLastMessage().setReceivedBy(usersReceivedMesssage);
+                channel.getLastMessage().setSeenBy(usersSeenMessage);
+            }
+            blaChannels.add(channel);
         }
 
         return blaChannels;
     }
 
-    @Override
-    public BlaChannel updateChannel(BlaChannel newChannel) {
+    private BlaUser getUserReactMessage(ArrayList<User> users, String targetUserId){
+        for(User user : users){
+            if(user.getId().equals(targetUserId))
+                return new BlaUser(user);
+        }
         return null;
+    }
+
+    @Override
+    public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
+        Response<GetChannelResult> channelResult = blaChatAPI.updateChannel(newChannel.getId(),
+                new UpdateChannelBody(newChannel.getName(), newChannel.getAvatar()))
+                .execute();
+
+        Log.i(TAG, "update: "+newChannel.getId() + " "+newChannel.getName()
+        + " "+ newChannel.getAvatar());
+
+        if(channelResult.isSuccessful()){
+            Log.i(TAG, "success: "+channelResult.body().getData());
+        }else{
+            Log.i(TAG, "error "+channelResult.errorBody().string());
+        }
+
+        Channel channel = channelResult.body().getData();
+        channelDao.update(channel);
+
+        return new BlaChannel(channel);
     }
 
     @Override
@@ -194,7 +236,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
             return new BlaChannel(channel);
         }
 
-        Response<GetChannelResult> response = blaChatAPI.getChannelByIds(new ChannelsBody(
+        Response<GetChannelsResult> response = blaChatAPI.getChannelByIds(new ChannelsBody(
                 Collections.singletonList(id)
         )).execute();
 
@@ -209,14 +251,25 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     }
 
     @Override
-    public boolean deleteChannel(String channelID) {
+    public boolean deleteChannel(String channelID) throws IOException {
+         Response<BaseResult> result =  blaChatAPI.deleteChannelById(channelID).execute();
+         if(result.isSuccessful()){
+             assert result.body() != null;
+             Log.i(TAG, "delete channel "+result.body().success());
+             Channel channel = channelDao.getChannelById(channelID);
+             if(channel != null)
+                channelDao.delete(channel);
+             return result.body().success();
+         }else{
+             Log.i(TAG, "e "+result.errorBody().string());
+         }
         return false;
     }
 
     @Override
-    public BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
+    public BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
         Response<CreateChannelResult> result = blaChatAPI.createChannel(new CreateChannelBody(
-                userIds, name, blaChannelType.getValue(), avatar
+                userIds, name, blaChannelType.getValue(), ""
         )).execute();
         if (result.isSuccessful() && result.body() != null) {
             Channel channel = result.body().getData();
@@ -248,8 +301,8 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     }
 
     @Override
-    public boolean sendTypingEvent(String channelId, BlaTypingEvent typingEvent) throws Exception {
-        if (typingEvent == BlaTypingEvent.START) {
+    public boolean sendTypingEvent(String channelId, EventType typingEvent) throws Exception {
+        if (typingEvent == EventType.START) {
             Response<BaseResult> baseResultResponse = blaChatAPI.putTypingEvent(channelId).execute();
             return baseResultResponse.isSuccessful();
         }
@@ -276,6 +329,15 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     public void usersAddedToChannel(String channelId, List<String> userIds) {
         for(String id: userIds) {
             userInChannelDao.insert(new UserInChannel(channelId, id, new Date(), new Date()));
+        }
+    }
+
+    @Override
+    public void removeUserFromChannel(String userId, String channelId) throws Exception {
+        RemoveUserFromChannelBody body = new RemoveUserFromChannelBody(userId, channelId);
+        Response<BaseResult> response = blaChatAPI.removeUserFromChannel(body).execute();
+        if(response.isSuccessful()){
+            userInChannelDao.delete(new UserInChannel(channelId, userId, new Date(), new Date()));
         }
     }
 }

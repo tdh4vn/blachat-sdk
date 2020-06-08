@@ -1,7 +1,7 @@
 package com.blameo.chatsdk.models.bla;
 
 public enum BlaPresenceState {
-    ONLINE(1), OFFLINE(2);
+    ONLINE(2), OFFLINE(1);
 
     private int status;
 

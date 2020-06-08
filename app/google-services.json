@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "150774280847",
+    "firebase_url": "https://meochat-5d013.firebaseio.com",
+    "project_id": "meochat-5d013",
+    "storage_bucket": "meochat-5d013.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150774280847:android:01b109f73bf48e5aa436fa",
+        "android_client_info": {
+          "package_name": "com.blameo.chatsdk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "150774280847-8qk0oqv7lu205p7adbn34mvq31ue8195.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMUAWMs2FW8Ew5RaeIrNlUpEcfc46jDcU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "150774280847-8qk0oqv7lu205p7adbn34mvq31ue8195.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

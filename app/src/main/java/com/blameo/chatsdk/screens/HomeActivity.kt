@@ -45,6 +45,7 @@ class HomeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_home)
 
         val intent = Intent(this, MainActivity::class.java)
+
         btn_user1.setOnClickListener {
             intent.putExtra("USER_ID", my_id_user1)
             intent.putExtra("TOKEN", token_user1)

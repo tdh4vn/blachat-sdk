@@ -102,7 +102,7 @@ class CreateChannelActivity : AppCompatActivity() {
 
     private fun createChannel(name: String, type: BlaChannelType) {
 
-        chatSdk.createChannel(name, "", uIds, type, object : Callback<BlaChannel> {
+        chatSdk.createChannel(name, uIds, type, object : Callback<BlaChannel> {
             override fun onSuccess(channel: BlaChannel?) {
                 Log.e(TAG, "create channel success: ${channel?.id} ${channel?.name}")
                 runOnUiThread {

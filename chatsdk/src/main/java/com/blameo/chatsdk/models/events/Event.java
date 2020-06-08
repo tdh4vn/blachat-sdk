@@ -1,9 +1,16 @@
 package com.blameo.chatsdk.models.events;
 
+import com.google.gson.annotations.SerializedName;
+
 import org.json.JSONObject;
 
 public class Event {
+
     private String type;
+
+    @SerializedName("event_id")
+    private String eventId;
+
     private JSONObject payload;
 
     public String getType() {
@@ -23,4 +30,11 @@ public class Event {
     }
 
 
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
+    }
 }

@@ -2,6 +2,9 @@ package com.blameo.chatsdk;
 
 import android.app.Application;
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.core.ImagePipelineConfig;
+import com.facebook.imagepipeline.decoder.SimpleProgressiveJpegConfig;
 import com.nostra13.universalimageloader.cache.disc.naming.Md5FileNameGenerator;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -15,7 +18,8 @@ public class DemoApplication extends Application {
     private static DemoApplication instance;
     private ImageLoaderConfiguration.Builder config;
 
-    public static DemoApplication getInstance() { return instance;
+    public static DemoApplication getInstance() {
+        return instance;
     }
 
     private DisplayImageOptions options = new DisplayImageOptions.Builder()
@@ -45,6 +49,17 @@ public class DemoApplication extends Application {
             ImageLoader.getInstance().init(config.build());
         }
 
+        ImagePipelineConfig cf = ImagePipelineConfig.newBuilder(this)
+                .setProgressiveJpegConfig(new SimpleProgressiveJpegConfig())
+                .setResizeAndRotateEnabledForNetwork(true)
+                .setDownsampleEnabled(true)
+                .build();
 
+        Fresco.initialize(this, cf);
+
+    }
+
+    public DisplayImageOptions getImageOptions(){
+        return options;
     }
 }

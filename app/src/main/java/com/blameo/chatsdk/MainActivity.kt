@@ -1,25 +1,21 @@
 package com.blameo.chatsdk
 
-import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.blameo.chatsdk.adapters.CustomDialogViewHolder
-import com.blameo.chatsdk.blachat.BlaChannelEventListener
+import com.blameo.chatsdk.blachat.ChannelEventListener
 import com.blameo.chatsdk.blachat.BlaChatSDK
-import com.blameo.chatsdk.blachat.BlaMessageListener
+import com.blameo.chatsdk.blachat.MessagesListener
 import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.UserVMStore
 import com.blameo.chatsdk.models.CustomChannel
-import com.blameo.chatsdk.models.bla.BlaChannel
-import com.blameo.chatsdk.models.bla.BlaMessage
-import com.blameo.chatsdk.models.bla.BlaTypingEvent
-import com.blameo.chatsdk.models.bla.BlaUser
+import com.blameo.chatsdk.models.bla.*
 import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.results.UserStatus
 import com.blameo.chatsdk.screens.ChatActivity
@@ -36,7 +32,7 @@ class MainActivity : AppCompatActivity(),  DialogsListAdapter.OnDialogClickListe
 DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
     lateinit var chatSdk: BlaChatSDK
-    lateinit var adapter: ChannelAdapter
+    lateinit var channelAdapter: DialogsListAdapter<CustomChannel>
     private val TAG = "MAIN"
 
     private var token = ""
@@ -50,6 +46,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
     private val ws = "ws://$IP:8001/connection/websocket?format=protobuf"
     private var channels: ArrayList<Channel> = arrayListOf()
     lateinit var userVMStore: UserVMStore
+    lateinit var handler: Handler
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -84,7 +81,6 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
     private fun init() {
 
-
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         toolbar.setNavigationOnClickListener {
@@ -98,13 +94,13 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
                 imageView.setImageResource(R.drawable.default_avatar)
         }
 
-        val channelAdapter = DialogsListAdapter<CustomChannel>(
+        channelAdapter = DialogsListAdapter<CustomChannel>(
             R.layout.item_custom_dialog_view_holder,
             CustomDialogViewHolder::class.java,
             imageLoader
         )
 
-        val handler = Handler()
+        handler = Handler()
 
         userVMStore = UserVMStore.getInstance()
 
@@ -148,15 +144,15 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
         }
 
         chatSdk.addPresenceListener { user ->
-            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.id, 1))
-            userPresence.updateStatus(user.isOnline)
+            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.blaUser?.id, 1))
+            userPresence.updateStatus(user.blaUser.isOnline)
         }
 
-        chatSdk.getUsersPresence(object : Callback<List<BlaUser>>{
-            override fun onSuccess(result: List<BlaUser>?) {
+        chatSdk.getUserPresence(object : Callback<List<BlaUserPresence>>{
+            override fun onSuccess(result: List<BlaUserPresence>?) {
                 result?.forEach {
-                    val userPresence = userVMStore.getUserViewModel(UserStatus(it.id, 1))
-                    userPresence.updateStatus(it.isOnline)
+                    val userPresence = userVMStore.getUserViewModel(UserStatus(it.blaUser.id, 1))
+                    userPresence.updateStatus(it.blaUser.isOnline)
                 }
             }
 
@@ -165,14 +161,14 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             }
         })
 
-
-        chatSdk.addMessageListener(object : BlaMessageListener{
+        chatSdk.addMessageListener(object :
+            MessagesListener {
             override fun onNewMessage(blaMessage: BlaMessage?) {
                 try {
                     val channelVM = channelVMStore.getChannelByID(blaMessage?.channelId!!)
-                    channelVM.updateNewMessage(blaMessage)
-                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, object : Callback<Void>{
-                        override fun onSuccess(result: Void?) {
+                    channelVM.updateNewMessage(blaMessage, false)
+                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, blaMessage.authorId, object : Callback<Boolean>{
+                        override fun onSuccess(result: Boolean?) {
 
                         }
 
@@ -207,7 +203,8 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             }
         })
 
-        chatSdk.addEventChannelListener(object : BlaChannelEventListener{
+        chatSdk.addChannelListener(object :
+            ChannelEventListener {
             override fun onMemberLeave(channel: BlaChannel?, blaUser: BlaUser?) {
             }
 
@@ -225,7 +222,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             override fun onTyping(
                 channel: BlaChannel?,
                 blaUser: BlaUser?,
-                blaTypingEvent: BlaTypingEvent?
+                eventType: EventType?
             ) {
             }
 
@@ -260,8 +257,34 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             .putExtra("CHANNEL", channel?.id))
     }
 
-    override fun onDialogLongClick(dialog: CustomChannel?) {
+    override fun onDialogLongClick(channel: CustomChannel?) {
 
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Delete channel")
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, which ->
+                deleteChannel(channel?.channel)
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+
+            }.create()
+
+        dialog.show()
+    }
+
+    private fun deleteChannel(channel: BlaChannel?) {
+
+        chatSdk.deleteChannel(channel!!, object : Callback<BlaChannel>{
+            override fun onSuccess(result: BlaChannel?) {
+                handler.post {
+                    channelAdapter.deleteById(result?.id)
+                }
+            }
+
+            override fun onFail(e: java.lang.Exception?) {
+
+            }
+        })
     }
 
 }

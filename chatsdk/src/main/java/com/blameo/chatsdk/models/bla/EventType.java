@@ -1,10 +1,10 @@
 package com.blameo.chatsdk.models.bla;
 
-public enum BlaTypingEvent {
+public enum EventType {
     START(1), STOP(2);
 
     private int id;
-    BlaTypingEvent(int id) {
+    EventType(int id) {
         this.id = id;
     }
 

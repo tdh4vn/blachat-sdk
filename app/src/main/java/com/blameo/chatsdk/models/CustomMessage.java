@@ -8,13 +8,14 @@ import com.stfalcon.chatkit.commons.models.IMessage;
 import com.stfalcon.chatkit.commons.models.IUser;
 import com.stfalcon.chatkit.commons.models.MessageContentType;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import static com.blameo.chatsdk.models.CustomMessage.MESSAGE_STATUS.RECEIVE;
 import static com.blameo.chatsdk.models.CustomMessage.MESSAGE_STATUS.SEEN;
 
 
-public class CustomMessage implements IMessage, MessageContentType.Image, MessageContentType {
+public class CustomMessage implements Serializable, IMessage, MessageContentType.Image, MessageContentType {
 
     @Nullable
     @Override

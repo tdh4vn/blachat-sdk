@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface MessageRepository {
     List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException;
-    BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, HashMap<String, Object> customData);
+    BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, HashMap<String, Object> customData);
     BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
     BlaMessage saveMessage(Message message);
     boolean userSeenMyMessage(String userId, String messageId, Date time);
@@ -20,4 +20,6 @@ public interface MessageRepository {
     boolean sendReceiveEvent(String chanelId, String messageId, String authorId) throws Exception;
     BlaMessage getMessageById(String messageId);
     void syncUnSentMessages() throws Exception;
+    BlaMessage deleteMessage(BlaMessage message) throws Exception;
+    BlaMessage updateMessage(BlaMessage message) throws Exception;
 }

@@ -2,4 +2,7 @@
 <resources>
     <dimen name="activity_margin">16dp</dimen>
     <dimen name="card_padding">40dp</dimen>
+    <dimen name="activity_sell_gird_view_vertical_spacing">16dp</dimen>
+    <dimen name="activity_sell_gird_view_horizontal_spacing">16dp</dimen>
+    <dimen name="activity_sell_gird_view_margin_top">16dp</dimen>
 </resources>

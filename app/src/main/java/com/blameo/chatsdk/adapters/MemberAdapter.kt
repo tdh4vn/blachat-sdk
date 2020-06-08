@@ -15,14 +15,12 @@ import com.blameo.chatsdk.controllers.UserViewModel
 import com.blameo.chatsdk.models.bla.BlaUser
 import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
-import com.blameo.chatsdk.utils.UserSP
 import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 
 class MemberAdapter(val context: Context, private val users: List<BlaUser>, private val myId: String, private val type: Int) :
     RecyclerView.Adapter<MemberAdapter.MemberVH>() {
-
 
     val userVMStore = UserVMStore.getInstance()
 
@@ -32,11 +30,25 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
     }
 
     private var selectUserListener: SelectUserListener? = null
+    private var itemClickListener: ItemClickListener?  = null
 
     fun setListener(listener: SelectUserListener){
         selectUserListener = listener
     }
 
+    fun setItemClickListener(itemClickListener: ItemClickListener){
+        this.itemClickListener = itemClickListener
+    }
+
+    fun notifyAdapterChange(position: Int){
+        (users as MutableList).removeAt(position)
+        notifyItemRemoved(position)
+        notifyDataSetChanged()
+    }
+
+    interface ItemClickListener {
+        fun onClick(userId: String, position: Int, isLongClick: Boolean)
+    }
 
     private var options: DisplayImageOptions = DisplayImageOptions.Builder()
         .cacheInMemory(true)
@@ -48,8 +60,9 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
         .build()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberVH {
+        val view = LayoutInflater.from(context).inflate(R.layout.item_user, parent, false)
         return MemberVH(
-            LayoutInflater.from(context).inflate(R.layout.item_user, parent, false),
+            view,
             context
         )
     }
@@ -74,9 +87,14 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
 
         if(type == 1)
         {
-            holder.itemView.isEnabled = false
             holder.itemView.isClickable = false
+            holder.itemView.isLongClickable = true
             holder.imgCheck.visibility = View.INVISIBLE
+            holder.itemView.setOnLongClickListener {
+                Log.i("Adsd", ""+position)
+                itemClickListener?.onClick(member.id, position, true)
+                true
+            }
         }
 
         holder.itemView.setOnClickListener {
@@ -98,21 +116,19 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
         var tvName: TextView = view.findViewById(R.id.tvName)
         var imgCheck: ImageView = view.findViewById(R.id.imgSelected)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
-        var imgStatus: View= view.findViewById(R.id.imgStatus)
+        var imgStatus: View = view.findViewById(R.id.imgStatus)
 
         fun bindUser(user: User, userStatus: UserViewModel, options: DisplayImageOptions, context: Context) {
             if(!TextUtils.isEmpty(user.name))
                 tvName.text = user.name
             if(!TextUtils.isEmpty(user.avatar))
                 ImageLoader.getInstance().displayImage(user.avatar, imgAvatar, options)
-
             userStatus.status.observeForever { status ->
                 if(status){
                     imgStatus.setBackgroundResource(R.drawable.shape_bubble_online)
                 }else
                     imgStatus.setBackgroundResource(R.drawable.shape_bubble_offline)
             }
-
         }
     }
 }

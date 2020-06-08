@@ -1,7 +1,10 @@
 package com.blameo.chatsdk.repositories.remote.api
 
+import androidx.room.Update
 import com.blameo.chatsdk.models.bodies.CreateMessageBody
+import com.blameo.chatsdk.models.bodies.DeleteMessageBody
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody
+import com.blameo.chatsdk.models.bodies.UpdateMessageBody
 import com.blameo.chatsdk.models.results.BaseResult
 import com.blameo.chatsdk.models.results.GetMessageByIDResult
 import com.blameo.chatsdk.models.results.GetMessagesResult
@@ -41,5 +44,15 @@ interface MessageAPI {
         @Path("channelId") channelId: String,
         @Query("latestId") latestId: String
     ): Call<GetMessagesResult>
+
+    @HTTP(method = "DELETE", path = "delete", hasBody = true)
+    fun deleteMessage(
+        @Body body: DeleteMessageBody
+    ): Call<BaseResult>
+
+    @PUT("update")
+    fun updateMessage(
+        @Body body: UpdateMessageBody
+    ): Call<GetMessageByIDResult>
 
 }

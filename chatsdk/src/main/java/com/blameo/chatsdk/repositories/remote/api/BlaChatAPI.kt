@@ -1,9 +1,6 @@
 package com.blameo.chatsdk.repositories.remote.api
 
-import com.blameo.chatsdk.models.bodies.ChannelsBody
-import com.blameo.chatsdk.models.bodies.CreateChannelBody
-import com.blameo.chatsdk.models.bodies.UsersBody
-import com.blameo.chatsdk.models.bodies.InviteUserToChannelBody
+import com.blameo.chatsdk.models.bodies.*
 import com.blameo.chatsdk.models.results.*
 import retrofit2.Call
 import retrofit2.http.*
@@ -14,7 +11,7 @@ interface BlaChatAPI {
     fun getChannel(
         @Query("pageSize") pageSize: Long,
         @Query("lastId") lastId: String
-    ): Call<GetChannelResult>
+    ): Call<GetChannelsResult>
 
     @GET("user/channels/members/{id}")
     fun getUsersInChannels(
@@ -48,7 +45,7 @@ interface BlaChatAPI {
     @GET("user/channels/channel")
     fun getNewerChannels(
         @Query("channelId") channelId: String
-    ): Call<GetChannelResult>
+    ): Call<GetChannelsResult>
 
     @POST("user/channels/invite/{channelId}")
     fun inviteUserToChannel(
@@ -64,6 +61,32 @@ interface BlaChatAPI {
     @POST("user/channels/multi-channel")
     fun getChannelByIds(
         @Body body: ChannelsBody
+    ): Call<GetChannelsResult>
+
+    @GET("events/gets")
+    fun getEvent(
+        @Query("eventId") eventId: String
+    ): Call<GetEventResult>
+
+    @PUT("user/channels/channel/{channelId}")
+    fun updateChannel(
+        @Path("channelId") channelID: String,
+        @Body body: UpdateChannelBody
     ): Call<GetChannelResult>
+
+    @DELETE("user/channels/delete/{channelId}")
+    fun deleteChannelById(
+        @Path("channelId") channelID: String
+    ): Call<BaseResult>
+
+    @HTTP(method = "DELETE", path = "user/channels/remove-user", hasBody = true)
+    fun removeUserFromChannel(
+        @Body body: RemoveUserFromChannelBody
+    ): Call<BaseResult>
+
+//    @DELETE("user/channels/remove-user")
+//    fun removeUserFromChannel(
+//        @Body body: RemoveUserFromChannelBody
+//    ): Call<BaseResult>
 
 }

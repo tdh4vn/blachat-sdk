@@ -1,10 +1,11 @@
 package com.blameo.chatsdk.blachat;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.Looper;
+import android.os.Build;
 import android.os.StrictMode;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import com.blameo.chatsdk.controllers.ChannelController;
 import com.blameo.chatsdk.controllers.ChannelControllerImpl;
@@ -15,9 +16,8 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
-import com.blameo.chatsdk.models.bodies.UpdateStatusBody;
+import com.blameo.chatsdk.models.bla.BlaUserPresence;
 import com.blameo.chatsdk.models.entities.Message;
-import com.blameo.chatsdk.models.results.UsersStatusResult;
 import com.blameo.chatsdk.repositories.MessageRepository;
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
@@ -29,10 +29,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import io.github.centrifugal.centrifuge.Client;
 import io.github.centrifugal.centrifuge.ConnectEvent;
@@ -53,7 +55,6 @@ import io.github.centrifugal.centrifuge.Subscription;
 import io.github.centrifugal.centrifuge.SubscriptionEventListener;
 import io.github.centrifugal.centrifuge.TokenCallback;
 import io.github.centrifugal.centrifuge.UnsubscribeEvent;
-import retrofit2.Response;
 
 public class BlaChatSDK implements BlaChatSDKProxy {
 
@@ -69,6 +70,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private String id;
     private Context applicationContext;
     private String TAG = "SDK";
+    private HashMap<String ,BlaUser> usersMap = new HashMap<>();
 
     private EventHandler eventHandler;
 
@@ -83,6 +85,14 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private BlaChatSDK() {
     }
 
+    private HashMap<String, BlaUser> getUsersMap(){
+        return usersMap;
+    }
+
+    private void setUsersMap(HashMap<String, BlaUser> map){
+        usersMap = map;
+    }
+
     public static BlaChatSDK getInstance() {
         //TODO: thread safe
         if (instance == null) {
@@ -90,7 +100,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         }
         return instance;
     }
-
 
     @Override
     public void init(Context context, String userId, String token) {
@@ -112,9 +121,23 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
         syncUnsentMessages();
 
+        getEvent();
+
+        getAllUsers(null);
+
+    }
+
+    private void getEvent() {
+
+        try {
+            executors.submit(() ->{
+                eventHandler.getEvent();
+            });
+        }catch (Exception e){}
     }
 
     private void syncUnsentMessages() {
+
         try {
             executors.submit(() -> {
                 try {
@@ -139,7 +162,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
             @Override
             public void onDisconnect(Client client, DisconnectEvent event) {
                 super.onDisconnect(client, event);
-                Log.i(TAG, "disconnect");
             }
 
             @Override
@@ -223,23 +245,23 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void addMessageListener(BlaMessageListener blaMessageListener) {
-        this.eventHandler.addMessageListener(blaMessageListener);
+    public void addMessageListener(MessagesListener messagesListener) {
+        this.eventHandler.addMessageListener(messagesListener);
     }
 
     @Override
-    public void removeMessageListener(BlaMessageListener blaMessageListener) {
-        this.eventHandler.removeMessageListener(blaMessageListener);
+    public void removeMessageListener(MessagesListener messagesListener) {
+        this.eventHandler.removeMessageListener(messagesListener);
     }
 
     @Override
-    public void addEventChannelListener(BlaChannelEventListener blaChannelEventListener) {
-        this.eventHandler.addEventChannelListener(blaChannelEventListener);
+    public void addChannelListener(ChannelEventListener channelEventListener) {
+        this.eventHandler.addEventChannelListener(channelEventListener);
     }
 
     @Override
-    public void removeChannelListener(BlaChannelEventListener blaChannelEventListener) {
-        this.eventHandler.removeEventChannelListener(blaChannelEventListener);
+    public void removeChannelListener(ChannelEventListener channelEventListener) {
+        this.eventHandler.removeEventChannelListener(channelEventListener);
     }
 
     @Override
@@ -250,10 +272,11 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
-                List<BlaUser> users = userRepository.getAllUsersStates();
+                List<BlaUserPresence> users = userRepository.getAllUsersStates();
                 if (users != null && users.size() > 0)
-                    for (BlaUser user : users) {
-                        blaPresenceListener.onUpdate(user);
+                    for (BlaUserPresence user : users) {
+                        if(blaPresenceListener != null)
+                            blaPresenceListener.onUpdate(user);
                     }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -262,12 +285,17 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void getChannels(String channelId, Long offset, Callback<List<BlaChannel>> callback) {
+    public void removePresenceListener(BlaPresenceListener blaPresenceListener) {
+
+    }
+
+    @Override
+    public void getChannels(String lastId, Integer limit, Callback<List<BlaChannel>> callback) {
         try {
             executors.submit(() -> {
                 List<BlaChannel> channels = null;
                 try {
-                    channels = channelController.getChannels(channelId, offset);
+                    channels = channelController.getChannels(lastId, limit);
                 } catch (Exception e) {
                     callback.onFail(e);
                     e.printStackTrace();
@@ -309,15 +337,20 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void getMessages(String channelId, String lastID, Long limit, Callback<List<BlaMessage>> callback) {
+    public void getMessages(String channelId, String lastId, Integer limit, Callback<List<BlaMessage>> callback) {
         try {
             executors.submit(() -> {
                 List<BlaMessage> messages = null;
                 try {
-                    messages = messageRepository.getMessages(channelId, lastID, limit);
+                    messages = messageRepository.getMessages(channelId, lastId, limit);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+                messages = handleMessages(messages);
+
+                Log.i(TAG, "xyz: "+messages.size());
+
                 callback.onSuccess(messages);
             }).get();
         } catch (Exception e) {
@@ -325,13 +358,28 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         }
     }
 
+    private List<BlaMessage> handleMessages(List<BlaMessage> messages) {
+        Log.i(TAG, "abcd: "+messages.size());
+
+        for (BlaMessage message: messages){
+            Log.i(TAG, "convert");
+            BlaUser author = getUsersMap().get(message.getAuthorId());
+//            Log.i(TAG, "author: "+author.getId() + " "+author.getName());
+            if(author!= null)
+                message.setAuthor(author);
+        }
+
+        Log.i(TAG, "def "+messages.size());
+
+        return messages;
+    }
+
     @Override
-    public void createChannel(String name, String avatar, List<String> userIds, BlaChannelType channelType, Callback<BlaChannel> callback) throws Exception {
+    public void createChannel(String name, List<String> userIds, BlaChannelType channelType, Callback<BlaChannel> callback) throws Exception {
         executors.submit(() -> {
             try {
                 BlaChannel channel = channelController.createChannel(
                         name,
-                        avatar,
                         userIds,
                         channelType
                 );
@@ -347,7 +395,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     public void updateChannel(BlaChannel newChannel, Callback<BlaChannel> callback) {
         try {
             executors.submit(() -> {
-                callback.onSuccess(channelController.updateChannel(newChannel));
+                try {
+                    callback.onSuccess(channelController.updateChannel(newChannel));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    callback.onFail(e);
+                }
             }).get();
         } catch (Exception e) {
             callback.onFail(e);
@@ -357,10 +410,17 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void deleteChannel(String channelId, Callback<Boolean> callback) {
+    public void deleteChannel(BlaChannel blaChannel, Callback<BlaChannel> callback) {
         try {
             executors.submit(() -> {
-                callback.onSuccess(channelController.deleteChannel(channelId));
+                try {
+                    boolean res = channelController.deleteChannel(blaChannel.getId());
+                    if(res)
+                        callback.onSuccess(blaChannel);
+                } catch (IOException e) {
+                    callback.onFail(e);
+                    e.printStackTrace();
+                }
             }).get();
         } catch (Exception e) {
             callback.onFail(e);
@@ -369,12 +429,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void sendStartTyping(String channelID, Callback<Void> callback) {
+    public void sendStartTyping(String channelID, Callback<Boolean> callback) {
         try {
             executors.submit(() -> {
                 try {
                     channelController.sendStartTypingEvent(channelID);
-                    callback.onSuccess(null);
+                    callback.onSuccess(true);
                 } catch (Exception e) {
                     callback.onFail(e);
                     e.printStackTrace();
@@ -387,12 +447,13 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void sendStopTyping(String channelID, Callback<Void> callback) {
+    public void sendStopTyping(String channelID, Callback<Boolean> callback) {
+
         try {
             executors.submit(() -> {
                 try {
                     channelController.sendStopTypingEvent(channelID);
-                    callback.onSuccess(null);
+                    callback.onSuccess(true);
                 } catch (Exception e) {
                     callback.onFail(e);
                     e.printStackTrace();
@@ -405,13 +466,13 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void markSeenMessage(String messageID, String channelID, Callback<Void> callback) {
+    public void markSeenMessage(String messageId, String channelId, String seenId, Callback<Boolean> callback) {
         try {
             executors.submit(() -> {
-                Message message = messageRepository.getMessageById(messageID);
+                messageRepository.userSeenMyMessage(id, messageId, new Date());
                 try {
-                    messageRepository.sendSeenEvent(message.getChannelId(), message.getId(), message.getAuthorId());
-                    callback.onSuccess(null);
+                    messageRepository.sendSeenEvent(channelId, messageId, seenId);
+                    callback.onSuccess(true);
                 } catch (Exception e) {
                     callback.onFail(e);
                     e.printStackTrace();
@@ -424,13 +485,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void markReceiveMessage(String messageID, String channelID, Callback<Void> callback) {
+    public void markReceiveMessage(String messageId, String channelId, String receiveId, Callback<Boolean> callback) {
         try {
             executors.submit(() -> {
-                Message message = messageRepository.getMessageById(messageID);
                 try {
-                    messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
-                    callback.onSuccess(null);
+                    messageRepository.sendReceiveEvent(channelId, messageId, receiveId);
+                    callback.onSuccess(true);
                 } catch (Exception e) {
                     callback.onFail(e);
                     e.printStackTrace();
@@ -452,16 +512,18 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                             id,
                             channelID,
                             content,
+                            type.getType(),
                             customData
                     );
 
-
-                    channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
-                    Log.i(TAG, "create message: " + message.getId());
-
-                    BlaMessage m = messageRepository.sendMessage(message);
-                    callback.onSuccess(m);
-                    channelController.updateLastMessageOfChannel(m.getChannelId(), m.getId());
+                    try{
+                        BlaMessage m = messageRepository.sendMessage(message);
+                        callback.onSuccess(m);
+                        channelController.updateLastMessageOfChannel(m.getChannelId(), m.getId());
+                    }catch (Exception e){
+                        callback.onSuccess(message);
+                        channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
+                    }
 
                 } catch (Exception e) {
                     callback.onFail(e);
@@ -475,21 +537,37 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     @Override
     public void updateMessage(BlaMessage updatedMessage, Callback<BlaMessage> callback) {
-        //TODO: update message
+        executors.submit(() -> {
+            try {
+                BlaMessage message = messageRepository.updateMessage(updatedMessage);
+                callback.onSuccess(message);
+            } catch (Exception e) {
+                callback.onFail(e);
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
     public void deleteMessage(BlaMessage deletedMessage, Callback<BlaMessage> callback) {
-        //TODO: delete message
+        executors.submit(() -> {
+            try {
+                BlaMessage message = messageRepository.deleteMessage(deletedMessage);
+                callback.onSuccess(message);
+            } catch (Exception e) {
+                callback.onFail(e);
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void inviteUserToChannel(List<String> usersID, String channelId, Callback<Void> callback) {
+    public void inviteUserToChannel(List<String> usersID, String channelId, Callback<Boolean> callback) {
 
         executors.submit(() -> {
             try {
                 channelController.inviteUsersToChannel(channelId, usersID);
-                callback.onSuccess(null);
+                callback.onSuccess(true);
             } catch (Exception e) {
                 callback.onFail(e);
                 e.printStackTrace();
@@ -499,12 +577,19 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void removeUserFromChannel(String userID, String channelId, Callback<Void> callback) {
-
+    public void removeUserFromChannel(String userID, String channelId, Callback<Boolean> callback) {
+        executors.submit(() -> {
+            try {
+                channelController.removeUserFromChannel(userID, channelId);
+                callback.onSuccess(true);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void getUsersPresence(Callback<List<BlaUser>> callback) {
+    public void getUserPresence(Callback<List<BlaUserPresence>> callback) {
 
         executors.submit(() -> {
             try {
@@ -515,12 +600,23 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void getAllUsers(Callback<List<BlaUser>> callback) {
         try {
             executors.submit(() -> {
                 try {
-                    callback.onSuccess(userRepository.getAllUser());
+                    List<BlaUser> users = userRepository.getAllUsers();
+
+                    Map<String, BlaUser> map = users.stream().collect(Collectors.toMap(BlaUser::getId, user -> user));
+//                    HashMap<String, BlaUser> hashMap =
+//                            (map instanceof HashMap) ? (HashMap) map : new HashMap<>(map);
+
+                    Log.i(TAG, "map: "+map.size());
+                    setUsersMap((HashMap<String, BlaUser>) map);
+
+                    callback.onSuccess(users);
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

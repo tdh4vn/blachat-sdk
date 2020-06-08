@@ -3,18 +3,14 @@ package com.blameo.chatsdk.controllers
 import android.text.TextUtils
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.blachat.BlaChatSDK
 import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.models.bla.BlaChannel
 import com.blameo.chatsdk.models.bla.BlaChannelType
 import com.blameo.chatsdk.models.bla.BlaMessage
 import com.blameo.chatsdk.models.bla.BlaUser
-import com.blameo.chatsdk.models.entities.Channel
-import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.utils.DateFormatUtils
 import com.blameo.chatsdk.utils.UserSP
-import java.lang.Exception
 
 class ConversationViewModel(val channel: BlaChannel) {
 
@@ -24,12 +20,10 @@ class ConversationViewModel(val channel: BlaChannel) {
     var channel_avatar: MutableLiveData<String> = MutableLiveData()
     var memmbers : List<BlaUser>? = null
     var chatSdk: BlaChatSDK = BlaChatSDK.getInstance()
-    var statusUser: MutableLiveData<Boolean> = MutableLiveData()
+    var userSeenMessage: MutableLiveData<Boolean> = MutableLiveData()
     var partnerId: MutableLiveData<String> = MutableLiveData()
 
     val TAG = "CVM"
-
-    var errorStream = MutableLiveData<String>()
 
     init {
         if(!TextUtils.isEmpty(channel.name))
@@ -45,12 +39,33 @@ class ConversationViewModel(val channel: BlaChannel) {
 
         if(channel.type == BlaChannelType.DIRECT.value)
             getUsersInChannel()
+
+        userSeenMessage.value = userHaveSeenMessage()
     }
 
 
-    fun updateNewMessage(message: BlaMessage){
+    fun updateNewMessage(message: BlaMessage, seen: Boolean){
         last_message.postValue(message.content)
         channel_updated.postValue(DateFormatUtils.getInstance().getNewDateFormat(message.createdAt))
+        userSeenMessage.postValue(seen)
+    }
+
+    fun markUserHaveSeenMessage(){
+        userSeenMessage.postValue(true)
+    }
+
+    fun updateChannel(avatar: String, name: String){
+        channel_avatar.postValue(avatar)
+        channel_name.postValue(name)
+    }
+
+    private fun userHaveSeenMessage(): Boolean {
+        if(channel.lastMessage == null) return false
+        for (user in channel.lastMessage.seenBy) {
+            Log.i(TAG, ""+user.id)
+            if (user.id == UserSP.getInstance().id) return true
+        }
+        return false
     }
 
     private fun getUsersInChannel(){

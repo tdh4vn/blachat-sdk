@@ -5,7 +5,7 @@ import com.blameo.chatsdk.models.bla.BlaUser;
 
 import java.util.Date;
 
-public interface BlaMessageListener {
+public interface MessagesListener {
     void onNewMessage(BlaMessage blaMessage);
     void onUpdateMessage(BlaMessage blaMessage);
     void onDeleteMessage(BlaMessage blaMessage);

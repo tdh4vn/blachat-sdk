@@ -5,16 +5,16 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
 
-public class GetChannelResult extends BaseResult {
+public class GetChannelsResult extends BaseResult {
 
     @SerializedName("data")
-    private Channel data;
+    private ArrayList<Channel> data;
 
-    public Channel getData() {
+    public ArrayList<Channel> getData() {
         return data;
     }
 
-    public void setData(Channel data) {
+    public void setData(ArrayList<Channel> data) {
         this.data = data;
     }
 

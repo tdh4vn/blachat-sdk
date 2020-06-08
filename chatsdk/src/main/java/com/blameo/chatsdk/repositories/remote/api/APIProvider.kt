@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.collections.HashMap
 
 
-object APIProvider {
+object  APIProvider {
     var currentToken: String = ""
 
     private var retrofitWithSession: Retrofit? = null

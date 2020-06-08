@@ -10,6 +10,7 @@ import java.util.HashMap;
 public class BlaMessage extends Message {
     private ArrayList<BlaUser> seenBy;
     private ArrayList<BlaUser> receivedBy;
+    private BlaUser author;
 
     public ArrayList<BlaUser> getSeenBy() {
         if(seenBy == null)
@@ -58,5 +59,13 @@ public class BlaMessage extends Message {
                 message.getIsSystemMessage(),
                 message.getCustomData());
 
+    }
+
+    public BlaUser getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(BlaUser author) {
+        this.author = author;
     }
 }

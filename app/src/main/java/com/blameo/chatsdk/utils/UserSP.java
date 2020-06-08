@@ -7,7 +7,7 @@ import com.blameo.chatsdk.DemoApplication;
 
 public class UserSP {
 
-    private static final UserSP instance = new UserSP();
+    private static UserSP instance;
     private String name = "shared_preference";
     private SharedPreferences preferences = DemoApplication.getInstance().getSharedPreferences(name, Context.MODE_PRIVATE);
 
@@ -15,6 +15,8 @@ public class UserSP {
     }
 
     public static UserSP getInstance() {
+        if(instance == null)
+            instance = new UserSP();
         return instance;
     }
 

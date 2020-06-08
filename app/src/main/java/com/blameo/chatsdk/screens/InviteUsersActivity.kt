@@ -79,14 +79,14 @@ class InviteUsersActivity : AppCompatActivity() {
         })
 
         btn_done.setOnClickListener {
-            if (uIds.size > 0)
-                inviteUsersToChannel()
+            if(uIds.size == 0)  return@setOnClickListener
+            inviteUsersToChannel()
         }
     }
 
     private fun inviteUsersToChannel() {
-        chatSdk.inviteUserToChannel(uIds, channelId, object : Callback<Void>{
-            override fun onSuccess(result: Void?) {
+        chatSdk.inviteUserToChannel(uIds, channelId, object : Callback<Boolean>{
+            override fun onSuccess(result: Boolean?) {
                 Log.i(TAG, "invite success")
                 finish()
             }

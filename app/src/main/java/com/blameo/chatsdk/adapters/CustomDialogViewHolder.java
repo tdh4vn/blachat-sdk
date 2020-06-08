@@ -1,5 +1,7 @@
 package com.blameo.chatsdk.adapters;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -59,6 +61,17 @@ public class CustomDialogViewHolder
 
         channelVM.getChannel_updated().observeForever(time -> {
             tvDate.setText(time);
+        });
+
+        channelVM.getUserSeenMessage().observeForever(userSeenMessage ->{
+            Log.i("dada", "seen: "+userSeenMessage);
+            if(!userSeenMessage){
+                tvLastMessage.setTextColor(Color.BLACK);
+                tvLastMessage.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
+            }else{
+                tvLastMessage.setTypeface(Typeface.DEFAULT);
+                tvLastMessage.setTextColor(Color.parseColor("#808080"));
+            }
         });
 
 //        if (dialog.getUsers().size() > 1) {

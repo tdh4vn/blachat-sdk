@@ -5,14 +5,19 @@ import android.graphics.BlendMode;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.room.Update;
+
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
+import com.blameo.chatsdk.models.bodies.DeleteMessageBody;
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
+import com.blameo.chatsdk.models.bodies.UpdateMessageBody;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.MessageWithUserReact;
 import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
+import com.blameo.chatsdk.models.results.BaseResult;
 import com.blameo.chatsdk.models.results.GetMessageByIDResult;
 import com.blameo.chatsdk.models.results.GetMessagesResult;
 import com.blameo.chatsdk.repositories.local.BlaChatSDKDatabase;
@@ -129,13 +134,13 @@ public class MessageRepositoryImpl implements MessageRepository {
 
 
     @Override
-    public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, HashMap<String, Object> customData) {
+    public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, HashMap<String, Object> customData) {
         Message message = new Message(
                 tmpId,
                 authorId,
                 channelId,
                 content,
-                1,
+                type,
                 new Date(),
                 new Date(),
                 null,
@@ -143,7 +148,6 @@ public class MessageRepositoryImpl implements MessageRepository {
                 customData
         );
 
-//        Log.i(TAG, "create ok "+ message.getId());
         messageDao.insert(message);
         return new BlaMessage(message);
     }
@@ -152,7 +156,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public BlaMessage sendMessage(BlaMessage blaMessage) throws Exception {
 
         Response<GetMessageByIDResult> response = messageAPI.createMessage(new CreateMessageBody(
-                0,
+                blaMessage.getType(),
                 blaMessage.getContent(),
                 blaMessage.getChannelId()
         )).execute();
@@ -232,5 +236,33 @@ public class MessageRepositoryImpl implements MessageRepository {
         for (Message m: unsentMessages) {
             sendMessage(new BlaMessage(m));
         }
+    }
+
+    @Override
+    public BlaMessage deleteMessage(BlaMessage message) throws Exception {
+        DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
+        Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
+        if(response.isSuccessful()){
+            if(response.body().success()){
+                messageDao.delete(message);
+                return message;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public BlaMessage updateMessage(BlaMessage message) throws Exception {
+        UpdateMessageBody body = new UpdateMessageBody(message.getContent(), message.getId(), message.getChannelId());
+        Response<GetMessageByIDResult> response = messageAPI.updateMessage(body).execute();
+        if(response.isSuccessful()){
+            Message m = response.body().getMessage();
+            if(m != null) {
+                messageDao.update(m);
+                return new BlaMessage(m);
+            }
+            return null;
+        }
+        return null;
     }
 }

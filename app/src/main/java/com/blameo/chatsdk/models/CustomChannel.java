@@ -64,4 +64,6 @@ public class CustomChannel implements IDialog<CustomMessage> {
     public BlaChannel getChannel(){
         return channel;
     }
+
+
 }

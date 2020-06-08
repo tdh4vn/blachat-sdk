@@ -63,8 +63,8 @@
                 android:layout_marginEnd="7dp"
                 android:layout_marginRight="7dp"/>
 
-
             <TextView
+                android:textColor="@color/grey"
                 android:id="@id/dialogLastMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -74,7 +74,6 @@
                 android:ellipsize="end"
                 android:gravity="top"
                 android:maxLines="1"/>
-
         </RelativeLayout>
 
         <ImageView
@@ -82,7 +81,7 @@
             android:layout_width="12dp"
             android:layout_height="12dp"
             android:layout_alignRight="@id/dialogAvatar"
-            android:layout_alignTop="@id/dialogAvatar"
+            android:layout_alignBottom="@id/dialogAvatar"
             android:layout_marginRight="5dp"
             android:background="@drawable/shape_bubble_offline"
             />

@@ -17,11 +17,12 @@ public interface ChannelController {
     boolean inviteUsersToChannel(String channelId, List<String> userIds) throws Exception;
     BlaChannel onNewChannel(Channel channel) throws Exception ;
     List<BlaChannel> getChannels(String lastChannelId, long limit) throws Exception;
-    BlaChannel updateChannel(BlaChannel newChannel);
-    boolean deleteChannel(String channelID);
+    BlaChannel updateChannel(BlaChannel newChannel) throws IOException;
+    boolean deleteChannel(String channelID) throws IOException;
     BlaChannel getChannelById(String channelID) throws Exception;
-    BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
+    BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
     void updateLastMessageOfChannel(String channelId, String messageId);
     boolean checkChannelIsExist(String channelId);
     void usersAddedToChannel(String channelId, List<String> userIds);
+    void removeUserFromChannel(String userId, String channelId) throws Exception;
 }

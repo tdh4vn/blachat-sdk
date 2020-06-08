@@ -91,15 +91,6 @@ class MessageAdapter(
 
         override fun fillData(m: Message) {
             tvContent.text = m.content
-//            tvTime.text = DateFormatUtils.getInstance().getTime(m.createdAtString)
-//
-//            Log.i("adapter", "${m.id} ${m.seenAtString} ${m.sentAtString}")
-//            if(!TextUtils.isEmpty(m.seenAtString))
-//                tvTime.text = tvTime.text.toString() + " Seen"
-//            else{
-//                if(!TextUtils.isEmpty(m.sentAtString))
-//                    tvTime.text = tvTime.text.toString() + " Sent"
-//            }
 
             if (!TextUtils.isEmpty(users[m.authorId]?.avatar))
                 ImageLoader.getInstance().displayImage(users[m.authorId]?.avatar,imgAvatar, options)

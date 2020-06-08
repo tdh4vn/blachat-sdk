@@ -5,8 +5,7 @@ import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
-import com.blameo.chatsdk.models.bla.BlaMessage;
-import com.blameo.chatsdk.models.bla.BlaTypingEvent;
+import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.ChannelWithUser;
@@ -71,6 +70,11 @@ public class ChannelControllerImpl implements ChannelController {
                 }
                 channelRepository.saveUsersInChannel(userInChannels);
 
+                Log.i(TAG, "channel controller : "+channelId);
+
+                Log.i(TAG, " dasdas "+userIds.size() +" "+membersInChannelRemoteDTOS.get(0).getUserChannels().size()
+                        + " " + membersInChannelRemoteDTOS.get(0).getChannelId() + " "+userInChannels.size());
+
                 return userRepository.getUsersByIds(userIds);
             }
         }
@@ -79,12 +83,12 @@ public class ChannelControllerImpl implements ChannelController {
 
     @Override
     public boolean sendStartTypingEvent(String channelId) throws Exception {
-        return channelRepository.sendTypingEvent(channelId, BlaTypingEvent.START);
+        return channelRepository.sendTypingEvent(channelId, EventType.START);
     }
 
     @Override
     public boolean sendStopTypingEvent(String channelId) throws Exception {
-        return channelRepository.sendTypingEvent(channelId, BlaTypingEvent.STOP);
+        return channelRepository.sendTypingEvent(channelId, EventType.STOP);
     }
 
     @Override
@@ -105,12 +109,12 @@ public class ChannelControllerImpl implements ChannelController {
     }
 
     @Override
-    public BlaChannel updateChannel(BlaChannel newChannel) {
+    public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
         return channelRepository.updateChannel(newChannel);
     }
 
     @Override
-    public boolean deleteChannel(String channelID) {
+    public boolean deleteChannel(String channelID) throws IOException {
         return channelRepository.deleteChannel(channelID);
     }
 
@@ -120,8 +124,8 @@ public class ChannelControllerImpl implements ChannelController {
     }
 
     @Override
-    public BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
-        return channelRepository.createChannel(name, avatar, userIds, blaChannelType);
+    public BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
+        return channelRepository.createChannel(name, userIds, blaChannelType);
     }
 
     @Override
@@ -137,6 +141,11 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public void usersAddedToChannel(String channelId, List<String> userIds) {
         channelRepository.usersAddedToChannel(channelId, userIds);
+    }
+
+    @Override
+    public void removeUserFromChannel(String userId, String channelId) throws Exception {
+        channelRepository.removeUserFromChannel(userId, channelId);
     }
 
 }

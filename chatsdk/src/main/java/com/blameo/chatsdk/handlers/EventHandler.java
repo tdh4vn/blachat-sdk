@@ -1,22 +1,25 @@
 package com.blameo.chatsdk.handlers;
 
-import com.blameo.chatsdk.blachat.BlaChannelEventListener;
-import com.blameo.chatsdk.blachat.BlaMessageListener;
-import com.blameo.chatsdk.models.events.Event;
+import com.blameo.chatsdk.blachat.ChannelEventListener;
+import com.blameo.chatsdk.blachat.MessagesListener;
 
 import io.github.centrifugal.centrifuge.PublishEvent;
 import io.github.centrifugal.centrifuge.Subscription;
 
 public interface EventHandler {
 
-    void addMessageListener(BlaMessageListener blaMessageListener);
+    void addMessageListener(MessagesListener messagesListener);
 
-    void addEventChannelListener(BlaChannelEventListener blaChannelEventListener);
+    void addEventChannelListener(ChannelEventListener channelEventListener);
 
-    void removeMessageListener(BlaMessageListener blaMessageListener);
+    void removeMessageListener(MessagesListener messagesListener);
 
-    void removeEventChannelListener(BlaChannelEventListener blaChannelEventListener);
+    void removeEventChannelListener(ChannelEventListener channelEventListener);
 
     void onPublish(Subscription sub, PublishEvent event);
+
+    void publishEvent(String data);
+
+    void getEvent();
 
 }
