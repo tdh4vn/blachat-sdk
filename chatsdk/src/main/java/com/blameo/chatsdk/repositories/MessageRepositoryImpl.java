@@ -69,7 +69,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException {
+    public List<BlaMessage> getMessages(String channelId, String lastMessageId, int limit) throws IOException {
         long lastUpdate = new Date().getTime();
         if (limit < 0) limit = 50;
 

@@ -34,6 +34,8 @@ class ConversationViewModel(val channel: BlaChannel) {
 
         channel_updated.value = DateFormatUtils.getInstance().getNewDateFormat(channel.updatedAt)
 
+        Log.i(TAG, "last: "+channel.lastMessage)
+
         last_message.value = if(channel.lastMessage == null){ "" }
              else{ channel.lastMessage.content }
 

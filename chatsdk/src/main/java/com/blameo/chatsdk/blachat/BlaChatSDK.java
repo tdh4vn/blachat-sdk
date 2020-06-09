@@ -23,6 +23,7 @@ import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;

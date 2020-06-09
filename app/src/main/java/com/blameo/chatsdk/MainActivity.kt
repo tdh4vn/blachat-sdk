@@ -120,7 +120,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
         channelAdapter.setOnDialogLongClickListener(this)
         dialogsList.setAdapter(channelAdapter)
 
-        chatSdk.getChannels(null, 20, object: Callback<List<BlaChannel>> {
+        chatSdk.getChannels("", 20, object: Callback<List<BlaChannel>> {
             override fun onSuccess(result: List<BlaChannel>?) {
                 val dialogs = arrayListOf<CustomChannel>()
 
@@ -161,8 +161,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             }
         })
 
-        chatSdk.addMessageListener(object :
-            MessagesListener {
+        chatSdk.addMessageListener(object : MessagesListener {
             override fun onNewMessage(blaMessage: BlaMessage?) {
                 try {
                     val channelVM = channelVMStore.getChannelByID(blaMessage?.channelId!!)

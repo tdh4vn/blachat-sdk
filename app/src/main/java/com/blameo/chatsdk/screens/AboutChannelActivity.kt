@@ -206,7 +206,7 @@ class AboutChannelActivity : AppCompatActivity() {
                     tvName.text = result?.name
                 }
 
-                channelVM?.updateChannel(result?.avatar!!, tvName.text.toString())
+                channelVM?.updateChannel(result?.avatar!!, result.name)
             }
 
             override fun onFail(e: Exception?) {

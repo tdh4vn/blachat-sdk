@@ -45,13 +45,14 @@ public class CustomDialogViewHolder
                     onlineIndicator.setBackgroundResource(R.drawable.shape_bubble_offline);
             });
         });
+
         channelVM.getChannel_avatar().observeForever(url -> {
             ImageLoader.getInstance().displayImage(url, ivAvatar, ChatApplication.getInstance().getDisplayImageOption());
         });
 
         channelVM.getChannel_name().observeForever(name -> {
             if(!TextUtils.isEmpty(name))
-            tvName.setText(name);
+                tvName.setText(name);
         });
 
         channelVM.getLast_message().observeForever(message -> {

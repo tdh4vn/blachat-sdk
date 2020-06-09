@@ -397,11 +397,17 @@ class ChatActivity : AppCompatActivity(),
                 imgStatus.setBackgroundResource(R.drawable.shape_bubble_offline)
         }
 
-        txtTitle.text = if (!TextUtils.isEmpty(channelVM.channel_name.value))
-            channelVM.channel_name.value else ""
-        if (!TextUtils.isEmpty(channelVM.channel_avatar.value))
-            com.nostra13.universalimageloader.core.ImageLoader.getInstance()
-                .displayImage(channelVM.channel_avatar.value, imgAvatar)
+
+        channelVM.channel_name.observeForever {
+            if (!TextUtils.isEmpty(it))
+                txtTitle.text = it else ""
+        }
+
+        channelVM.channel_avatar.observeForever {
+            if (!TextUtils.isEmpty(it))
+                com.nostra13.universalimageloader.core.ImageLoader.getInstance()
+                    .displayImage(it, imgAvatar)
+        }
 
         chatSdk.addMessageListener(messageListener)
 

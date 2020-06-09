@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public interface MessageRepository {
-    List<BlaMessage> getMessages(String channelId, String lastMessageId, long limit) throws IOException;
+    List<BlaMessage> getMessages(String channelId, String lastMessageId, int limit) throws IOException;
     BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, HashMap<String, Object> customData);
     BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
     BlaMessage saveMessage(Message message);

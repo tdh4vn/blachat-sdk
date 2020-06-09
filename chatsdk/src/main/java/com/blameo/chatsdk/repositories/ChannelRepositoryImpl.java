@@ -37,6 +37,8 @@ import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -102,7 +104,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     }
 
     @Override
-    public List<BlaChannel> getChannels(String lastChannelId, long limit) throws Exception {
+    public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
         long lastUpdate = new Date().getTime();
         if (limit < 0) {
             limit = 0;
@@ -115,6 +117,26 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         }
 
         List<ChannelWithLastMessage> channels = channelDao.getChannelsWithLastMessage(lastUpdate, limit);
+
+//        Response<GetChannelsResult> response = blaChatAPI.getChannel(
+//                limit,
+//                lastChannelId
+//        ).execute();
+//        List<Channel> channelRemote = response.body().getData();
+//        Log.i(TAG, "channel size: "+channelRemote.size());
+//        for(Channel channel: channelRemote){
+//            Log.i(TAG, "messages in channel size: "+channel.getLastMessages().size());
+//        }
+//
+//        String json = new Gson().toJson(channelRemote);
+//        Log.i(TAG, "json: "+json);
+//        List<Channel> convertChannels = new Gson().fromJson(json, new TypeToken<List<Channel>>(){}.getType());
+//
+//        Log.i(TAG, "convert channel size: "+convertChannels.size());
+//        for(Channel channel: convertChannels){
+//            Log.i(TAG, "messages in convert channel size: "+channel.getLastMessages().size());
+//        }
+
 
         if (channels.isEmpty()) {
             Response<GetChannelsResult> response = blaChatAPI.getChannel(
@@ -211,14 +233,15 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
         Response<GetChannelResult> channelResult = blaChatAPI.updateChannel(newChannel.getId(),
-                new UpdateChannelBody(newChannel.getName(), newChannel.getAvatar()))
+                newChannel.getName(), newChannel.getAvatar())
                 .execute();
 
         Log.i(TAG, "update: "+newChannel.getId() + " "+newChannel.getName()
         + " "+ newChannel.getAvatar());
 
         if(channelResult.isSuccessful()){
-            Log.i(TAG, "success: "+channelResult.body().getData());
+            Log.i(TAG, "success: "+channelResult.body().getData()+ "\n "
+                    +channelResult.body().getData().getName() + "\n "+channelResult.body().getData().getAvatar());
         }else{
             Log.i(TAG, "error "+channelResult.errorBody().string());
         }

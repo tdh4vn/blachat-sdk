@@ -69,9 +69,11 @@ interface BlaChatAPI {
     ): Call<GetEventResult>
 
     @PUT("user/channels/channel/{channelId}")
+    @FormUrlEncoded
     fun updateChannel(
-        @Path("channelId") channelID: String,
-        @Body body: UpdateChannelBody
+        @Path("channelId") channelId: String,
+        @Field("name") name: String,
+        @Field("avatar") avatar: String
     ): Call<GetChannelResult>
 
     @DELETE("user/channels/delete/{channelId}")
@@ -83,10 +85,5 @@ interface BlaChatAPI {
     fun removeUserFromChannel(
         @Body body: RemoveUserFromChannelBody
     ): Call<BaseResult>
-
-//    @DELETE("user/channels/remove-user")
-//    fun removeUserFromChannel(
-//        @Body body: RemoveUserFromChannelBody
-//    ): Call<BaseResult>
 
 }

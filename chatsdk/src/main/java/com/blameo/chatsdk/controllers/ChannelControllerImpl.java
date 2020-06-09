@@ -42,7 +42,7 @@ public class ChannelControllerImpl implements ChannelController {
     }
 
     @Override
-    public List<BlaChannel> syncChannels(String lastChannelId, long limit) throws Exception {
+    public List<BlaChannel> syncChannels(String lastChannelId, int limit) throws Exception {
         return null;
     }
 
@@ -104,7 +104,7 @@ public class ChannelControllerImpl implements ChannelController {
     }
 
     @Override
-    public List<BlaChannel> getChannels(String lastChannelId, long limit) throws Exception {
+    public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
         return channelRepository.getChannels(lastChannelId, limit);
     }
 

@@ -19,13 +19,13 @@ public abstract class ChannelDao implements BaseDao<Channel> {
             " WHERE " + Constant.CHANNEL_UPDATED_AT + " < :lastUpdate" +
             " ORDER BY " + Constant.CHANNEL_UPDATED_AT + " DESC " +
             " LIMIT :limit")
-    public abstract List<Channel> getChannels(long lastUpdate, long limit);
+    public abstract List<Channel> getChannels(long lastUpdate, int limit);
 
     @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME +
             " WHERE " + Constant.CHANNEL_UPDATED_AT + " < :lastUpdate" +
             " ORDER BY " + Constant.CHANNEL_UPDATED_AT + " DESC " +
             " LIMIT :limit")
-    public abstract List<ChannelWithLastMessage> getChannelsWithLastMessage(long lastUpdate, long limit);
+    public abstract List<ChannelWithLastMessage> getChannelsWithLastMessage(long lastUpdate, int limit);
 
     @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME +
             " WHERE " + Constant.CHANNEL_ID + " = :cId")
