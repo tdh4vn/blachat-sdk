@@ -58,6 +58,9 @@ dependencies {
 
     implementation libs.rxJava
     implementation libs.rxAndroid
+    implementation libs.gson
+    implementation libs.gsonConverter
+    implementation libs.rxJavaConverter
 }
 
 apply plugin: 'com.google.gms.google-services'

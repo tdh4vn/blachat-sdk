@@ -30,12 +30,15 @@ import com.blameo.chatsdk.models.entities.Channel
 import com.blameo.chatsdk.models.entities.Message
 import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.models.results.UserStatus
+import com.blameo.chatsdk.utils.GsonDateFormatter
+import com.blameo.chatsdk.utils.GsonUtil
 import com.blameo.chatsdk.utils.UserSP
 import com.esafirm.imagepicker.features.ImagePicker
 import com.esafirm.imagepicker.features.ReturnMode
 import com.esafirm.imagepicker.model.Image
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.google.gson.Gson
 import com.stfalcon.chatkit.commons.ImageLoader
 import com.stfalcon.chatkit.messages.MessageHolders
 import com.stfalcon.chatkit.messages.MessageHolders.ContentChecker
@@ -282,6 +285,8 @@ class ChatActivity : AppCompatActivity(),
 //                    val user = usersMap[it.authorId]
                     val user = it.author
                     Log.i(TAG, "" + user?.id + " " + user?.avatar)
+//                    val json = Gson().toJson(it)
+//                    Log.i(TAG, "gson $json")
                     var customUser = CustomUser(user)
                     if (it.isSystemMessage) {
                         customUser = CustomUser(usersMap[UserSP.getInstance().id])

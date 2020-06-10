@@ -8,6 +8,8 @@ import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -24,11 +26,11 @@ public class Message implements Serializable {
     @ColumnInfo(name = Constant.MESSAGE_ID)
     private String id;
 
-    @SerializedName("author_id")
+    @SerializedName(value = "authorId", alternate = "author_id")
     @ColumnInfo(name = Constant.MESSAGE_AUTHOR_ID)
     private String authorId;
 
-    @SerializedName("channel_id")
+    @SerializedName(value = "channelID", alternate = "channel_id")
     @ColumnInfo(name = Constant.MESSAGE_CHANNEL_ID)
     private String channelId;
 
@@ -41,26 +43,26 @@ public class Message implements Serializable {
     private int type;
 
     @TypeConverters(Converters.class)
-    @SerializedName("created_at")
+    @SerializedName(value = "createdAt",alternate ="created_at")
     @ColumnInfo(name = Constant.MESSAGE_CREATED_AT)
     private Date createdAt;
 
     @TypeConverters(Converters.class)
-    @SerializedName("updated_at")
+    @SerializedName(value = "updatedAt", alternate = "updated_at")
     @ColumnInfo(name = Constant.MESSAGE_UPDATED_AT)
     private Date updatedAt;
 
     @TypeConverters(Converters.class)
-    @SerializedName("sent_at")
+    @SerializedName(value = "sentAt",alternate ="sent_at")
     @ColumnInfo(name = Constant.MESSAGE_SENT_AT)
     private Date sentAt;
 
-    @SerializedName("is_system_message")
+    @SerializedName(value = "isSystemMessage", alternate = "is_system_message")
     @ColumnInfo(name = Constant.MESSAGE_IS_SYSTEM)
     private boolean isSystemMessage;
 
     @TypeConverters(Converters.class)
-    @SerializedName("custom_data")
+    @SerializedName(value = "customData", alternate = "custom_data")
     @ColumnInfo(name = Constant.MESSAGE_CUSTOM_DATA)
     private HashMap<String, Object> customData;
 

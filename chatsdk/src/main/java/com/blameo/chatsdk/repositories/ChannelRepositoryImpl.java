@@ -38,6 +38,7 @@ import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
@@ -137,7 +138,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 //            Log.i(TAG, "messages in convert channel size: "+channel.getLastMessages().size());
 //        }
 
-
         if (channels.isEmpty()) {
             Response<GetChannelsResult> response = blaChatAPI.getChannel(
                     limit,
@@ -232,19 +232,17 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
+
         Response<GetChannelResult> channelResult = blaChatAPI.updateChannel(newChannel.getId(),
                 newChannel.getName(), newChannel.getAvatar())
                 .execute();
 
-        Log.i(TAG, "update: "+newChannel.getId() + " "+newChannel.getName()
-        + " "+ newChannel.getAvatar());
-
-        if(channelResult.isSuccessful()){
-            Log.i(TAG, "success: "+channelResult.body().getData()+ "\n "
-                    +channelResult.body().getData().getName() + "\n "+channelResult.body().getData().getAvatar());
-        }else{
-            Log.i(TAG, "error "+channelResult.errorBody().string());
-        }
+//        if(channelResult.isSuccessful()){
+//            Log.i(TAG, "success: "+channelResult.body().getData()+ "\n "
+//                    +channelResult.body().getData().getName() + "\n "+channelResult.body().getData().getAvatar());
+//        }else{
+//            Log.i(TAG, "error "+channelResult.errorBody().string());
+//        }
 
         Channel channel = channelResult.body().getData();
         channelDao.update(channel);

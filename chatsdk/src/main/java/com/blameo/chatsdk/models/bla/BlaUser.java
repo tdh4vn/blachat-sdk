@@ -2,6 +2,7 @@ package com.blameo.chatsdk.models.bla;
 
 import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.repositories.local.Converters;
+import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
 import java.util.HashMap;

@@ -30,6 +30,7 @@ import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
 import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,6 +94,9 @@ public class MessageRepositoryImpl implements MessageRepository {
 
             messages = response.body().getData();
             messageDao.insertMany(response.body().getData());
+
+//            String json = new Gson().toJson( response.body().getData());
+//            Log.i(TAG, "mess json: "+json);
         }else {
             Collections.reverse(messages);
         }

@@ -610,8 +610,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                     List<BlaUser> users = userRepository.getAllUsers();
 
                     Map<String, BlaUser> map = users.stream().collect(Collectors.toMap(BlaUser::getId, user -> user));
-//                    HashMap<String, BlaUser> hashMap =
-//                            (map instanceof HashMap) ? (HashMap) map : new HashMap<>(map);
 
                     Log.i(TAG, "map: "+map.size());
                     setUsersMap((HashMap<String, BlaUser>) map);

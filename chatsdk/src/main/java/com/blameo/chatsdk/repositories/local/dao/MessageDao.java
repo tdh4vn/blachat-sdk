@@ -13,7 +13,9 @@ import java.util.List;
 @Dao
 public abstract class MessageDao implements BaseDao<Message> {
 
-    @Query("SELECT * FROM " + "(select * from "+ Constant.MESSAGE_TABLE_NAME + " order by " + Constant.MESSAGE_CREATED_AT + " DESC "+" limit :limit)" + Constant.MESSAGE_TABLE_NAME +
+    @Query("SELECT * FROM "
+            + "(select * from " + Constant.MESSAGE_TABLE_NAME + " order by " + Constant.MESSAGE_CREATED_AT + " DESC "+" limit :limit)"
+            + Constant.MESSAGE_TABLE_NAME +
             " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId " +
             " AND " + Constant.MESSAGE_CREATED_AT + " < :lastCreatedAt " +
            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " ASC " +

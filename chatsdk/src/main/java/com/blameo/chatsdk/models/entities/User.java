@@ -31,7 +31,7 @@ public class User {
     private String avatar;
 
     @TypeConverters(Converters.class)
-    @SerializedName("custom_data")
+    @SerializedName(value = "customData", alternate = "custom_data")
     @ColumnInfo(name = Constant.USER_CUSTOM_DATA)
     private HashMap<String, Object> customData;
 

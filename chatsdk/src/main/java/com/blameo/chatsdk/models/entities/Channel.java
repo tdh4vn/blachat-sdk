@@ -9,6 +9,7 @@ import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -40,12 +41,12 @@ public class Channel implements Serializable {
     private int type;
 
     @TypeConverters(Converters.class)
-    @SerializedName("updated_at")
+    @SerializedName(value = "updatedAt", alternate = "updated_at")
     @ColumnInfo(name = Constant.CHANNEL_UPDATED_AT)
     private Date updatedAt;
 
     @TypeConverters(Converters.class)
-    @SerializedName("created_at")
+    @SerializedName(value = "createdAt", alternate = "created_at")
     @ColumnInfo(name = Constant.CHANNEL_CREATED_AT)
     private Date createdAt;
 
@@ -58,7 +59,7 @@ public class Channel implements Serializable {
     private List<Message> lastMessages;
 
     @TypeConverters(Converters.class)
-    @SerializedName("custom_data")
+    @SerializedName(value = "customData", alternate = "custom_data")
     @ColumnInfo(name = Constant.CHANNEL_CUSTOM_DATA)
     protected HashMap<String, Object> customData;
 

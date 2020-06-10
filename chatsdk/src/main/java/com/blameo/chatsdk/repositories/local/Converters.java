@@ -6,6 +6,8 @@ import androidx.room.TypeConverter;
 
 import com.blameo.chatsdk.utils.GsonUtil;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -13,7 +15,9 @@ public class Converters {
 
     @TypeConverter
     public static Date fromTimestamp(Long value) {
+
         if(value == null)   return null;
+
         if(value > 10000000000L)
             return new Date(value);
         return new Date(value * 1000);
