@@ -8,8 +8,6 @@ import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
