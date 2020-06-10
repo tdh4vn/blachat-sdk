@@ -88,7 +88,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 channelIds
         )).execute();
 
-        Log.i(TAG, "channel repo : "+channelIds.get(0));
+//        Log.i(TAG, "channel repo : "+channelIds.get(0));
 
         if (getMembersOfMultiChannelResultResponse.isSuccessful()) {
             assert getMembersOfMultiChannelResultResponse.body() != null;
