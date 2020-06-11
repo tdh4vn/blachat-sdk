@@ -28,7 +28,7 @@ public class Message implements Serializable {
     @ColumnInfo(name = Constant.MESSAGE_AUTHOR_ID)
     private String authorId;
 
-    @SerializedName(value = "channelID", alternate = "channel_id")
+    @SerializedName(value = "channelId", alternate = "channel_id")
     @ColumnInfo(name = Constant.MESSAGE_CHANNEL_ID)
     private String channelId;
 

@@ -126,6 +126,9 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
                 result?.forEach {
                     Log.i(TAG, "" + it.lastMessage)
+                    if(it.lastMessage != null){
+                        Log.i(TAG, "author: "+it.lastMessage.author.name)
+                    }
                     dialogs.add(CustomChannel(it))
                 }
 

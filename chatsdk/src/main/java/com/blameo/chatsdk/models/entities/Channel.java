@@ -50,11 +50,11 @@ public class Channel implements Serializable {
     @ColumnInfo(name = Constant.CHANNEL_CREATED_AT)
     private Date createdAt;
 
-    @SerializedName("last_message_id")
+    @SerializedName(value = "lastMessageId", alternate = "last_message_id")
     @ColumnInfo(name = Constant.CHANNEL_LAST_MESSAGE_ID)
     private String lastMessageId;
 
-    @SerializedName("last_messages")
+    @SerializedName(value = "lastMessages", alternate = "last_messages")
     @Ignore
     private List<Message> lastMessages;
 
