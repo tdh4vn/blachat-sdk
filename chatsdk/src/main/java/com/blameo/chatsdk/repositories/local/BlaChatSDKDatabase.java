@@ -24,7 +24,7 @@ import com.blameo.chatsdk.repositories.local.dao.UserReactMessageDao;
         UserInChannel.class,
         UserReactMessage.class
 }, version = Constant.DATABASE_VERSION)
-public abstract class BlaChatSDKDatabase extends RoomDatabase {
+public abstract class  BlaChatSDKDatabase extends RoomDatabase {
     private static final String DB_NAME = Constant.DB_FILE_NAME;
 
     private static BlaChatSDKDatabase instance;

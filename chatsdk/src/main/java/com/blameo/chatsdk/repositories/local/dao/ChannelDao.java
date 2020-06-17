@@ -1,5 +1,7 @@
 package com.blameo.chatsdk.repositories.local.dao;
 
+import android.util.Log;
+
 import androidx.room.ColumnInfo;
 import androidx.room.Dao;
 import androidx.room.Entity;
@@ -49,9 +51,9 @@ public abstract class ChannelDao implements BaseDao<Channel> {
         for (Channel channel: channels) {
             if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
                 channel.setLastMessageId(channel.getLastMessages().get(0).getId());
+//                Log.i("OK", "size: "+ channel.getLastMessages().size() + " "+channel.getUnreadMessages());
             }
         }
-
         this.insertMany(channels);
 
     }

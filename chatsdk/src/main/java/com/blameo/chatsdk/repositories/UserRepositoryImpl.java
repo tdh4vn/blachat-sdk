@@ -2,15 +2,9 @@ package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
-import androidx.room.Update;
-
-import com.blameo.chatsdk.blachat.BlaPresenceListener;
-import com.blameo.chatsdk.models.bla.BlaPresenceState;
 import com.blameo.chatsdk.models.bla.BlaUser;
-import com.blameo.chatsdk.models.bla.BlaUserPresence;
 import com.blameo.chatsdk.models.bodies.PostIDsBody;
 import com.blameo.chatsdk.models.bodies.UpdateStatusBody;
 import com.blameo.chatsdk.models.bodies.UsersBody;
@@ -27,6 +21,7 @@ import com.blameo.chatsdk.utils.BlaChatTextUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -85,27 +80,33 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<BlaUser> getAllUsers() throws IOException {
+    public List<BlaUser> getAllUsers() throws Exception {
         List<User> users = userDao.getAllUsers();
         List<BlaUser> result = new ArrayList<>();
 
-        Log.i(TAG, "" + users.size());
+        Log.i(TAG, "local user size: " + users.size());
         for (User user : users) {
-//            Log.i(TAG, "" + user.getId() + " " + user.getName());
             result.add(new BlaUser(user));
         }
+
+        if(result.size() ==0)
+            result = fetchAllUsers();
+
+        return result;
+    }
+
+    @Override
+    public List<BlaUser> fetchAllUsers() throws Exception {
+
+        List<BlaUser> result = new ArrayList<>();
+
         Response<GetUsersByIdsResult> response = blaChatAPI.getAllMembers().execute();
         if(response.isSuccessful() && response.body().getData() != null){
-            result.clear();
             for (User user : response.body().getData()) {
-//                Log.i(TAG, "" + user.getId() + " " + user.getName());
                 result.add(new BlaUser(user));
             }
             userDao.insertMany(response.body().getData());
         }
-
-        Log.i(TAG, "" + result.size());
-
         return result;
     }
 
@@ -116,11 +117,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<BlaUserPresence> getUsersPresence() throws Exception {
+    public List<BlaUser> getUsersPresence() throws Exception {
 
         List<User> allUsers = userDao.getAllUsers();
-        List<UserStatus> userStatuses;
-        List<BlaUserPresence> result = new ArrayList<>();
+//        for(User u: allUsers){
+//            Log.i(TAG, "status: "+u.getLastActiveAt() + " user id: "+ u.getId());
+//        }
+
+        List<BlaUser> result = new ArrayList<>();
         HashMap<String, User> usersMap = new HashMap<>();
 
         StringBuilder ids = new StringBuilder();
@@ -133,24 +137,44 @@ public class UserRepositoryImpl implements UserRepository {
         body.setIds(ids.toString());
 
         Response<UsersStatusResult> response = presenceAPI.getUsersStatus(body).execute();
-        userStatuses = response.body().getData();
-        for (UserStatus currentStatus : userStatuses) {
+        for (UserStatus currentStatus : response.body().getData()) {
             UserStatus previousStatus = userStatusMap.get(currentStatus.getId());
+
             if (previousStatus == null || previousStatus.getStatus() != currentStatus.getStatus()) {
                 userStatusMap.put(currentStatus.getId(), currentStatus);
                 BlaUser user = new BlaUser(usersMap.get(currentStatus.getId()));
                 user.setOnline(currentStatus.getStatus() == 2);
-                BlaPresenceState state = BlaPresenceState.OFFLINE;
-                if(user.isOnline())
-                    state = BlaPresenceState.ONLINE;
+                result.add(user);
+                if(previousStatus != null){
+                    user.setLastActiveAt(new Date());
+                    userDao.update(user);
+                }else{
+                    if(user.isOnline()){
+                        user.setLastActiveAt(new Date());
+                        userDao.update(user);
+                    }
+                }
 
-                BlaUserPresence blaUserPresence = new BlaUserPresence(user, state);
-                result.add(blaUserPresence);
             }
         }
 
-        Log.i("update", "response: " + result.size());
+        Log.i("updatedd", "response: " + result.size());
         return result;
+    }
+
+    @Override
+    public List<BlaUser>  getAllUsersStates() {
+        try {
+            return getUsersPresence();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userDao.insert(user);
     }
 
     @Override
@@ -167,23 +191,10 @@ public class UserRepositoryImpl implements UserRepository {
                     e.printStackTrace();
                 }
 
-                handler.postDelayed(this, 10000);
+                handler.postDelayed(this, 40000);
             }
         });
     }
 
-    @Override
-    public List<BlaUserPresence>  getAllUsersStates() {
-        try {
-            return getUsersPresence();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
-    @Override
-    public void saveUser(User user) {
-        userDao.insert(user);
-    }
 }

@@ -1,10 +1,12 @@
 package com.blameo.chatsdk
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.adapters.CustomDialogViewHolder
@@ -48,6 +50,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
     lateinit var userVMStore: UserVMStore
     lateinit var handler: Handler
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -79,6 +82,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.N)
     private fun init() {
 
         setSupportActionBar(toolbar)
@@ -114,7 +118,7 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
 
         chatSdk = BlaChatSDK.getInstance()
 
-        chatSdk.init(applicationContext, myId, token)
+        chatSdk.initBlaChatSDK(applicationContext, myId, token)
 
         channelAdapter.setOnDialogClickListener(this)
         channelAdapter.setOnDialogLongClickListener(this)
@@ -143,19 +147,35 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
         })
 
         btn_create_channel.setOnClickListener {
+//            chatSdk.getAllUsers(object : Callback<List<BlaUser>>{
+//                override fun onSuccess(result: List<BlaUser>?) {
+//                    result?.forEach {
+//                        Log.i(TAG, "all users: "+it.id + " " +it.isOnline + " "+it.lastActiveAt)
+//                    }
+//                }
+//
+//                override fun onFail(e: java.lang.Exception?) {
+//
+//                }
+//            })
             startActivity(Intent(this, CreateChannelActivity::class.java))
         }
 
         chatSdk.addPresenceListener { user ->
-            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.blaUser?.id, 1))
-            userPresence.updateStatus(user.blaUser.isOnline)
+            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.id, 1))
+            userPresence.updateStatus(user.isOnline)
+ //           Log.i(TAG, "add last active at: "+user.isOnline + " "+user.lastActiveAt)
         }
 
-        chatSdk.getUserPresence(object : Callback<List<BlaUserPresence>>{
-            override fun onSuccess(result: List<BlaUserPresence>?) {
+        chatSdk.getUserPresence(object : Callback<List<BlaUser>>{
+            override fun onSuccess(result: List<BlaUser>?) {
+
+//                Log.i(TAG, "get users presence "+result?.size)
+
                 result?.forEach {
-                    val userPresence = userVMStore.getUserViewModel(UserStatus(it.blaUser.id, 1))
-                    userPresence.updateStatus(it.blaUser.isOnline)
+                    Log.i(TAG, "last active at: "+it.isOnline + " "+it.lastActiveAt)
+                    val userPresence = userVMStore.getUserViewModel(UserStatus(it.id, 1))
+                    userPresence.updateStatus(it.isOnline)
                 }
             }
 
@@ -245,7 +265,10 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             }
 
             override fun onUpdateChannel(channel: BlaChannel?) {
-
+                Log.i(TAG, "channel update "+channel?.id + " "+ channel?.lastMessage?.content+ " "+channel?.unreadMessages)
+                handler.post {
+                    channelAdapter.updateItemById(CustomChannel(channel))
+                }
             }
 
             override fun onMemberJoin(channel: BlaChannel?, blaUser: BlaUser?) {

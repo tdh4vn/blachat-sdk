@@ -19,6 +19,7 @@ import com.blameo.chatsdk.repositories.MessageRepository;
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,8 +38,8 @@ public class ChannelControllerImpl implements ChannelController {
 
     public ChannelControllerImpl(Context context, String myId){
         userRepository = new UserRepositoryImpl(context, myId);
-        channelRepository = new ChannelRepositoryImpl(context);
-        messageRepository = new MessageRepositoryImpl(context);
+        channelRepository = new ChannelRepositoryImpl(context, myId);
+        messageRepository = new MessageRepositoryImpl(context, myId);
     }
 
     @Override
@@ -68,12 +69,13 @@ public class ChannelControllerImpl implements ChannelController {
                         userIds.add(remoteUserChannel.getMemberId());
                     }
                 }
+
                 channelRepository.saveUsersInChannel(userInChannels);
 
-                Log.i(TAG, "channel controller : "+channelId);
+//                Log.i(TAG, "channel controller : "+channelId);
 
-                Log.i(TAG, " dasdas "+userIds.size() +" "+membersInChannelRemoteDTOS.get(0).getUserChannels().size()
-                        + " " + membersInChannelRemoteDTOS.get(0).getChannelId() + " "+userInChannels.size());
+//                Log.i(TAG, " dasdas "+userIds.size() +" "+membersInChannelRemoteDTOS.get(0).getUserChannels().size()
+//                        + " " + membersInChannelRemoteDTOS.get(0).getChannelId() + " "+userInChannels.size());
 
                 return userRepository.getUsersByIds(userIds);
             }
@@ -113,6 +115,11 @@ public class ChannelControllerImpl implements ChannelController {
                     channel.getLastMessage().setAuthor(new BlaUser(user));
             }
         }
+
+//        Gson gson = new Gson();
+//        String json = gson.toJson(channels);
+//        Log.i(TAG, "channels to json: "+json);
+
         return channels;
     }
 
@@ -154,6 +161,16 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public void removeUserFromChannel(String userId, String channelId) throws Exception {
         channelRepository.removeUserFromChannel(userId, channelId);
+    }
+
+    @Override
+    public BlaChannel resetUnreadMessagesInChannel(String channelId) {
+        return channelRepository.resetUnreadMessagesInChannel(channelId);
+    }
+
+    @Override
+    public BlaChannel updateUserLastSeenInChannel(String channelId) {
+        return channelRepository.updateUserLastSeenInChannel(channelId);
     }
 
 }

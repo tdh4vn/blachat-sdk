@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.ToggleButton
 import androidx.recyclerview.widget.RecyclerView
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.controllers.UserVMStore
@@ -19,14 +20,15 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions
 import com.nostra13.universalimageloader.core.ImageLoader
 import com.nostra13.universalimageloader.core.assist.ImageScaleType
 
-class MemberAdapter(val context: Context, private val users: List<BlaUser>, private val myId: String, private val type: Int) :
+class MemberAdapter(val context: Context, private val users: List<BlaUser>, private val myId: String,
+                    private val type: Int, private val showIconCheck: Boolean) :
     RecyclerView.Adapter<MemberAdapter.MemberVH>() {
 
     val userVMStore = UserVMStore.getInstance()
 
     interface SelectUserListener{
-        fun onAdd(id: String)
-        fun onRemove(id: String)
+        fun onAdd(user: BlaUser)
+        fun onRemove(user: BlaUser)
     }
 
     private var selectUserListener: SelectUserListener? = null
@@ -47,7 +49,7 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
     }
 
     interface ItemClickListener {
-        fun onClick(userId: String, position: Int, isLongClick: Boolean)
+        fun onClick(user: String, position: Int, isLongClick: Boolean)
     }
 
     private var options: DisplayImageOptions = DisplayImageOptions.Builder()
@@ -61,10 +63,7 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MemberVH {
         val view = LayoutInflater.from(context).inflate(R.layout.item_user, parent, false)
-        return MemberVH(
-            view,
-            context
-        )
+        return MemberVH(view)
     }
 
     override fun getItemCount(): Int {
@@ -90,31 +89,47 @@ class MemberAdapter(val context: Context, private val users: List<BlaUser>, priv
             holder.itemView.isClickable = false
             holder.itemView.isLongClickable = true
             holder.imgCheck.visibility = View.INVISIBLE
+            if(!showIconCheck)
+                holder.imgCheck.visibility = View.GONE
             holder.itemView.setOnLongClickListener {
                 Log.i("Adsd", ""+position)
                 itemClickListener?.onClick(member.id, position, true)
                 true
             }
+
         }
 
         holder.itemView.setOnClickListener {
+
             if(selectUserListener != null) {
-                if(holder.imgCheck.visibility == View.VISIBLE) {
-                    holder.imgCheck.visibility = View.INVISIBLE
-                    selectUserListener?.onRemove(member.id)
-                }
-                else{
-                    holder.imgCheck.visibility = View.VISIBLE
-                    selectUserListener?.onAdd(member.id)
-                }
+                Log.e("adapter", "name: "+member.name)
+                print(member.name)
+                if(holder.imgCheck.isChecked){
+                    selectUserListener?.onRemove(member)
+                }else
+                    selectUserListener?.onAdd(member)
+
+
+                holder.imgCheck.isChecked = !holder.imgCheck.isChecked
+            }
+        }
+
+        holder.imgCheck.setOnClickListener {
+            if(selectUserListener != null) {
+                if(holder.imgCheck.isChecked){
+                    selectUserListener?.onRemove(member)
+                }else
+                    selectUserListener?.onAdd(member)
+
+                holder.imgCheck.isChecked = !holder.imgCheck.isChecked
             }
         }
     }
 
-    class MemberVH(view: View, context: Context) : RecyclerView.ViewHolder(view) {
+    class MemberVH(view: View) : RecyclerView.ViewHolder(view) {
 
         var tvName: TextView = view.findViewById(R.id.tvName)
-        var imgCheck: ImageView = view.findViewById(R.id.imgSelected)
+        var imgCheck: ToggleButton = view.findViewById(R.id.imgSelected)
         var imgAvatar: ImageView = view.findViewById(R.id.imgAvatar)
         var imgStatus: View = view.findViewById(R.id.imgStatus)
 

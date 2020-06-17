@@ -1,5 +1,7 @@
 package com.blameo.chatsdk.models;
 
+import android.util.Log;
+
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.utils.UserSP;
@@ -52,12 +54,15 @@ public class CustomChannel implements IDialog<CustomMessage> {
 
     @Override
     public int getUnreadCount() {
-        return 0;
+        Log.i("CUSTOM", "real: "+channel.getUnreadMessages() + " fake: "+ channel.getNumberMessageUnread());
+        if(channel.getNumberMessageUnread().contains("+"))
+            return 20;
+        return Integer.parseInt(channel.getNumberMessageUnread());
     }
 
     private static ArrayList<CustomUser> getAllUsers() {
         ArrayList<CustomUser> users = new ArrayList<>();
-        users.add(new CustomUser(new BlaUser(UserSP.getInstance().getID(), "", "https://png.pngtree.com/svg/20161027/service_default_avatar_182956.png", null)));
+        users.add(new CustomUser(new BlaUser(UserSP.getInstance().getID(), "", "https://png.pngtree.com/svg/20161027/service_default_avatar_182956.png", null, null)));
         return users;
     }
 

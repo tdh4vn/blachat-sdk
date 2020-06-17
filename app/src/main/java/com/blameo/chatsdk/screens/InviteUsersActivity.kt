@@ -19,14 +19,13 @@ import com.blameo.chatsdk.utils.UserSP
 import kotlinx.android.synthetic.main.activity_create_channel.*
 import kotlinx.android.synthetic.main.activity_create_channel.rv_members
 import kotlinx.android.synthetic.main.activity_create_channel.toolbar
-import kotlinx.android.synthetic.main.activity_invite_users.*
 
 class InviteUsersActivity : AppCompatActivity() {
 
     lateinit var adapter: MemberAdapter
     lateinit var chatSdk: BlaChatSDK
     private val TAG = "CREATE"
-    private val uIds: ArrayList<String> = arrayListOf()
+    private val users: ArrayList<BlaUser> = arrayListOf()
     private var channelId = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,15 +56,15 @@ class InviteUsersActivity : AppCompatActivity() {
                         this@InviteUsersActivity,
                         result!!,
                         UserSP.getInstance().id,
-                        2
+                        2, false
                     )
                     adapter.setListener(object : MemberAdapter.SelectUserListener {
-                        override fun onAdd(id: String) {
-                            uIds.add(id)
+                        override fun onAdd(id: BlaUser) {
+                            users.add(id)
                         }
 
-                        override fun onRemove(id: String) {
-                            uIds.remove(id)
+                        override fun onRemove(id: BlaUser) {
+                            users.remove(id)
                         }
                     })
                     rv_members.layoutManager = LinearLayoutManager(this@InviteUsersActivity)
@@ -79,12 +78,17 @@ class InviteUsersActivity : AppCompatActivity() {
         })
 
         btn_done.setOnClickListener {
-            if(uIds.size == 0)  return@setOnClickListener
+            if(users.size == 0)  return@setOnClickListener
             inviteUsersToChannel()
         }
     }
 
     private fun inviteUsersToChannel() {
+        val uIds = arrayListOf<String>()
+        users.forEach {
+            uIds.add(it.id)
+        }
+
         chatSdk.inviteUserToChannel(uIds, channelId, object : Callback<Boolean>{
             override fun onSuccess(result: Boolean?) {
                 Log.i(TAG, "invite success")

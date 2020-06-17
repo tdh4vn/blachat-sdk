@@ -8,15 +8,15 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
-import com.blameo.chatsdk.models.bla.BlaUserPresence;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public interface BlaChatSDKProxy {
 
-    void init(Context context, String userId, String token);
+    void initBlaChatSDK(Context context, String userId, String token);
     void addMessageListener(MessagesListener messagesListener);
     void removeMessageListener(MessagesListener messagesListener);
     void addChannelListener(ChannelEventListener channelEventListener);
@@ -27,18 +27,18 @@ public interface BlaChatSDKProxy {
     void getUsersInChannel(String channelId, Callback<List<BlaUser>> callback);
     void getUsers(ArrayList<String> userIds, Callback<List<BlaUser>> callback) throws Exception;
     void getMessages(String channelId, String lastId, Integer limit, Callback<List<BlaMessage>> callback);
-    void createChannel(String name, List<String> userIds, BlaChannelType channelType, Callback<BlaChannel> callback) throws Exception;
+    void createChannel(String name, List<String> userIds, BlaChannelType channelType, Map<String, Object> customData, Callback<BlaChannel> callback) throws Exception;
     void updateChannel(BlaChannel newChannel, Callback<BlaChannel> callback);
     void deleteChannel(BlaChannel blaChannel, Callback<BlaChannel> callback);
     void sendStartTyping(String channelId, Callback<Boolean> callback);
     void sendStopTyping(String channelId, Callback<Boolean> callback);
     void markSeenMessage(String messageId, String channelId, String seenId, Callback<Boolean> callback);
     void markReceiveMessage(String messageId, String channelId, String receiveId, Callback<Boolean> callback);
-    void createMessage(String content, String channelId, BlaMessageType type, HashMap<String, Object> customData, Callback<BlaMessage> callback);
+    void createMessage(String content, String channelId, BlaMessageType type, Map<String, Object> customData, Callback<BlaMessage> callback);
     void updateMessage(BlaMessage updatedMessage, Callback<BlaMessage> callback);
     void deleteMessage(BlaMessage deletedMessage, Callback<BlaMessage> callback);
     void inviteUserToChannel(List<String> usersIds, String channelId, Callback<Boolean> callback);
     void removeUserFromChannel(String userId, String channelId, Callback<Boolean> callback);
-    void getUserPresence(Callback<List<BlaUserPresence>> callback) throws Exception;
+    void getUserPresence(Callback<List<BlaUser>> callback) throws Exception;
     void getAllUsers(Callback<List<BlaUser>> callback);
 }

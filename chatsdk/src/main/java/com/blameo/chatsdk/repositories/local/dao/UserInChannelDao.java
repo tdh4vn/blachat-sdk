@@ -2,6 +2,7 @@ package com.blameo.chatsdk.repositories.local.dao;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Dao;
+import androidx.room.Query;
 import androidx.room.Update;
 
 import com.blameo.chatsdk.models.entities.UserInChannel;
@@ -14,6 +15,10 @@ public abstract class UserInChannelDao implements BaseDao<UserInChannel> {
 
     @Update(entity = UserInChannel.class)
     public abstract void updateLastReceived(UpdateReceived data);
+
+    @Query("SELECT * FROM " + Constant.UIC_TABLE_NAME + " WHERE " + Constant.UIC_CHANNEL_ID + " = :channelId"
+    +" AND "+ Constant.UIC_USER_ID +" =:userId")
+    abstract public UserInChannel getUserInChannelById(String channelId, String userId);
 
 
     public static class UpdateSeen {

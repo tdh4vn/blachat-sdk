@@ -5,16 +5,12 @@ import android.graphics.Color
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
 import android.text.TextUtils
 import android.util.Log
-import android.view.View
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.blameo.chatsdk.ChatListener
 import com.blameo.chatsdk.R
 import com.blameo.chatsdk.adapters.MemberAdapter
 import com.blameo.chatsdk.blachat.BlaChatSDK
@@ -22,8 +18,6 @@ import com.blameo.chatsdk.blachat.Callback
 import com.blameo.chatsdk.controllers.ChannelVMlStore
 import com.blameo.chatsdk.controllers.ConversationViewModel
 import com.blameo.chatsdk.models.bla.*
-import com.blameo.chatsdk.models.entities.Channel
-import com.blameo.chatsdk.models.entities.User
 import com.blameo.chatsdk.utils.UserSP
 import com.esafirm.imagepicker.features.ImagePicker
 import com.esafirm.imagepicker.features.ReturnMode
@@ -74,14 +68,14 @@ class AboutChannelActivity : AppCompatActivity() {
 
 
     private fun initAdapter(users: List<BlaUser>) {
-        adapter = MemberAdapter(this@AboutChannelActivity, users, UserSP.getInstance().id, 1)
+        adapter = MemberAdapter(this@AboutChannelActivity, users, UserSP.getInstance().id, 1, false)
         val layoutManager = LinearLayoutManager(this@AboutChannelActivity)
 //        val layoutManager = GridLayoutManager(this, 2)
         adapter.setItemClickListener(object : MemberAdapter.ItemClickListener{
             override fun onClick(userId: String, position: Int, isLongClick: Boolean) {
                 Log.i(TAG, "click "+userId + " "+ position)
                 if(isLongClick){
-                    showDeleteChannelDialog(position, userId)
+                    showRemoveUserChannelDialog(position, userId)
                 }
             }
         })
@@ -162,11 +156,11 @@ class AboutChannelActivity : AppCompatActivity() {
         editText = dialog.findViewById(R.id.edtName)!!
     }
 
-    private fun showDeleteChannelDialog(position: Int, userId: String) {
+    private fun showRemoveUserChannelDialog(position: Int, userId: String) {
 
 
         val dialog = AlertDialog.Builder(this)
-            .setTitle("Do you want to delete this user?")
+            .setTitle("Do you want to remove this user?")
             .setPositiveButton("OK") { dialog, which ->
                 removeUserFromChannel(position, userId)
             }

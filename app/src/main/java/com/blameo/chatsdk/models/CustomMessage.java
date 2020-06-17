@@ -154,7 +154,7 @@ public class CustomMessage implements Serializable, IMessage, MessageContentType
 
     @Override
     public IUser getUser() {
-        return myCustomUser == null ? new CustomUser(new BlaUser("","", "", null)) : myCustomUser;
+        return myCustomUser == null ? new CustomUser(new BlaUser("","", "", null, null)) : myCustomUser;
     }
 
     public static class Image {

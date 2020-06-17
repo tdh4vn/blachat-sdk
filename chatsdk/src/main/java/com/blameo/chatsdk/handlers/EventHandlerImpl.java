@@ -30,6 +30,7 @@ import com.blameo.chatsdk.utils.GsonDateFormatter;
 import com.blameo.chatsdk.utils.GsonHashMapFormatter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ import retrofit2.Response;
 
 public class EventHandlerImpl implements EventHandler {
 
-    private static final String TAG = "EVENT" ;
+    private static final String TAG = "EVENT";
     private Vector<MessagesListener> messageListeners = new Vector<>();
 
     private Vector<ChannelEventListener> channelEventListeners = new Vector<>();
@@ -87,7 +88,7 @@ public class EventHandlerImpl implements EventHandler {
 
         this.gson = gsonBuilder.create();
         this.channelController = new ChannelControllerImpl(context, myId);
-        this.messageRepository = new MessageRepositoryImpl(context);
+        this.messageRepository = new MessageRepositoryImpl(context, myId);
         this.userRepository = new UserRepositoryImpl(context, myId);
         sharedPreferences = context.getSharedPreferences("EVENT", Context.MODE_PRIVATE);
     }
@@ -130,9 +131,9 @@ public class EventHandlerImpl implements EventHandler {
         try {
             Event p = gson.fromJson(data, Event.class);
 
-            Log.i("EVENT", ""+p.getType() + " "+p.getPayload() + " "+ p.getEventId() + "\n" + data);
+            Log.i("EVENT", "" + p.getType() + " " + p.getPayload() + " " + p.getEventId() + "\n" + data);
 
-            if(!TextUtils.isEmpty(p.getEventId()))
+            if (!TextUtils.isEmpty(p.getEventId()))
                 sharedPreferences.edit().putString(LAST_EVENT_ID, p.getEventId()).apply();
 
             switch (p.getType()) {
@@ -141,8 +142,11 @@ public class EventHandlerImpl implements EventHandler {
                     JSONObject jsonObject = new JSONObject(data);
                     Payload typing = gson.fromJson(jsonObject.get("payload").toString(), Payload.class);
 
+                    if (typing.user_id.equals(myId)) return;
+
                     BlaChannel channel = channelController.getChannelById(typing.channel_id);
                     BlaUser user = userRepository.getUserById(typing.user_id);
+
 
                     if (channel != null && user != null) {
                         for (ChannelEventListener channelEventListener : channelEventListeners) {
@@ -157,14 +161,27 @@ public class EventHandlerImpl implements EventHandler {
 
                     Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
 
-//                        if (!message.getAuthorId().equals(myId)) {
+                    Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
+
+                    if(message.getAuthorId().equals(myId))  return;
+
+                    Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
+
                     BlaMessage blaMessage = messageRepository.saveMessage(message);
+                    channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
+                    messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
+
+
+                    BlaChannel blaChannel = channelController.updateUserLastSeenInChannel(message.getChannelId());
+                    for (ChannelEventListener listener : channelEventListeners) {
+                        Log.i(TAG, "new message so update channel: " + message.getContent() + " " + blaChannel.getUnreadMessages());
+                        listener.onUpdateChannel(blaChannel);
+                    }
+
                     for (MessagesListener listener : messageListeners) {
                         listener.onNewMessage(blaMessage);
-                        channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
-                        messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
                     }
-//                        }
+
                     break;
                 }
 
@@ -213,7 +230,7 @@ public class EventHandlerImpl implements EventHandler {
                     JSONObject jsonObject = new JSONObject(data);
                     Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
 
-                    if (channel != null){
+                    if (channel != null) {
                         if (channelController.checkChannelIsExist(channel.getId())) return;
                         channelController.onNewChannel(channel);
                         for (ChannelEventListener listener : channelEventListeners) {
@@ -230,17 +247,27 @@ public class EventHandlerImpl implements EventHandler {
                     channelController.usersAddedToChannel(inviteUsersEvent.channelId, inviteUsersEvent.userIds);
                     break;
                 }
+                case "update_channel": {
+                    JSONObject jsonObject = new JSONObject(data);
+                    Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
+                    for (ChannelEventListener listener : channelEventListeners) {
+                        listener.onUpdateChannel(new BlaChannel(channel));
+                    }
+                    channelController.updateChannel(new BlaChannel(channel));
+                    break;
+                }
             }
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
     }
 
     @Override
-    public void getEvent(){
+    public void getEvent() {
 
         String lastEventId = sharedPreferences.getString(LAST_EVENT_ID, "");
-        Log.i(TAG, "last_event_id "+lastEventId);
+        Log.i(TAG, "last_event_id " + lastEventId);
 
-        if(lastEventId.isEmpty())   return;
+        if (lastEventId.isEmpty()) return;
 
         try {
             Response<GetEventResult> response = APIProvider.INSTANCE.getBlaChatAPI()
@@ -248,19 +275,26 @@ public class EventHandlerImpl implements EventHandler {
                     .execute();
 
             assert response.body() != null;
-            if(response.isSuccessful() && response.body().getData() != null){
+            if (response.isSuccessful() && response.body().getData() != null) {
                 ArrayList<GetEvent> events = response.body().getData();
-                Log.i(TAG, "get event: "+ events.size());
-                if(response.body().getData().size() == 0)   return;
+                Log.i(TAG, "get event: " + events.size());
+                if (response.body().getData().size() == 0) return;
                 sharedPreferences.edit().putString(LAST_EVENT_ID, "").apply();
 
-                for(int i = events.size() - 1 ; i >= 0; i--){
+                for (int i = events.size() - 1; i >= 0; i--) {
                     publishEvent(events.get(i).getPayload());
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onChannelUpdate(BlaChannel channel) {
+        for (ChannelEventListener listener : channelEventListeners) {
+            listener.onUpdateChannel(channel);
         }
     }
 }

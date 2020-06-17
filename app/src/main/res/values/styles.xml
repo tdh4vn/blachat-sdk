@@ -30,4 +30,20 @@
         <item name="colorAccent">@color/green</item>
     </style>
 
+    <style name="Strong">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/red</item>
+    </style>
+
+
+    <style name="QTheme" parent="android:Theme.Light">
+        <item name="android:textViewStyle">@style/QText</item>
+    </style>
+
+    <style name="QText" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:typeface">sans</item>
+    </style>
+
 </resources>

@@ -1,5 +1,8 @@
 package com.blameo.chatsdk.models.entities;
 
+import android.text.TextUtils;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -16,8 +19,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import kotlin.jvm.Transient;
 
 @Entity(tableName = Constant.CHANNEL_TABLE_NAME)
 public class Channel implements Serializable {
@@ -57,14 +58,16 @@ public class Channel implements Serializable {
     @SerializedName(value = "lastMessages", alternate = "last_messages")
     @Ignore
     private List<Message> lastMessages;
-
     @TypeConverters(Converters.class)
     @SerializedName(value = "customData", alternate = "custom_data")
     @ColumnInfo(name = Constant.CHANNEL_CUSTOM_DATA)
     protected HashMap<String, Object> customData;
 
+    @ColumnInfo(name = Constant.CHANNEL_UNREAD_MESSAGES)
+    private int unreadMessages = 0;
 
-    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt, String lastMessageId, HashMap<String, Object> customData) {
+    public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt,
+                   String lastMessageId, HashMap<String, Object> customData, int unreadMessages) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
@@ -73,6 +76,7 @@ public class Channel implements Serializable {
         this.createdAt = createdAt;
         this.lastMessageId = lastMessageId;
         this.customData = customData;
+        this.unreadMessages = unreadMessages;
     }
 
     public String getId() {
@@ -145,5 +149,13 @@ public class Channel implements Serializable {
 
     public void setLastMessages(List<Message> lastMessages) {
         this.lastMessages = lastMessages;
+    }
+
+    public int getUnreadMessages() {
+        return unreadMessages;
+    }
+
+    public void setUnreadMessages(int unreadMessages) {
+        this.unreadMessages = unreadMessages;
     }
 }

@@ -10,6 +10,7 @@ import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -35,14 +36,19 @@ public class User {
     @ColumnInfo(name = Constant.USER_CUSTOM_DATA)
     private HashMap<String, Object> customData;
 
+    @ColumnInfo(name = Constant.USER_LAST_ACTIVE_AT)
+    @TypeConverters(Converters.class)
+    private Date lastActiveAt;
+
     public User() {
     }
 
-    public User(String id, String name, String avatar, HashMap<String, Object> customDataMap) {
+    public User(String id, String name, String avatar, HashMap<String, Object> customDataMap, Date lastActiveAt) {
         this.id = id;
         this.name = name;
         this.avatar = avatar;
         this.customData = customDataMap;
+        this.lastActiveAt = lastActiveAt;
     }
 
     public String getId() {
@@ -75,5 +81,13 @@ public class User {
 
     public void setCustomData(HashMap<String, Object> customData) {
         this.customData = customData;
+    }
+
+    public Date getLastActiveAt() {
+        return lastActiveAt;
+    }
+
+    public void setLastActiveAt(Date lastActiveAt) {
+        this.lastActiveAt = lastActiveAt;
     }
 }

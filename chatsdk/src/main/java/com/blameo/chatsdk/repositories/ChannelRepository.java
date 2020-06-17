@@ -42,4 +42,8 @@ public interface ChannelRepository {
     void usersAddedToChannel(String channelId, List<String> userIds);
 
     void removeUserFromChannel(String userId, String channelId) throws Exception;
+
+    BlaChannel resetUnreadMessagesInChannel(String channelId);
+
+    BlaChannel updateUserLastSeenInChannel(String channelId);
 }

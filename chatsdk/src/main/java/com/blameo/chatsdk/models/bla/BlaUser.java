@@ -11,8 +11,6 @@ public class BlaUser extends User {
 
     private boolean online;
 
-    private Date lastActiveAt;
-
     public boolean isOnline() {
         return online;
     }
@@ -25,22 +23,17 @@ public class BlaUser extends User {
         this.online = online;
     }
 
-    public BlaUser(String id, String name, String avatar, HashMap<String, Object> customData) {
-        super(id, name, avatar, customData);
+    public BlaUser(String id, String name, String avatar, HashMap<String, Object> customData, Date lastActiveAt) {
+        super(id, name, avatar, customData, lastActiveAt);
     }
 
     public BlaUser(User user) {
         super(user.getId(),
                 user.getName(),
                 user.getAvatar(),
-                user.getCustomData());
+                user.getCustomData(),
+                user.getLastActiveAt());
     }
 
-    public Date getLastActiveAt() {
-        return lastActiveAt;
-    }
 
-    public void setLastActiveAt(Date lastActiveAt) {
-        this.lastActiveAt = lastActiveAt;
-    }
 }

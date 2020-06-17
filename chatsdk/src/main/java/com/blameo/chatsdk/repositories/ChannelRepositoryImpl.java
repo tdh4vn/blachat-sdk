@@ -12,7 +12,6 @@ import com.blameo.chatsdk.models.bodies.ChannelsBody;
 import com.blameo.chatsdk.models.bodies.CreateChannelBody;
 import com.blameo.chatsdk.models.bodies.InviteUserToChannelBody;
 import com.blameo.chatsdk.models.bodies.RemoveUserFromChannelBody;
-import com.blameo.chatsdk.models.bodies.UpdateChannelBody;
 import com.blameo.chatsdk.models.bodies.UsersBody;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.ChannelWithLastMessage;
@@ -37,9 +36,6 @@ import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,15 +61,18 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     private BlaChatAPI blaChatAPI;
 
+    private String myId;
+
     private String TAG = "channel_repo";
 
-    public ChannelRepositoryImpl(Context context) {
+    public ChannelRepositoryImpl(Context context, String myId) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
         this.userInChannelDao = BlaChatSDKDatabase.getInstance(context).userInChannelDao();
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
         this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
+        this.myId = myId;
 //        exportDB();
 //        try {
 //            blaChatAPI.getAllMembers().execute();
@@ -88,12 +87,17 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 channelIds
         )).execute();
 
+
+
 //        Log.i(TAG, "channel repo : "+channelIds.get(0));
 
         if (getMembersOfMultiChannelResultResponse.isSuccessful()) {
             assert getMembersOfMultiChannelResultResponse.body() != null;
+            Log.i(TAG, "get remote users in channels done "+getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS().size());
             return getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS();
         }
+
+        Log.i(TAG, "get remote users in channels done null");
 
         return new ArrayList<>();
 
@@ -106,6 +110,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
+
         long lastUpdate = new Date().getTime();
         if (limit < 0) {
             limit = 0;
@@ -119,25 +124,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
         List<ChannelWithLastMessage> channels = channelDao.getChannelsWithLastMessage(lastUpdate, limit);
 
-//        Response<GetChannelsResult> response = blaChatAPI.getChannel(
-//                limit,
-//                lastChannelId
-//        ).execute();
-//        List<Channel> channelRemote = response.body().getData();
-//        Log.i(TAG, "channel size: "+channelRemote.size());
-//        for(Channel channel: channelRemote){
-//            Log.i(TAG, "messages in channel size: "+channel.getLastMessages().size());
-//        }
-//
-//        String json = new Gson().toJson(channelRemote);
-//        Log.i(TAG, "json: "+json);
-//        List<Channel> convertChannels = new Gson().fromJson(json, new TypeToken<List<Channel>>(){}.getType());
-//
-//        Log.i(TAG, "convert channel size: "+convertChannels.size());
-//        for(Channel channel: convertChannels){
-//            Log.i(TAG, "messages in convert channel size: "+channel.getLastMessages().size());
-//        }
-
         if (channels.isEmpty()) {
             Response<GetChannelsResult> response = blaChatAPI.getChannel(
                     limit,
@@ -149,12 +135,13 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
             if (response.isSuccessful() && channelRemote != null && !channelRemote.isEmpty()) {
 
-                channelDao.insertMany(channelRemote);
+//                channelDao.insertMany(channelRemote);
                 Set<String> userIds = new HashSet<>();
                 List<UserInChannel> userInChannels = new ArrayList<>();
                 ArrayList<String> channelIds = new ArrayList<>();
                 ArrayList<Message> messagesFromChannels = new ArrayList<>();
                 for (Channel channel: channelRemote) {
+
 
                     ChannelWithLastMessage channelWithLastMessage = new ChannelWithLastMessage();
                     channelWithLastMessage.channel = channel;
@@ -193,12 +180,33 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 if (getUsersResponse.isSuccessful() && !getUsersResponse.body().getData().isEmpty()) {
                     userDao.insertMany(getUsersResponse.body().getData());
                 }
+
+
+                for (Channel channel: channelRemote) {
+                    int unreadMessage = getUnreadMessagesInChannel(channel);
+
+                    Log.i(TAG, "set unread messages in channel id: " + channel.getId() + " has " + unreadMessage + " unread messages");
+
+                    channel.setUnreadMessages(unreadMessage);
+                    channelDao.update(channel);
+                }
+
+
             }
         }
 
         ArrayList<BlaChannel> blaChannels = new ArrayList<>();
+        ArrayList<String> channelIds = new ArrayList<>();
+        for(ChannelWithLastMessage channel: channels){
+            channelIds.add(channel.channel.getId());
+        }
+
+        Log.i(TAG,"start "+channelIds.size());
+
         for (ChannelWithLastMessage c: channels) {
             BlaChannel channel = new BlaChannel(c.channel, c.lastMessage);
+
+            Log.i(TAG, "channel id: " + channel.getId() + " has " + channel.getUnreadMessages() + " unread messages");
 
             if(c.lastMessage != null){
                 MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(c.lastMessage.getId());
@@ -228,6 +236,23 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 return new BlaUser(user);
         }
         return null;
+    }
+
+    private int getUnreadMessagesInChannel(Channel channel) {
+
+        UserInChannel userInChannel = userInChannelDao.getUserInChannelById(channel.getId(), myId);
+        if(userInChannel == null)   return 0;
+        int unreadMessages = channel.getUnreadMessages();
+        long userLastSeenAt = userInChannel.getLastSeen().getTime();
+        if(channel.getLastMessages() == null)   return unreadMessages;
+        Log.i(TAG, "channel id: "+userInChannel.getChannelId() + " "+userInChannel.getLastSeen()
+        + " "+channel.getLastMessages().size());
+        for(Message message : channel.getLastMessages()){
+            if(message.getCreatedAt().getTime() > userLastSeenAt)
+                unreadMessages++;
+        }
+
+        return unreadMessages;
     }
 
     @Override
@@ -361,4 +386,38 @@ public class ChannelRepositoryImpl implements ChannelRepository {
             userInChannelDao.delete(new UserInChannel(channelId, userId, new Date(), new Date()));
         }
     }
+
+    @Override
+    public BlaChannel resetUnreadMessagesInChannel(String channelId) {
+
+        Log.i(TAG, "reset: "+channelId);
+
+
+        ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
+        channel.channel.setUnreadMessages(0);
+        channelDao.update(channel.channel);
+        BlaChannel blaChannel = new BlaChannel(channel.channel, channel.lastMessage);
+        Log.i(TAG, "reset: "+blaChannel.getLastMessage().getContent() + " "+blaChannel.getId()
+        + " "+blaChannel.getUnreadMessages());
+        return blaChannel;
+    }
+
+    @Override
+    public BlaChannel updateUserLastSeenInChannel(String channelId) {
+
+        Log.i(TAG, "increase count: "+channelId);
+
+        ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
+        int count = channel.channel.getUnreadMessages();
+        count++;
+
+        channel.channel.setUnreadMessages(count);
+        channelDao.update(channel.channel);
+        BlaChannel blaChannel = new BlaChannel(channel.channel, channel.lastMessage);
+        Log.i(TAG, "increase count: "+blaChannel.getLastMessage().getContent() + " "+blaChannel.getId()
+                + " "+blaChannel.getUnreadMessages());
+        return blaChannel;
+    }
+
+
 }

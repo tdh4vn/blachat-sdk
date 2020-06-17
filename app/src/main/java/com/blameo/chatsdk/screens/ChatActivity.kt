@@ -419,12 +419,14 @@ class ChatActivity : AppCompatActivity(),
         chatSdk.addChannelListener(channelListener)
 
         input.setInputListener {
-            if (!TextUtils.isEmpty(input.inputEditText.text.toString().trim()))
+            if(!TextUtils.isEmpty(input.inputEditText.text.toString().trim())){
+                val map = HashMap<String, Any>()
+                map["customize_message"] = "Nam test custom data create message"
                 chatSdk.createMessage(
                     input.inputEditText.text.toString(),
                     channel.id,
                     BlaMessageType.TEXT,
-                    null,
+                    map,
                     object : Callback<BlaMessage> {
                         override fun onSuccess(result: BlaMessage?) {
                             addNewMessage(result!!, 0)
@@ -435,6 +437,8 @@ class ChatActivity : AppCompatActivity(),
 
                         }
                     })
+            }
+
             true
         }
 

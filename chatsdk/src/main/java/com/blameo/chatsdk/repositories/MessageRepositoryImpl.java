@@ -7,6 +7,7 @@ import android.util.Log;
 
 import androidx.room.Update;
 
+import com.blameo.chatsdk.controllers.ChannelController;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
@@ -38,6 +39,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Response;
 
@@ -57,14 +59,17 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     private BlaChatAPI blaChatAPI;
 
+    private String myId = "";
+
     private String TAG = "mess_repo";
 
-    public MessageRepositoryImpl(Context context) {
+    public MessageRepositoryImpl(Context context, String myId) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
         this.userInChannelDao = BlaChatSDKDatabase.getInstance(context).userInChannelDao();
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
         this.userReactMessageDao = BlaChatSDKDatabase.getInstance(context).userReactMessageDao();
+        this.myId = myId;
 
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
     }
@@ -138,7 +143,7 @@ public class MessageRepositoryImpl implements MessageRepository {
 
 
     @Override
-    public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, HashMap<String, Object> customData) {
+    public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, Map<String, Object> customData) {
         Message message = new Message(
                 tmpId,
                 authorId,
@@ -149,7 +154,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                 new Date(),
                 null,
                 false,
-                customData
+                new HashMap<>(customData)
         );
 
         messageDao.insert(message);
@@ -193,6 +198,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                 UserReactMessage.SEEN,
                 time
         ));
+
         return true;
     }
 
@@ -214,6 +220,9 @@ public class MessageRepositoryImpl implements MessageRepository {
                 channelId,
                 authorId
         )).execute();
+
+//        userInChannelDao.updateLastSeen(new UserInChannelDao.UpdateSeen(channelId, myId, new Date().getTime()));
+
         return response.isSuccessful();
     }
 
