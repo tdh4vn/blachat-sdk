@@ -21,6 +21,8 @@ import com.blameo.chatsdk.utils.BlaChatTextUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -112,8 +114,33 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public BlaUser getUserById(String id) {
-        User user = userDao.getUserById(id);
-        return new BlaUser(user);
+        try {
+            User user = userDao.getUserById(id);
+            if (user == null) {
+                List<User> users = syncUserByIds(Collections.singletonList(id));
+                if (users != null && users.size() > 0) {
+                    user = users.get(0);
+                } else {
+                    return null;
+                }
+            }
+
+            assert user != null;
+            return new BlaUser(user);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private List<User> syncUserByIds(List<String> uIds) throws IOException {
+        Response<GetUsersByIdsResult> res = blaChatAPI.getUsersByIds(new UsersBody(uIds)).execute();
+        if (res.isSuccessful() && res.body() != null) {
+
+            userDao.insertMany(res.body().getData());
+
+            return res.body().getData();
+        }
+        return null;
     }
 
     @Override
