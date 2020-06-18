@@ -69,6 +69,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private Context applicationContext;
     private String TAG = "SDK";
     private HashMap<String ,BlaUser> usersMap = new HashMap<>();
+    private BlaPresenceListener blaPresenceListener;
 
     private EventHandler eventHandler;
 
@@ -99,7 +100,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         return instance;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void initBlaChatSDK(Context context, String userId, String token) {
         this.token = token;
@@ -264,18 +264,19 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     @Override
     public void addPresenceListener(BlaPresenceListener blaPresenceListener) {
 
+        this.blaPresenceListener = blaPresenceListener;
+
         ScheduledExecutorService scheduler =
                 Executors.newSingleThreadScheduledExecutor();
 
         scheduler.scheduleAtFixedRate(() -> {
             try {
                 List<BlaUser> users = userRepository.getAllUsersStates();
-                if (users != null && users.size() > 0)
-                    Log.i(TAG, "total :"+users.size());
-                    for (BlaUser user : users) {
-                        if(blaPresenceListener != null)
-                            blaPresenceListener.onUpdate(user);
-                    }
+                if (users != null && users.size() > 0) {
+//                    Log.i(TAG, "total :" + users.size());
+                    if (this.blaPresenceListener != null)
+                        this.blaPresenceListener.onUpdate(users);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -284,6 +285,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     @Override
     public void removePresenceListener(BlaPresenceListener blaPresenceListener) {
+        this.blaPresenceListener = null;
     }
 
     @Override
@@ -362,10 +364,9 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     private List<BlaMessage> handleMessages(List<BlaMessage> messages) {
-        Log.i(TAG, "abcd: "+messages.size());
 
         for (BlaMessage message: messages){
-            Log.i(TAG, "convert");
+
             BlaUser author = getUsersMap().get(message.getAuthorId());
 //            Log.i(TAG, "author: "+author.getId() + " "+author.getName());
             if(author!= null)
@@ -605,17 +606,18 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         });
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     private void fetchAllUsers(){
         try {
             executors.submit(() -> {
                 try {
                     List<BlaUser> users = userRepository.fetchAllUsers();
+                    HashMap<String, BlaUser> userHashMap = new HashMap<>();
 
-                    Map<String, BlaUser> map = users.stream().collect(Collectors.toMap(BlaUser::getId, user -> user));
+                    for (BlaUser user: users)
+                        userHashMap.put(user.getId(), user);
 
-                    Log.i(TAG, "map: "+map.size());
-                    setUsersMap((HashMap<String, BlaUser>) map);
+                    Log.i(TAG, "map: "+userHashMap.size());
+                    setUsersMap(userHashMap);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -625,7 +627,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     public void getAllUsers(Callback<List<BlaUser>> callback) {
         try {
