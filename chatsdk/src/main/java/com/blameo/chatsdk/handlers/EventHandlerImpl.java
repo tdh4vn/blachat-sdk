@@ -15,6 +15,7 @@ import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
+import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.events.CursorEvent;
 import com.blameo.chatsdk.models.events.Event;
 import com.blameo.chatsdk.models.events.GetEvent;
@@ -168,6 +169,9 @@ public class EventHandlerImpl implements EventHandler {
                     Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
 
                     BlaMessage blaMessage = messageRepository.saveMessage(message);
+                    User user = userRepository.getUserById(blaMessage.getAuthorId());
+                    if(user != null)
+                        blaMessage.setAuthor(new BlaUser(user));
                     channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
                     messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
 

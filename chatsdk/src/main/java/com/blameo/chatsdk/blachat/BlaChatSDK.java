@@ -284,7 +284,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     @Override
     public void removePresenceListener(BlaPresenceListener blaPresenceListener) {
-
     }
 
     @Override

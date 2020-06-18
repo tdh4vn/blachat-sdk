@@ -426,7 +426,7 @@ class ChatActivity : AppCompatActivity(),
                     input.inputEditText.text.toString(),
                     channel.id,
                     BlaMessageType.TEXT,
-                    map,
+                    null,
                     object : Callback<BlaMessage> {
                         override fun onSuccess(result: BlaMessage?) {
                             addNewMessage(result!!, 0)
