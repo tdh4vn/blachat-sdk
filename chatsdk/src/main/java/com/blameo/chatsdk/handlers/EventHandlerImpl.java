@@ -9,6 +9,8 @@ import com.blameo.chatsdk.blachat.ChannelEventListener;
 import com.blameo.chatsdk.blachat.MessagesListener;
 import com.blameo.chatsdk.controllers.ChannelController;
 import com.blameo.chatsdk.controllers.ChannelControllerImpl;
+import com.blameo.chatsdk.controllers.MessageController;
+import com.blameo.chatsdk.controllers.MessageControllerImpl;
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.EventType;
@@ -16,6 +18,7 @@ import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.User;
+import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.events.CursorEvent;
 import com.blameo.chatsdk.models.events.Event;
 import com.blameo.chatsdk.models.events.GetEvent;
@@ -57,6 +60,7 @@ public class EventHandlerImpl implements EventHandler {
     private ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private ChannelController channelController;
+    private MessageController messageController;
 
     private MessageRepository messageRepository;
 
@@ -88,9 +92,10 @@ public class EventHandlerImpl implements EventHandler {
         gsonBuilder.setLenient();
 
         this.gson = gsonBuilder.create();
-        this.channelController = new ChannelControllerImpl(context, myId);
-        this.messageRepository = new MessageRepositoryImpl(context, myId);
-        this.userRepository = new UserRepositoryImpl(context, myId);
+        this.channelController = new ChannelControllerImpl();
+        this.messageRepository = MessageRepositoryImpl.getInstance();
+        this.messageController = new MessageControllerImpl();
+        this.userRepository = UserRepositoryImpl.getInstance();
         sharedPreferences = context.getSharedPreferences("EVENT", Context.MODE_PRIVATE);
     }
 
@@ -162,23 +167,15 @@ public class EventHandlerImpl implements EventHandler {
 
                     Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
 
-                    Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
-
                     if(message.getAuthorId().equals(myId))  return;
 
-                    Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
+                    BlaMessage blaMessage = messageController.onNewMessage(message);
 
-                    BlaMessage blaMessage = messageRepository.saveMessage(message);
-                    User user = userRepository.getUserById(blaMessage.getAuthorId());
-                    if(user != null)
-                        blaMessage.setAuthor(new BlaUser(user));
                     channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
-                    messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
-
 
                     BlaChannel blaChannel = channelController.updateUserLastSeenInChannel(message.getChannelId());
+
                     for (ChannelEventListener listener : channelEventListeners) {
-                        Log.i(TAG, "new message so update channel: " + message.getContent() + " " + blaChannel.getUnreadMessages());
                         listener.onUpdateChannel(blaChannel);
                     }
 
@@ -192,15 +189,16 @@ public class EventHandlerImpl implements EventHandler {
                 case "mark_seen": {
 
                     JSONObject jsonObject = new JSONObject(data);
+
                     CursorEvent cursorEvent = gson.fromJson(jsonObject.get("payload").toString(), CursorEvent.class);
-                    Log.i(TAG, "abc " + cursorEvent.actor_id + " " + cursorEvent.channel_id + " " + cursorEvent.message_id);
+
                     BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
-                    BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
+
+                    BlaMessage message = messageController.userReactMyMessage(cursorEvent.actor_id, cursorEvent.message_id, new Date(cursorEvent.time), UserReactMessage.SEEN);
+
                     BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
-                    messageRepository.userSeenMyMessage(user.getId(), message.getId(), new Date(cursorEvent.time));
-
-                    if (channel != null) {
+                    if (channel != null && message != null) {
                         for (ChannelEventListener listener : channelEventListeners) {
                             listener.onUserSeenMessage(channel, user, message);
                         }
@@ -211,18 +209,14 @@ public class EventHandlerImpl implements EventHandler {
                 case "mark_receive": {
                     JSONObject jsonObject = new JSONObject(data);
                     CursorEvent cursorEvent = gson.fromJson(jsonObject.get("payload").toString(), CursorEvent.class);
-                    Log.i(TAG, "rec " + cursorEvent.actor_id + " " + cursorEvent.channel_id + " " + cursorEvent.message_id);
                     BlaChannel channel = channelController.getChannelById(cursorEvent.channel_id);
-                    BlaMessage message = messageRepository.getMessageById(cursorEvent.message_id);
+
+                    BlaMessage message = messageController.userReactMyMessage(cursorEvent.actor_id, cursorEvent.message_id, new Date(cursorEvent.time), UserReactMessage.RECEIVE);
+
                     BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
-                    messageRepository.userReceiveMyMessage(user.getId(), message.getId(), new Date(cursorEvent.time));
-
-                    if (channel != null) {
+                    if (channel != null && message != null) {
                         for (ChannelEventListener listener : channelEventListeners) {
-                            ArrayList<BlaUser> users = new ArrayList<>();
-                            users.add(user);
-                            message.setReceivedBy(users);
                             listener.onUserReceiveMessage(channel, user, message);
                         }
                     }
@@ -247,21 +241,21 @@ public class EventHandlerImpl implements EventHandler {
                 case "invite_user": {
                     JSONObject jsonObject = new JSONObject(data);
                     InviteUsersEvent inviteUsersEvent = gson.fromJson(jsonObject.get("payload").toString(), InviteUsersEvent.class);
-                    Log.i(TAG, "invite users: " + inviteUsersEvent.channelId + " " + inviteUsersEvent.userIds.size());
                     channelController.usersAddedToChannel(inviteUsersEvent.channelId, inviteUsersEvent.userIds);
                     break;
                 }
                 case "update_channel": {
                     JSONObject jsonObject = new JSONObject(data);
                     Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
+                    BlaChannel blaChannel = channelController.onChannelUpdate(channel);
                     for (ChannelEventListener listener : channelEventListeners) {
-                        listener.onUpdateChannel(new BlaChannel(channel));
+                        listener.onUpdateChannel(blaChannel);
                     }
-                    channelController.updateChannel(new BlaChannel(channel));
                     break;
                 }
             }
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -269,7 +263,6 @@ public class EventHandlerImpl implements EventHandler {
     public void getEvent() {
 
         String lastEventId = sharedPreferences.getString(LAST_EVENT_ID, "");
-        Log.i(TAG, "last_event_id " + lastEventId);
 
         if (lastEventId.isEmpty()) return;
 
@@ -281,7 +274,6 @@ public class EventHandlerImpl implements EventHandler {
             assert response.body() != null;
             if (response.isSuccessful() && response.body().getData() != null) {
                 ArrayList<GetEvent> events = response.body().getData();
-                Log.i(TAG, "get event: " + events.size());
                 if (response.body().getData().size() == 0) return;
                 sharedPreferences.edit().putString(LAST_EVENT_ID, "").apply();
 

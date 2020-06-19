@@ -27,13 +27,13 @@ public interface BlaChatSDKProxy {
     void getUsersInChannel(String channelId, Callback<List<BlaUser>> callback);
     void getUsers(ArrayList<String> userIds, Callback<List<BlaUser>> callback) throws Exception;
     void getMessages(String channelId, String lastId, Integer limit, Callback<List<BlaMessage>> callback);
-    void createChannel(String name, List<String> userIds, BlaChannelType channelType, Map<String, Object> customData, Callback<BlaChannel> callback) throws Exception;
+    void createChannel(String name, String avatar, List<String> userIds, BlaChannelType channelType, Map<String, Object> customData, Callback<BlaChannel> callback) throws Exception;
     void updateChannel(BlaChannel newChannel, Callback<BlaChannel> callback);
     void deleteChannel(BlaChannel blaChannel, Callback<BlaChannel> callback);
     void sendStartTyping(String channelId, Callback<Boolean> callback);
     void sendStopTyping(String channelId, Callback<Boolean> callback);
-    void markSeenMessage(String messageId, String channelId, String seenId, Callback<Boolean> callback);
-    void markReceiveMessage(String messageId, String channelId, String receiveId, Callback<Boolean> callback);
+    void markSeenMessage(String messageId, String channelId, Callback<Boolean> callback);
+    void markReceiveMessage(String messageId, String channelId, Callback<Boolean> callback);
     void createMessage(String content, String channelId, BlaMessageType type, Map<String, Object> customData, Callback<BlaMessage> callback);
     void updateMessage(BlaMessage updatedMessage, Callback<BlaMessage> callback);
     void deleteMessage(BlaMessage deletedMessage, Callback<BlaMessage> callback);

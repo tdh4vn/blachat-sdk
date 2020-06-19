@@ -261,7 +261,6 @@ class ChatActivity : AppCompatActivity(),
         chatSdk.markSeenMessage(
             message.id,
             message.channelId,
-            message.authorId,
             object : Callback<Boolean> {
                 override fun onSuccess(result: Boolean?) {
                 }

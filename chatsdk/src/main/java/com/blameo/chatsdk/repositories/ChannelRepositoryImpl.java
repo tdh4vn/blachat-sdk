@@ -36,6 +36,7 @@ import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
+import com.blameo.chatsdk.utils.GsonUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import retrofit2.Response;
@@ -65,7 +67,23 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     private String TAG = "channel_repo";
 
-    public ChannelRepositoryImpl(Context context, String myId) {
+    static private ChannelRepository channelRepository = null;
+
+    public static ChannelRepository getInstance(Context context, String myId) {
+        if (channelRepository == null) {
+            channelRepository = new ChannelRepositoryImpl(context, myId);
+        }
+        return channelRepository;
+    }
+
+    public static ChannelRepository getInstance() {
+        if (channelRepository != null) {
+            return channelRepository;
+        }
+        throw new RuntimeException("Instance need init first");
+    }
+
+    private ChannelRepositoryImpl(Context context, String myId) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
         this.userInChannelDao = BlaChatSDKDatabase.getInstance(context).userInChannelDao();
@@ -73,12 +91,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         this.blaChatAPI = APIProvider.INSTANCE.getBlaChatAPI();
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
         this.myId = myId;
-//        exportDB();
-//        try {
-//            blaChatAPI.getAllMembers().execute();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Override
@@ -142,7 +154,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 ArrayList<Message> messagesFromChannels = new ArrayList<>();
                 for (Channel channel: channelRemote) {
 
-
                     ChannelWithLastMessage channelWithLastMessage = new ChannelWithLastMessage();
                     channelWithLastMessage.channel = channel;
 
@@ -177,16 +188,14 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                         new ArrayList<>(userIds)
                 )).execute();
 
-                if (getUsersResponse.isSuccessful() && !getUsersResponse.body().getData().isEmpty()) {
+                if (getUsersResponse.isSuccessful()
+                        && getUsersResponse.body() != null
+                        && !getUsersResponse.body().getData().isEmpty()) {
                     userDao.insertMany(getUsersResponse.body().getData());
                 }
 
-
                 for (Channel channel: channelRemote) {
                     int unreadMessage = getUnreadMessagesInChannel(channel);
-
-                    Log.i(TAG, "set unread messages in channel id: " + channel.getId() + " has " + unreadMessage + " unread messages");
-
                     channel.setUnreadMessages(unreadMessage);
                     channelDao.update(channel);
                 }
@@ -262,13 +271,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 newChannel.getName(), newChannel.getAvatar())
                 .execute();
 
-//        if(channelResult.isSuccessful()){
-//            Log.i(TAG, "success: "+channelResult.body().getData()+ "\n "
-//                    +channelResult.body().getData().getName() + "\n "+channelResult.body().getData().getAvatar());
-//        }else{
-//            Log.i(TAG, "error "+channelResult.errorBody().string());
-//        }
-
         Channel channel = channelResult.body().getData();
         channelDao.update(channel);
 
@@ -306,16 +308,17 @@ public class ChannelRepositoryImpl implements ChannelRepository {
              if(channel != null)
                 channelDao.delete(channel);
              return result.body().success();
-         }else{
+         } else {
              Log.i(TAG, "e "+result.errorBody().string());
          }
         return false;
     }
 
     @Override
-    public BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
+    public BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType, Map<String, Object> customData) throws Exception {
+
         Response<CreateChannelResult> result = blaChatAPI.createChannel(new CreateChannelBody(
-                userIds, name, blaChannelType.getValue(), ""
+                userIds, name, blaChannelType.getValue(), avatar, GsonUtil.mapToJSON(customData)
         )).execute();
         if (result.isSuccessful() && result.body() != null) {
             Channel channel = result.body().getData();
@@ -330,6 +333,12 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     public boolean updateLastMessage(String channelId, String messageId) {
         channelDao.updateLastMessage(new ChannelDao.UpdateLastMessageOfChannel(channelId, messageId));
         return true;
+    }
+
+    @Override
+    public BlaChannel onChannelUpdate(Channel channel) {
+        channelDao.update(channel);
+        return new BlaChannel(channel);
     }
 
     @Override
@@ -417,6 +426,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         Log.i(TAG, "increase count: "+blaChannel.getLastMessage().getContent() + " "+blaChannel.getId()
                 + " "+blaChannel.getUnreadMessages());
         return blaChannel;
+    }
+
+    @Override
+    public List<String> getContactList() {
+        return null;
     }
 
 

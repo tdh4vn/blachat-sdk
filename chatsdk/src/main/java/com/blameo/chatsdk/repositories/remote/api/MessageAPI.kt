@@ -19,7 +19,7 @@ interface MessageAPI {
     ): Call<GetMessageByIDResult>
 
     @POST("create")
-    fun createMessage(
+    fun sendMessage(
         @Body body: CreateMessageBody
     ): Call<GetMessageByIDResult>
 

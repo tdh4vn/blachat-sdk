@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 
 public class ChannelControllerImpl implements ChannelController {
@@ -36,10 +37,10 @@ public class ChannelControllerImpl implements ChannelController {
 
     private MessageRepository messageRepository;
 
-    public ChannelControllerImpl(Context context, String myId){
-        userRepository = new UserRepositoryImpl(context, myId);
-        channelRepository = new ChannelRepositoryImpl(context, myId);
-        messageRepository = new MessageRepositoryImpl(context, myId);
+    public ChannelControllerImpl(){
+        userRepository = UserRepositoryImpl.getInstance();
+        channelRepository = ChannelRepositoryImpl.getInstance();
+        messageRepository = MessageRepositoryImpl.getInstance();
     }
 
     @Override
@@ -72,11 +73,6 @@ public class ChannelControllerImpl implements ChannelController {
 
                 channelRepository.saveUsersInChannel(userInChannels);
 
-//                Log.i(TAG, "channel controller : "+channelId);
-
-//                Log.i(TAG, " dasdas "+userIds.size() +" "+membersInChannelRemoteDTOS.get(0).getUserChannels().size()
-//                        + " " + membersInChannelRemoteDTOS.get(0).getChannelId() + " "+userInChannels.size());
-
                 return userRepository.getUsersByIds(userIds);
             }
         }
@@ -102,6 +98,10 @@ public class ChannelControllerImpl implements ChannelController {
     public BlaChannel onNewChannel(Channel channel) throws Exception {
         channelRepository.saveChannel(channel);
         getUsersInChannel(channel.getId());
+        if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
+            messageRepository.saveMessages(channel.getLastMessages());
+        }
+
         return new BlaChannel(channel);
     }
 
@@ -116,16 +116,17 @@ public class ChannelControllerImpl implements ChannelController {
             }
         }
 
-//        Gson gson = new Gson();
-//        String json = gson.toJson(channels);
-//        Log.i(TAG, "channels to json: "+json);
-
         return channels;
     }
 
     @Override
     public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
         return channelRepository.updateChannel(newChannel);
+    }
+
+    @Override
+    public BlaChannel onChannelUpdate(Channel channelUpdate) throws IOException {
+        return channelRepository.onChannelUpdate(channelUpdate);
     }
 
     @Override
@@ -139,8 +140,8 @@ public class ChannelControllerImpl implements ChannelController {
     }
 
     @Override
-    public BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception {
-        return channelRepository.createChannel(name, userIds, blaChannelType);
+    public BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType, Map<String, Object> customData) throws Exception {
+        return channelRepository.createChannel(name, avatar, userIds, blaChannelType, customData);
     }
 
     @Override

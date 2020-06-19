@@ -189,8 +189,8 @@ class CreateChannelActivity : AppCompatActivity() {
 
         val map = HashMap<String, Any>()
         map["customize"] = "Nam test custom data create channel"
-
-        chatSdk.createChannel(name, uIds, type, map, object : Callback<BlaChannel> {
+        val avatarDefault = "https://cdn1.iconfinder.com/data/icons/user-pictures/100/unknown-512.png";
+        chatSdk.createChannel(name, avatarDefault, uIds, type, map, object : Callback<BlaChannel> {
             override fun onSuccess(channel: BlaChannel?) {
                 Log.e(TAG, "create channel success: ${channel?.id} ${channel?.name} $urlAvatar")
                 runOnUiThread {

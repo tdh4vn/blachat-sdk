@@ -12,16 +12,19 @@ public class CustomUser implements IUser {
 
     @Override
     public String getId() {
-        return user.getId();
+        if (user != null) return user.getId();
+        return "";
     }
 
     @Override
     public String getName() {
-        return user.getName();
+        if (user != null) return user.getName();
+        return "";
     }
 
     @Override
     public String getAvatar() {
-        return user.getAvatar();
+        if (user != null) return user.getAvatar();
+        return "";
     }
 }

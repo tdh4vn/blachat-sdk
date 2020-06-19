@@ -1,7 +1,7 @@
 package com.blameo.chatsdk.models.bla;
 
 public enum BlaMessageType {
-    TEXT(0), IMAGE(1);
+    TEXT(0), IMAGE(1), OTHER(2);
 
     private int type;
     BlaMessageType(int type) {

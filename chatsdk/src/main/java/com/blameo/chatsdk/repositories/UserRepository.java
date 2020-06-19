@@ -22,4 +22,6 @@ public interface UserRepository {
     void saveUser(User user);
 
     List<BlaUser> fetchAllUsers() throws Exception;
+
+    String getMyId();
 }

@@ -10,6 +10,7 @@ import com.blameo.chatsdk.models.results.MembersInChannelRemoteDTO;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public interface ChannelRepository {
 
@@ -25,9 +26,11 @@ public interface ChannelRepository {
 
     boolean deleteChannel(String channelID) throws IOException;
 
-    BlaChannel createChannel(String name, List<String> userIds, BlaChannelType blaChannelType) throws Exception;
+    BlaChannel createChannel(String name, String avatar, List<String> userIds, BlaChannelType blaChannelType, Map<String, Object> customData) throws Exception;
 
     boolean updateLastMessage(String channelId, String messageId);
+
+    BlaChannel onChannelUpdate(Channel channel);
 
     boolean addUserToChannel(String channelId, List<String> userIds) throws Exception;
 
@@ -46,4 +49,6 @@ public interface ChannelRepository {
     BlaChannel resetUnreadMessagesInChannel(String channelId);
 
     BlaChannel updateUserLastSeenInChannel(String channelId);
+
+    List<String> getContactList();
 }

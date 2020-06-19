@@ -16,16 +16,20 @@ public class CreateChannelBody {
     @SerializedName("type")
     private int type;
 
+    @SerializedName("avatar")
+    private String avatar;
+
     @SerializedName("custom_data")
     private String customData;
 
     public CreateChannelBody() {
     }
 
-    public CreateChannelBody(List<String> userIds, String name, int type, String customData) {
+    public CreateChannelBody(List<String> userIds, String name, int type, String avatar, String customData) {
         this.userIds = userIds;
         this.name = name;
         this.type = type;
+        this.avatar = avatar;
         this.customData = customData;
     }
 
@@ -39,6 +43,14 @@ public class CreateChannelBody {
 
     public String getName() {
         return name;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public void setName(String name) {
@@ -60,4 +72,7 @@ public class CreateChannelBody {
     public void setCustomData(String customData) {
         this.customData = customData;
     }
+
+
+
 }

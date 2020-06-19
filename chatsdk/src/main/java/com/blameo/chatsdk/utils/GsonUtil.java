@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class GsonUtil {
 
@@ -15,6 +16,11 @@ public class GsonUtil {
     private static Type type = new TypeToken<HashMap<String, Object>>(){}.getType();
 
     public static String mapToJSON(HashMap<String, Object> data)  {
+        if (data == null)   return null;
+        return gson.toJson(data);
+    }
+
+    public static String mapToJSON(Map<String, Object> data)  {
         if (data == null)   return null;
         return gson.toJson(data);
     }

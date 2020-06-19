@@ -1,13 +1,9 @@
 package com.blameo.chatsdk.repositories;
 
 import android.content.Context;
-import android.graphics.BlendMode;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.room.Update;
-
-import com.blameo.chatsdk.controllers.ChannelController;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.CreateMessageBody;
@@ -30,8 +26,6 @@ import com.blameo.chatsdk.repositories.local.dao.UserReactMessageDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
-import com.blameo.chatsdk.utils.ChatSdkDateFormatUtil;
-import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,7 +57,23 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     private String TAG = "mess_repo";
 
-    public MessageRepositoryImpl(Context context, String myId) {
+    private static MessageRepository messageRepository = null;
+
+    public static MessageRepository getInstance(Context context, String myId) {
+        if (messageRepository == null) {
+            messageRepository = new MessageRepositoryImpl(context, myId);
+        }
+        return messageRepository;
+    }
+
+    public static MessageRepository getInstance() {
+        if (messageRepository != null) {
+            return messageRepository;
+        }
+        throw new RuntimeException("Instance need init first");
+    }
+
+    private MessageRepositoryImpl(Context context, String myId) {
         this.channelDao = BlaChatSDKDatabase.getInstance(context).channelDao();
         this.userDao = BlaChatSDKDatabase.getInstance(context).userDao();
         this.userInChannelDao = BlaChatSDKDatabase.getInstance(context).userInChannelDao();
@@ -102,11 +112,10 @@ public class MessageRepositoryImpl implements MessageRepository {
 
 //            String json = new Gson().toJson( response.body().getData());
 //            Log.i(TAG, "mess json: "+json);
-        }else {
+        } else {
             Collections.reverse(messages);
         }
 
-        Log.i(TAG, "remote messages size: "+messages.size());
 
         List<BlaMessage> blaMessages = new ArrayList<>();
         for(Message message: messages) {
@@ -114,18 +123,18 @@ public class MessageRepositoryImpl implements MessageRepository {
             MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(message.getId());
             Log.i(TAG, "react "+messageWithUserReact.message.getId() + " "+
                     messageWithUserReact.users.size() + " "+ messageWithUserReact.userReactMessages.size());
-            ArrayList<BlaUser> usersReceivedMesssage = new ArrayList<>();
+            ArrayList<BlaUser> usersReceivedMessage = new ArrayList<>();
             ArrayList<BlaUser> usersSeenMessage = new ArrayList<>();
             for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
-
                 BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
 
                 if(userReactMessage.getType() == UserReactMessage.RECEIVE){
-                    usersReceivedMesssage.add(targetUser);
-                }else
+                    usersReceivedMessage.add(targetUser);
+                } else {
                     usersSeenMessage.add(targetUser);
+                }
             }
-            blaMessage.setReceivedBy(usersReceivedMesssage);
+            blaMessage.setReceivedBy(usersReceivedMessage);
             blaMessage.setSeenBy(usersSeenMessage);
             blaMessages.add(blaMessage);
         }
@@ -144,6 +153,12 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, Map<String, Object> customData) {
+        HashMap<String, Object> data;
+        if (customData == null) {
+            data = new HashMap<>();
+        } else {
+            data = new HashMap<>(customData);
+        }
         Message message = new Message(
                 tmpId,
                 authorId,
@@ -154,7 +169,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                 new Date(),
                 null,
                 false,
-                new HashMap<>(customData)
+                data
         );
 
         messageDao.insert(message);
@@ -164,7 +179,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public BlaMessage sendMessage(BlaMessage blaMessage) throws Exception {
 
-        Response<GetMessageByIDResult> response = messageAPI.createMessage(new CreateMessageBody(
+        Response<GetMessageByIDResult> response = messageAPI.sendMessage(new CreateMessageBody(
                 blaMessage.getType(),
                 blaMessage.getContent(),
                 blaMessage.getChannelId()
@@ -188,6 +203,16 @@ public class MessageRepositoryImpl implements MessageRepository {
     public BlaMessage saveMessage(Message message) {
         messageDao.insert(message);
         return new BlaMessage(message);
+    }
+
+    @Override
+    public List<BlaMessage> saveMessages(List<Message> messages) {
+        messageDao.insertMany(messages);
+        List<BlaMessage> blaMessages = new ArrayList<>();
+        for (Message m: messages) {
+            blaMessages.add(new BlaMessage(m));
+        }
+        return blaMessages;
     }
 
     @Override
@@ -244,8 +269,6 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public void syncUnSentMessages() throws Exception {
         List<Message> unsentMessages = messageDao.getUnSentMessages();
-
-//        Log.i(TAG, "unsent messages: "+unsentMessages.size());
         for (Message m: unsentMessages) {
             sendMessage(new BlaMessage(m));
         }
@@ -277,5 +300,35 @@ public class MessageRepositoryImpl implements MessageRepository {
             return null;
         }
         return null;
+    }
+
+    @Override
+    public List<BlaUser> getUserSeenMessage(String messageId) {
+        List<BlaUser> list = new ArrayList<>();
+        MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(messageId);
+        for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
+            BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
+
+            if(userReactMessage.getType() == UserReactMessage.SEEN){
+                list.add(targetUser);
+            }
+        }
+
+        return list;
+    }
+
+    @Override
+    public List<BlaUser> getUserReceiveMessage(String messageId) {
+        List<BlaUser> list = new ArrayList<>();
+        MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(messageId);
+        for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
+            BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
+
+            if(userReactMessage.getType() == UserReactMessage.RECEIVE){
+                list.add(targetUser);
+            }
+        }
+
+        return list;
     }
 }

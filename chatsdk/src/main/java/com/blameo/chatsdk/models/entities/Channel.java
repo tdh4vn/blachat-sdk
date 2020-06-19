@@ -1,8 +1,5 @@
 package com.blameo.chatsdk.models.entities;
 
-import android.text.TextUtils;
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
@@ -12,7 +9,6 @@ import androidx.room.TypeConverters;
 
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -58,6 +54,7 @@ public class Channel implements Serializable {
     @SerializedName(value = "lastMessages", alternate = "last_messages")
     @Ignore
     private List<Message> lastMessages;
+
     @TypeConverters(Converters.class)
     @SerializedName(value = "customData", alternate = "custom_data")
     @ColumnInfo(name = Constant.CHANNEL_CUSTOM_DATA)

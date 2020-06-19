@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.repositories;
 
 import com.blameo.chatsdk.models.bla.BlaMessage;
+import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Message;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ public interface MessageRepository {
     BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, Map<String, Object> customData);
     BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
     BlaMessage saveMessage(Message message);
+    List<BlaMessage> saveMessages(List<Message> messages);
     boolean userSeenMyMessage(String userId, String messageId, Date time);
     boolean userReceiveMyMessage(String userId, String messageId, Date time);
     boolean sendSeenEvent(String channelId, String messageId, String authorId) throws Exception;
@@ -21,4 +23,9 @@ public interface MessageRepository {
     void syncUnSentMessages() throws Exception;
     BlaMessage deleteMessage(BlaMessage message) throws Exception;
     BlaMessage updateMessage(BlaMessage message) throws Exception;
+
+    List<BlaUser> getUserSeenMessage(String messageId);
+
+    List<BlaUser> getUserReceiveMessage(String messageId);
+
 }
