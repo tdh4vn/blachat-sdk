@@ -166,8 +166,6 @@ public class EventHandlerImpl implements EventHandler {
 
                     if(message.getAuthorId().equals(myId))  return;
 
-                    Log.i(TAG, "new message: "+message.getAuthorId() + " "+myId);
-
                     BlaMessage blaMessage = messageRepository.saveMessage(message);
                     User user = userRepository.getUserById(blaMessage.getAuthorId());
                     if(user != null)

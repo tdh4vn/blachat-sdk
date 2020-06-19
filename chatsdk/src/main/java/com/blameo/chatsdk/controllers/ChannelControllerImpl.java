@@ -116,10 +116,6 @@ public class ChannelControllerImpl implements ChannelController {
             }
         }
 
-//        Gson gson = new Gson();
-//        String json = gson.toJson(channels);
-//        Log.i(TAG, "channels to json: "+json);
-
         return channels;
     }
 

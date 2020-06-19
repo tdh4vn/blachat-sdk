@@ -20,6 +20,4 @@ public interface UserRepository {
     List<BlaUser> getAllUsersStates();
 
     void saveUser(User user);
-
-    List<BlaUser> fetchAllUsers() throws Exception;
 }

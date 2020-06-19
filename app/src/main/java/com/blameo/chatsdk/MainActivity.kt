@@ -161,9 +161,10 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
             startActivity(Intent(this, CreateChannelActivity::class.java))
         }
 
-        chatSdk.addPresenceListener { user ->
-            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.id, 1))
-            userPresence.updateStatus(user.isOnline)
+        chatSdk.addPresenceListener {
+
+//            val userPresence = userVMStore.getUserViewModel(UserStatus(user?.id, 1))
+//            userPresence.updateStatus(user.isOnline)
  //           Log.i(TAG, "add last active at: "+user.isOnline + " "+user.lastActiveAt)
         }
 
@@ -201,7 +202,6 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
                 }catch (e: Exception){
                     e.printStackTrace()
                 }
-
             }
 
             override fun onUpdateMessage(blaMessage: BlaMessage?) {

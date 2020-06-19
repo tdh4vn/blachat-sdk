@@ -82,7 +82,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<BlaUser> getAllUsers() throws Exception {
+    public List<BlaUser> getAllUsers() {
         List<User> users = userDao.getAllUsers();
         List<BlaUser> result = new ArrayList<>();
 
@@ -91,24 +91,6 @@ public class UserRepositoryImpl implements UserRepository {
             result.add(new BlaUser(user));
         }
 
-        if(result.size() ==0)
-            result = fetchAllUsers();
-
-        return result;
-    }
-
-    @Override
-    public List<BlaUser> fetchAllUsers() throws Exception {
-
-        List<BlaUser> result = new ArrayList<>();
-
-        Response<GetUsersByIdsResult> response = blaChatAPI.getAllMembers().execute();
-        if(response.isSuccessful() && response.body().getData() != null){
-            for (User user : response.body().getData()) {
-                result.add(new BlaUser(user));
-            }
-            userDao.insertMany(response.body().getData());
-        }
         return result;
     }
 

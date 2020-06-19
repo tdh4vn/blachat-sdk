@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -69,7 +70,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private Context applicationContext;
     private String TAG = "SDK";
     private HashMap<String ,BlaUser> usersMap = new HashMap<>();
-    private BlaPresenceListener blaPresenceListener;
+    private Vector<BlaPresenceListener> presenceListeners = new Vector<>();
 
     private EventHandler eventHandler;
 
@@ -84,13 +85,13 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private BlaChatSDK() {
     }
 
-    private HashMap<String, BlaUser> getUsersMap(){
-        return usersMap;
-    }
-
-    private void setUsersMap(HashMap<String, BlaUser> map){
-        usersMap = map;
-    }
+//    private HashMap<String, BlaUser> getUsersMap(){
+//        return usersMap;
+//    }
+//
+//    private void setUsersMap(HashMap<String, BlaUser> map){
+//        usersMap = map;
+//    }
 
     public static BlaChatSDK getInstance() {
         //TODO: thread safe
@@ -121,8 +122,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         syncUnsentMessages();
 
         getEvent();
-
-        fetchAllUsers();
     }
 
     private void getEvent() {
@@ -264,7 +263,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     @Override
     public void addPresenceListener(BlaPresenceListener blaPresenceListener) {
 
-        this.blaPresenceListener = blaPresenceListener;
+        presenceListeners.add(blaPresenceListener);
 
         ScheduledExecutorService scheduler =
                 Executors.newSingleThreadScheduledExecutor();
@@ -274,8 +273,11 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 List<BlaUser> users = userRepository.getAllUsersStates();
                 if (users != null && users.size() > 0) {
 //                    Log.i(TAG, "total :" + users.size());
-                    if (this.blaPresenceListener != null)
-                        this.blaPresenceListener.onUpdate(users);
+
+                    for (BlaPresenceListener listener : presenceListeners) {
+                        if(listener != null) listener.onUpdate(users);
+                    }
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -285,7 +287,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     @Override
     public void removePresenceListener(BlaPresenceListener blaPresenceListener) {
-        this.blaPresenceListener = null;
+        presenceListeners.remove(blaPresenceListener);
     }
 
     @Override
@@ -363,14 +365,14 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         eventHandler.onChannelUpdate(channel);
     }
 
+    // add author to a message
     private List<BlaMessage> handleMessages(List<BlaMessage> messages) {
 
         for (BlaMessage message: messages){
 
-            BlaUser author = getUsersMap().get(message.getAuthorId());
-//            Log.i(TAG, "author: "+author.getId() + " "+author.getName());
-            if(author!= null)
-                message.setAuthor(author);
+            BlaUser author = userRepository.getUserById(message.getAuthorId());
+            Log.i(TAG, "author: "+author.getId() + " "+author.getName());
+            message.setAuthor(author);
         }
 
         Log.i(TAG, "def "+messages.size());
@@ -604,27 +606,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 e.printStackTrace();
             }
         });
-    }
-
-    private void fetchAllUsers(){
-        try {
-            executors.submit(() -> {
-                try {
-                    List<BlaUser> users = userRepository.fetchAllUsers();
-                    HashMap<String, BlaUser> userHashMap = new HashMap<>();
-
-                    for (BlaUser user: users)
-                        userHashMap.put(user.getId(), user);
-
-                    Log.i(TAG, "map: "+userHashMap.size());
-                    setUsersMap(userHashMap);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
