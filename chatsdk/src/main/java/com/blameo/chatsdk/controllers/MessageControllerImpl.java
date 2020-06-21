@@ -72,10 +72,10 @@ public class MessageControllerImpl implements MessageController {
                 customData
         );
 
-        BlaMessage m = messageRepository.sendMessage(message);
+        message = messageRepository.sendMessage(message);
         injectAuthorToMessage(message);
 
-        return m;
+        return message;
     }
 
     @Override

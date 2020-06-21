@@ -47,14 +47,16 @@ public abstract class ChannelDao implements BaseDao<Channel> {
     public void saveChannel(List<Channel> channels) {
 
         //Inject last message id to save
-
-        for (Channel channel: channels) {
-            if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
-                channel.setLastMessageId(channel.getLastMessages().get(0).getId());
+        if (channels != null) {
+            for (Channel channel: channels) {
+                if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
+                    channel.setLastMessageId(channel.getLastMessages().get(0).getId());
 //                Log.i("OK", "size: "+ channel.getLastMessages().size() + " "+channel.getUnreadMessages());
+                }
             }
+            this.insertMany(channels);
         }
-        this.insertMany(channels);
+
 
     }
 

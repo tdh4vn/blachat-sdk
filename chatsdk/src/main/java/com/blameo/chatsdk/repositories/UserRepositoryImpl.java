@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Response;
 
@@ -193,19 +194,20 @@ public class UserRepositoryImpl implements UserRepository {
 
                 if (previousStatus == null || previousStatus.getStatus() != currentStatus.getStatus()) {
                     userStatusMap.put(currentStatus.getId(), currentStatus);
-                    BlaUser user = new BlaUser(usersMap.get(currentStatus.getId()));
-                    user.setOnline(currentStatus.getStatus() == BlaPresenceType.ONLINE.getValue());
-                    result.add(user);
-                    if(previousStatus != null){
-                        user.setLastActiveAt(new Date());
-                        userDao.update(user);
-                    } else {
-                        if(user.isOnline()){
+                    if (usersMap.get(currentStatus.getId()) != null) {
+                        BlaUser user = new BlaUser(Objects.requireNonNull(usersMap.get(currentStatus.getId())));
+                        user.setOnline(currentStatus.getStatus() == BlaPresenceType.ONLINE.getValue());
+                        result.add(user);
+                        if(previousStatus != null){
                             user.setLastActiveAt(new Date());
                             userDao.update(user);
+                        } else {
+                            if(user.isOnline()){
+                                user.setLastActiveAt(new Date());
+                                userDao.update(user);
+                            }
                         }
                     }
-
                 }
             }
         }

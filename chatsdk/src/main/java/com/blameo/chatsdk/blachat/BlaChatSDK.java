@@ -26,6 +26,9 @@ import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
+import com.blameo.chatsdk.utils.GsonUtil;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -489,6 +492,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                         type,
                         customData
                 );
+                String json = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create().toJson(message);
+                Log.e("json", json);
                 if (callback != null) callback.onSuccess(message);
                 channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
             } catch (Exception e) {
