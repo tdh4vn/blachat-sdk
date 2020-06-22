@@ -107,12 +107,13 @@ public class ChannelControllerImpl implements ChannelController {
 
     @Override
     public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
-        List<BlaChannel> channels = channelRepository.getChannels(lastChannelId, limit);
+        List<BlaChannel> channels = channelRepository.getChannels(lastChannelId, limit, userRepository);
         for(BlaChannel channel: channels){
-            if(channel.getLastMessage()!= null){
+            if (channel.getLastMessage()!= null){
                 User user = userRepository.getUserById(channel.getLastMessage().getAuthorId());
-                if(user != null)
+                if(user != null) {
                     channel.getLastMessage().setAuthor(new BlaUser(user));
+                }
             }
         }
 

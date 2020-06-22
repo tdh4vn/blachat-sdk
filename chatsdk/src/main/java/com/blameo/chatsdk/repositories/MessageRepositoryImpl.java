@@ -263,7 +263,11 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public BlaMessage getMessageById(String messageId) {
-        return new BlaMessage(messageDao.getMessageById(messageId));
+        Message m = messageDao.getMessageById(messageId);
+        if (m == null) {
+            return null;
+        }
+        return new BlaMessage(m);
     }
 
     @Override
@@ -278,7 +282,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public BlaMessage deleteMessage(BlaMessage message) throws Exception {
         DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
         Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
-        if(response.isSuccessful()){
+        if(response.isSuccessful() && response.body() != null){
             if(response.body().success()){
                 messageDao.delete(message);
                 return message;
@@ -291,7 +295,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public BlaMessage updateMessage(BlaMessage message) throws Exception {
         UpdateMessageBody body = new UpdateMessageBody(message.getContent(), message.getId(), message.getChannelId());
         Response<GetMessageByIDResult> response = messageAPI.updateMessage(body).execute();
-        if(response.isSuccessful()){
+        if(response.isSuccessful() && response.body() != null){
             Message m = response.body().getMessage();
             if(m != null) {
                 messageDao.update(m);

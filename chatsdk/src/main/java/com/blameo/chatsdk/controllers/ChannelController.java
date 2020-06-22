@@ -5,6 +5,7 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
+import com.blameo.chatsdk.repositories.UserRepository;
 
 import java.io.IOException;
 import java.util.List;

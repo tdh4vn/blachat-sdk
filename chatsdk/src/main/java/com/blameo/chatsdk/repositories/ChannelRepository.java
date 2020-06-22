@@ -18,7 +18,7 @@ public interface ChannelRepository {
 
     ChannelWithUser getLocalUserInChannel(String channelId);
 
-    List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception;
+    List<BlaChannel> getChannels(String lastChannelId, int limit, UserRepository userRepository) throws Exception;
 
     BlaChannel updateChannel(BlaChannel newChannel) throws IOException;
 

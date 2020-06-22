@@ -18,6 +18,7 @@ import com.blameo.chatsdk.models.entities.ChannelWithLastMessage;
 import com.blameo.chatsdk.models.entities.ChannelWithUser;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.MessageWithUserReact;
+import com.blameo.chatsdk.models.entities.RemoteUserChannel;
 import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserInChannel;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +123,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     }
 
     @Override
-    public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
+    public List<BlaChannel> getChannels(String lastChannelId, int limit, UserRepository userRepository) throws Exception {
 
         long lastUpdate = new Date().getTime();
         if (limit < 0) {
@@ -152,6 +154,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 List<UserInChannel> userInChannels = new ArrayList<>();
                 ArrayList<String> channelIds = new ArrayList<>();
                 ArrayList<Message> messagesFromChannels = new ArrayList<>();
+                Map<String, ArrayList<RemoteUserChannel>> channelWithUser = new HashMap<>();
                 for (Channel channel: channelRemote) {
 
                     ChannelWithLastMessage channelWithLastMessage = new ChannelWithLastMessage();
@@ -172,10 +175,12 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                             channelIds
                     )).execute();
 
+
                     if (getMembersOfMultiChannelResultResponse.isSuccessful()
                             && getMembersOfMultiChannelResultResponse.body() != null) {
                         for (MembersInChannelRemoteDTO membersInChannelRemoteDTO : getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS()){
                             userInChannels.addAll(membersInChannelRemoteDTO.toUserInChannel());
+                            channelWithUser.put(membersInChannelRemoteDTO.getChannelId(), membersInChannelRemoteDTO.getUserChannels());
                         }
                     }
 
@@ -197,10 +202,23 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 for (Channel channel: channelRemote) {
                     int unreadMessage = getUnreadMessagesInChannel(channel);
                     channel.setUnreadMessages(unreadMessage);
+                    if (channel.isDirect()) {
+                        ArrayList<RemoteUserChannel> userChannels = channelWithUser.get(channel.getId());
+                        if (userChannels != null) {
+                            for (RemoteUserChannel userChannel : userChannels) {
+                                if (!userChannel.getMemberId().equals(myId)) {
+                                    User u = userRepository.getUserById(userChannel.getMemberId());
+                                    if (u != null) {
+                                        channel.setAvatar(u.getAvatar());
+                                        channel.setName(u.getName());
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     channelDao.update(channel);
                 }
-
-
             }
         }
 

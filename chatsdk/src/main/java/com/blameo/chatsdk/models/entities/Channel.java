@@ -7,6 +7,7 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
+import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
 import com.google.gson.annotations.SerializedName;
@@ -74,6 +75,10 @@ public class Channel implements Serializable {
         this.lastMessageId = lastMessageId;
         this.customData = customData;
         this.unreadMessages = unreadMessages;
+    }
+
+    public boolean isDirect() {
+        return this.getType() == BlaChannelType.DIRECT.getValue();
     }
 
     public String getId() {

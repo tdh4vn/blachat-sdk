@@ -114,11 +114,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         this.messageRepository = MessageRepositoryImpl.getInstance(context, userId);
         this.userRepository = UserRepositoryImpl.getInstance(context, userId);
         this.channelRepository = ChannelRepositoryImpl.getInstance(context, userId);
-
-
         this.channelController = new ChannelControllerImpl();
         this.messageController = new MessageControllerImpl();
-
 
         eventHandler = new EventHandlerImpl(id, context);
 
@@ -281,7 +278,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void getChannels(String lastId, Integer limit, Callback<List<BlaChannel>> callback) {
+    public void getChannels(String lastId, Integer limit,Callback<List<BlaChannel>> callback) {
         try {
             executors.submit(() -> {
                 List<BlaChannel> channels = null;
