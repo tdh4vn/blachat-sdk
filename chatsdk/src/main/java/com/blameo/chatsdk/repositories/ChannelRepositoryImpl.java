@@ -101,20 +101,12 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                 channelIds
         )).execute();
 
-
-
-//        Log.i(TAG, "channel repo : "+channelIds.get(0));
-
         if (getMembersOfMultiChannelResultResponse.isSuccessful()) {
             assert getMembersOfMultiChannelResultResponse.body() != null;
-            Log.i(TAG, "get remote users in channels done "+getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS().size());
             return getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS();
         }
 
-        Log.i(TAG, "get remote users in channels done null");
-
         return new ArrayList<>();
-
     }
 
     @Override
@@ -143,13 +135,14 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                     limit,
                     lastChannelId
             ).execute();
+
+            assert response.body() != null;
             List<Channel> channelRemote = response.body().getData();
 
             channelDao.saveChannel(response.body().getData());
 
             if (response.isSuccessful() && channelRemote != null && !channelRemote.isEmpty()) {
 
-//                channelDao.insertMany(channelRemote);
                 Set<String> userIds = new HashSet<>();
                 List<UserInChannel> userInChannels = new ArrayList<>();
                 ArrayList<String> channelIds = new ArrayList<>();
@@ -175,10 +168,13 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                             channelIds
                     )).execute();
 
-
                     if (getMembersOfMultiChannelResultResponse.isSuccessful()
                             && getMembersOfMultiChannelResultResponse.body() != null) {
                         for (MembersInChannelRemoteDTO membersInChannelRemoteDTO : getMembersOfMultiChannelResultResponse.body().getMembersInChannelRemoteDTOS()){
+                            List<String> uIds = membersInChannelRemoteDTO.getMemberIds();
+
+                            userIds.addAll(uIds);
+
                             userInChannels.addAll(membersInChannelRemoteDTO.toUserInChannel());
                             channelWithUser.put(membersInChannelRemoteDTO.getChannelId(), membersInChannelRemoteDTO.getUserChannels());
                         }
@@ -223,32 +219,25 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         }
 
         ArrayList<BlaChannel> blaChannels = new ArrayList<>();
-        ArrayList<String> channelIds = new ArrayList<>();
-        for(ChannelWithLastMessage channel: channels){
-            channelIds.add(channel.channel.getId());
-        }
-
-        Log.i(TAG,"start "+channelIds.size());
 
         for (ChannelWithLastMessage c: channels) {
             BlaChannel channel = new BlaChannel(c.channel, c.lastMessage);
 
-            Log.i(TAG, "channel id: " + channel.getId() + " has " + channel.getUnreadMessages() + " unread messages");
-
-            if(c.lastMessage != null){
+            if (c.lastMessage != null) {
                 MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(c.lastMessage.getId());
-                ArrayList<BlaUser> usersReceivedMesssage = new ArrayList<>();
+                ArrayList<BlaUser> usersReceivedMessage = new ArrayList<>();
                 ArrayList<BlaUser> usersSeenMessage = new ArrayList<>();
                 for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
 
                     BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
 
                     if(userReactMessage.getType() == UserReactMessage.RECEIVE){
-                        usersReceivedMesssage.add(targetUser);
-                    }else
+                        usersReceivedMessage.add(targetUser);
+                    } else {
                         usersSeenMessage.add(targetUser);
+                    }
                 }
-                channel.getLastMessage().setReceivedBy(usersReceivedMesssage);
+                channel.getLastMessage().setReceivedBy(usersReceivedMessage);
                 channel.getLastMessage().setSeenBy(usersSeenMessage);
             }
             blaChannels.add(channel);

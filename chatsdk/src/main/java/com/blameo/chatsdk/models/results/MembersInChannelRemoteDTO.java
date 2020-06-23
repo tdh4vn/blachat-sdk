@@ -5,6 +5,7 @@ import com.blameo.chatsdk.models.entities.UserInChannel;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MembersInChannelRemoteDTO extends BaseResult {
 
@@ -28,6 +29,17 @@ public class MembersInChannelRemoteDTO extends BaseResult {
 
     public void setUserChannels(ArrayList<RemoteUserChannel> userChannels) {
         this.userChannels = userChannels;
+    }
+
+
+    public List<String> getMemberIds() {
+        ArrayList<String> ids = new ArrayList<>();
+
+        for (RemoteUserChannel membersInChannel: userChannels) {
+            ids.add(membersInChannel.getMemberId());
+        }
+
+        return ids;
     }
 
     public ArrayList<UserInChannel> toUserInChannel() {
