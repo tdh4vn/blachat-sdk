@@ -1,108 +1,318 @@
 package com.blameo.chatsdk
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.text.TextUtils
 import android.util.Log
-import android.view.View
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.blameo.chatsdk.models.pojos.Channel
-import com.blameo.chatsdk.models.pojos.Message
-import com.blameo.chatsdk.models.pojos.User
+import com.blameo.chatsdk.adapters.CustomDialogViewHolder
+import com.blameo.chatsdk.blachat.ChannelEventListener
+import com.blameo.chatsdk.blachat.BlaChatSDK
+import com.blameo.chatsdk.blachat.MessagesListener
+import com.blameo.chatsdk.blachat.Callback
+import com.blameo.chatsdk.controllers.ChannelVMlStore
+import com.blameo.chatsdk.controllers.UserVMStore
+import com.blameo.chatsdk.models.CustomChannel
+import com.blameo.chatsdk.models.bla.*
+import com.blameo.chatsdk.models.entities.Channel
+import com.blameo.chatsdk.models.results.UserStatus
+import com.blameo.chatsdk.screens.ChatActivity
+import com.blameo.chatsdk.screens.CreateChannelActivity
+import com.blameo.chatsdk.utils.UserSP
+import com.squareup.picasso.Picasso
+import com.stfalcon.chatkit.commons.ImageLoader
+import com.stfalcon.chatkit.dialogs.DialogsListAdapter
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
-class MainActivity : AppCompatActivity() {
 
-    lateinit var chatSdk: BlameoChatSdk
-    lateinit var adapter: ChannelAdapter
+class MainActivity : AppCompatActivity(),  DialogsListAdapter.OnDialogClickListener<CustomChannel>,
+DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
+
+    lateinit var chatSdk: BlaChatSDK
+    lateinit var channelAdapter: DialogsListAdapter<CustomChannel>
     private val TAG = "MAIN"
 
-    private val token = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6ZTk3Y2" +
-            "FkMTktYjFhNC00MzY5LTljNDctMzhjODhkMjc2MGFhIiwiY2xpZW50IjoiZTk3Y2FkMTktYjFhNC00MzY5LTljNDctMzhjODhk" +
-            "Mjc2MGFhIiwiZXhwIjoxNTg3OTU4ODAyLCJzdWIiOiJlOTdjYWQxOS1iMWE0LTQzNjktOWM0Ny0zOGM4OGQyNzYwYWEiLCJ1c2VyS" +
-            "WQiOiJlOTdjYWQxOS1iMWE0LT" +
-            "QzNjktOWM0Ny0zOGM4OGQyNzYwYWEifQ.MUpR3vyhypT-_a3qTyUZAiB1WoNXxbhRW8wu2YMFkuk"
+    private var token = ""
 
-    private val tokenWs = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6YzUwODI2NzAtZDYwYi00YWRjLTk1NDc" +
-            "tZDY1OWZmZGM0NjY5IiwiY2xpZW50IjoiYzUwODI2NzAtZDYwYi00YWRjLTk1NDctZDY1OWZmZGM0NjY5IiwiZXhwIjoxNTg5NDMxMDA4LC" +
-            "JzdWIiOiJjNTA4MjY3MC1kNjBiLTRhZGMtOTU0Ny1kNjU5ZmZkYzQ2NjkiLCJ1c2VySWQiOiJjNTA4MjY3MC1kNjBiLTRhZGMtOTU0Ny1kN" +
-            "jU5ZmZkYzQ2NjkifQ.cf6XdyxrCdZzsvS838FH9n0u4SA6XG2wUUPn-tLlatQ"
+    private var tokenWs = ""
 
-    private val channelId = "42618113-fa71-48e6-9d13-8dad2934ae59"
-    private val currentUid = "c5082670-d60b-4adc-9547-d659ffdc4669"
+    private var myId = ""
     private val userId1 = "7a7c52fe-0a3f-4123-849b-3c2bcabe4f62"
-    private val userId2 = "2fc5c3fc-b40b-4497-9772-9dd5b4df8ed7"
     private val IP = "159.65.2.104"
+    private val baseUrl = "http://$IP"
     private val ws = "ws://$IP:8001/connection/websocket?format=protobuf"
+    private var channels: ArrayList<Channel> = arrayListOf()
+    lateinit var userVMStore: UserVMStore
+    lateinit var handler: Handler
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initView()
+        getUser()
+
+        init()
+
+        getMembers()
 
     }
 
-    private fun initView() {
+    private fun getMembers() {
+//        chatSdk.getAllMembers(object : ChatListener.GetAllMembersListener{
+//            override fun onSuccess(users: ArrayList<User>) {
+// //               users.forEach {
+////                    Log.i(TAG, "member: ${it.id} ${it.name}")
+////                }
+//            }
+//        })
+//
+    }
+
+    private fun getUser() {
+        myId = intent.getStringExtra("USER_ID")!!
+        token = intent.getStringExtra("TOKEN")!!
+        tokenWs = intent.getStringExtra("TOKEN_WS")!!
+        UserSP.getInstance().id = myId
+    }
 
 
-        chatSdk = BlameoChatSdk.getInstance()
-        chatSdk.initSession(ws, token, tokenWs, currentUid)
-        chatSdk.initContext(this)
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun init() {
 
-        btn_get_channel.setOnClickListener {
-            chatSdk.getChannels(object: ChatListener.GetChannelsListener{
-                override fun onChannelChanged(channel: Channel) {
-                    chatSdk.exportChannelDB()
-                }
-
-                override fun onGetChannelsSuccess(channels: ArrayList<Channel>) {
-//                    Log.e(TAG, "size ${channels.size}")
-                    adapter = ChannelAdapter(this@MainActivity, channels)
-                    rv_channels.adapter = adapter
-                    rv_channels.layoutManager = LinearLayoutManager(this@MainActivity)
-                    adapter.notifyDataSetChanged()
-                }
-
-            })
-            btn_get_channel.visibility = View.INVISIBLE
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        toolbar.setNavigationOnClickListener {
+            finish()
         }
 
-        btn_get_users.setOnClickListener {
-            chatSdk.getUsersInChannel(channelId, object: ChatListener.GetUsersInChannelListener{
-                override fun onGetUsersByIdsSuccess(users: ArrayList<User>) {
-//                    users.forEachIndexed { index, it ->
-//                        Log.e(TAG, "user: $index ${it.name}")
-//                    }
-                }
-            })
+        val imageLoader = ImageLoader { imageView, url, _ ->
+            if(!TextUtils.isEmpty(url))
+                Picasso.with(this).load(url).into(imageView)
+            else
+                imageView.setImageResource(R.drawable.default_avatar)
         }
 
-        btn_create_channel.setOnClickListener {
-            chatSdk.createChannel(arrayListOf(userId1, userId2), "BlameO General",
-                1, object: ChatListener.CreateChannelListener{
-                    override fun createChannelSuccess(channel: Channel) {
-//                        Log.e(TAG, "create channel id: ${channel.id} ${channel.name}")
-                    }
-                })
-        }
+        channelAdapter = DialogsListAdapter<CustomChannel>(
+            R.layout.item_custom_dialog_view_holder,
+            CustomDialogViewHolder::class.java,
+            imageLoader
+        )
 
-        val messageListener = object : ChatListener.CreateMessageListener{
-            override fun createMessageSuccess(message: Message) {
-//                Log.e(TAG, "create success ${message.content} ${message.id}")
+        handler = Handler()
+
+        userVMStore = UserVMStore.getInstance()
+
+        val channelVMStore = ChannelVMlStore.getInstance()
+        channelVMStore.newChannel.observeForever {
+            handler.post {
+                channelAdapter.addItem(0, CustomChannel(it))
+                channelVMStore.addNewChannel(it)
             }
         }
 
-        btn_create_message.setOnClickListener {
-            chatSdk.createMessage("Hello ae", 1, channelId, messageListener)
+        chatSdk = BlaChatSDK.getInstance()
+
+        chatSdk.initBlaChatSDK(applicationContext, myId, token)
+
+        channelAdapter.setOnDialogClickListener(this)
+        channelAdapter.setOnDialogLongClickListener(this)
+        dialogsList.setAdapter(channelAdapter)
+
+        chatSdk.getChannels("", 20, object: Callback<List<BlaChannel>> {
+            override fun onSuccess(result: List<BlaChannel>?) {
+                val dialogs = arrayListOf<CustomChannel>()
+
+                result?.forEach {
+                    Log.i(TAG, "" + it.lastMessage)
+                    if(it.lastMessage != null){
+                        Log.i(TAG, "author: "+it.lastMessage.author.name)
+                    }
+                    dialogs.add(CustomChannel(it))
+                }
+
+                channelAdapter.setItems(dialogs)
+
+            }
+
+            override fun onFail(e: Exception?) {
+
+            }
+
+        })
+
+        btn_create_channel.setOnClickListener {
+//            chatSdk.getAllUsers(object : Callback<List<BlaUser>>{
+//                override fun onSuccess(result: List<BlaUser>?) {
+//                    result?.forEach {
+//                        Log.i(TAG, "all users: "+it.id + " " +it.isOnline + " "+it.lastActiveAt)
+//                    }
+//                }
+//
+//                override fun onFail(e: java.lang.Exception?) {
+//
+//                }
+//            })
+            startActivity(Intent(this, CreateChannelActivity::class.java))
         }
 
-        btn_get_messages.setOnClickListener {
-            chatSdk.getMessages(channelId, "", object : ChatListener.GetMessagesListener{
-                override fun getMessagesSuccess(messages: ArrayList<Message>) {
-                    Log.i(TAG, "$channelId has ${messages.size} in total")
-                }
-            })
+        chatSdk.addPresenceListener { users ->
+            users.forEach {
+                val userPresence = userVMStore.getUserViewModel(UserStatus(it?.id, 1))
+                userPresence.updateStatus(it.isOnline)
+            }
+
+            //           Log.i(TAG, "add last active at: "+user.isOnline + " "+user.lastActiveAt)
         }
+
+        chatSdk.getUserPresence(object : Callback<List<BlaUser>>{
+            override fun onSuccess(result: List<BlaUser>?) {
+
+//                Log.i(TAG, "get users presence "+result?.size)
+
+                result?.forEach {
+                    Log.i(TAG, "last active at: "+it.isOnline + " "+it.lastActiveAt)
+                    val userPresence = userVMStore.getUserViewModel(UserStatus(it.id, 1))
+                    userPresence.updateStatus(it.isOnline)
+                }
+            }
+
+            override fun onFail(e: java.lang.Exception?) {
+
+            }
+        })
+
+        chatSdk.addMessageListener(object : MessagesListener {
+            override fun onNewMessage(blaMessage: BlaMessage?) {
+                try {
+                    val channelVM = channelVMStore.getChannelByID(blaMessage?.channelId!!)
+                    channelVM.updateNewMessage(blaMessage, false)
+                    chatSdk.markReceiveMessage(blaMessage.id, blaMessage.channelId, object : Callback<Boolean>{
+                        override fun onSuccess(result: Boolean?) {
+
+                        }
+
+                        override fun onFail(e: Exception?) {
+
+                        }
+                    })
+                }catch (e: Exception){
+                    e.printStackTrace()
+                }
+
+            }
+
+            override fun onUpdateMessage(blaMessage: BlaMessage?) {
+
+            }
+
+            override fun onDeleteMessage(blaMessage: BlaMessage?) {
+
+            }
+
+            override fun onUserSeen(blaMessage: BlaMessage?, blaUser: BlaUser?, seenAt: Date?) {
+
+            }
+
+            override fun onUserReceive(
+                blaMessage: BlaMessage?,
+                blaUser: BlaUser?,
+                receivedAt: Date?
+            ) {
+
+            }
+        })
+
+        chatSdk.addChannelListener(object :
+            ChannelEventListener {
+            override fun onMemberLeave(channel: BlaChannel?, blaUser: BlaUser?) {
+            }
+
+            override fun onUserReceiveMessage(
+                channel: BlaChannel?,
+                user: BlaUser?,
+                message: BlaMessage?
+            ) {
+                Log.i(TAG, "user receive "+channel?.id + " "+ user?.id + " "+message?.id)
+            }
+
+            override fun onDeleteChannel(channel: BlaChannel?) {
+            }
+
+            override fun onTyping(
+                channel: BlaChannel?,
+                blaUser: BlaUser?,
+                eventType: EventType?
+            ) {
+            }
+
+            override fun onNewChannel(channel: BlaChannel?) {
+                handler.post {
+                    channelAdapter.addItem(0, CustomChannel(channel))
+                }
+
+
+            }
+
+            override fun onUserSeenMessage(
+                channel: BlaChannel?,
+                user: BlaUser?,
+                message: BlaMessage?
+            ) {
+                Log.i(TAG, "user seen "+channel?.id + " "+ user?.id + " "+message?.id)
+            }
+
+            override fun onUpdateChannel(channel: BlaChannel?) {
+                Log.i(TAG, "channel update "+channel?.id + " "+ channel?.lastMessage?.content+ " "+channel?.unreadMessages)
+                handler.post {
+                    channelAdapter.updateItemById(CustomChannel(channel))
+                }
+            }
+
+            override fun onMemberJoin(channel: BlaChannel?, blaUser: BlaUser?) {
+
+            }
+        })
+    }
+
+    override fun onDialogClick(channel: CustomChannel?) {
+        startActivity(Intent(this, ChatActivity::class.java)
+            .putExtra("CHANNEL", channel?.id))
+    }
+
+    override fun onDialogLongClick(channel: CustomChannel?) {
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Delete channel")
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, which ->
+                deleteChannel(channel?.channel)
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+
+            }.create()
+
+        dialog.show()
+    }
+
+    private fun deleteChannel(channel: BlaChannel?) {
+
+        chatSdk.deleteChannel(channel!!, object : Callback<BlaChannel>{
+            override fun onSuccess(result: BlaChannel?) {
+                handler.post {
+                    channelAdapter.deleteById(result?.id)
+                }
+            }
+
+            override fun onFail(e: java.lang.Exception?) {
+
+            }
+        })
     }
 
 }

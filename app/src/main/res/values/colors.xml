@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorPrimary">#9693C8</color>
+    <color name="colorPrimaryDark">#9693C8</color>
+    <color name="colorBackgroundText">#F1F1F1</color>
+    <color name="colorAddMember">#828282</color>
+    <color name="colorUncheckBorder">#989898</color>
+
+
     <color name="colorAccent">#03DAC5</color>
+    <color name="titileColor">#60727a</color>
+    <color name="titileColor2">#c7c6c6</color>
+    <color name="titileColor3">#f9f9f9</color>
+    <color name="colorMainBg">#fff</color>
+    <color name="statusBar">#f5f6f7</color>
+    <color name="timeTextColor">#c1bfbf</color>
+    <color name="subTextColor">#C0C0C0</color>
+    <color name="colorTextPrimary">#ffffff</color>
+    <color name="no_text">#858E99</color>
+    <color name="colorPhone">#57d98d</color>
+    <color name="black_accent">#242121</color>
+    <color name="grey">#808080</color>
+    <color name="violet_accent">#4538F8</color>
+
+    <color name="cornflower_blue">#6274e2</color>
+    <color name="cornflower_blue_dark">#303F9F</color>
+    <color name="cornflower_blue_darkest">#2d3a93</color>
+    <color name="gray">#ebebeb</color>
+    <color name="gray_light">#e8e8e8</color>
+    <color name="gray_transparent">#a6efefef</color>
+    <color name="gray_dark">#858585</color>
+    <color name="gray_dark_transparent">#ae858585</color>
+    <color name="gray_darkest">#ae282828</color>
+    <color name="black">#000000</color>
+    <color name="black_10">#19000000</color>
+    <color name="ivory">#f8efe6</color>
+    <color name="ivory_dark">#f7e8d9</color>
+    <color name="green">#38be55</color>
+    <color name="green_dark">#2da346</color>
+    <color name="red">#e94f4f</color>
+    <color name="brown">#4e342e</color>
 </resources>

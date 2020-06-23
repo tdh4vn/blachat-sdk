@@ -8,11 +8,20 @@
     <com.makeramen.roundedimageview.RoundedImageView
         android:layout_centerVertical="true"
         android:layout_margin="16dp"
+        android:scaleType="centerCrop"
         app:riv_corner_radius="28dp"
         android:id="@+id/imgAvatar"
-        android:src="@mipmap/ic_launcher_round"
+        android:src="@drawable/default_avatar"
         android:layout_width="56dp"
         android:layout_height="56dp"/>
+
+    <View
+        android:layout_alignEnd="@id/imgAvatar"
+        android:baselineAlignBottom="true"
+        android:layout_alignBottom="@+id/imgAvatar"
+        android:id="@+id/imgStatus"
+        android:layout_width="12dp"
+        android:layout_height="12dp"/>
 
     <LinearLayout
         android:layout_centerVertical="true"
@@ -53,7 +62,6 @@
         </RelativeLayout>
 
         <TextView
-            android:text="Hello"
             android:id="@+id/tvContent"
             android:ellipsize="end"
             android:textSize="14sp"

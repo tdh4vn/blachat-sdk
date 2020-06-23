@@ -1,0 +1,52 @@
+# This file is a template, and might need editing before it works on your project.
+# Read more about this script on this blog post https://about.gitlab.com/2018/10/24/setting-up-gitlab-ci-for-android-projects/, by Jason Lenny
+# If you are interested in using Android with FastLane for publishing take a look at the Android-Fastlane template.
+
+image: openjdk:8-jdk
+
+variables:
+  ANDROID_COMPILE_SDK: "29"
+  ANDROID_BUILD_TOOLS: "29.0.2"
+  ANDROID_SDK_TOOLS: "4333796"
+
+cache:
+  key: ${CI_PROJECT_ID}
+  paths:
+  - .gradle/
+  - android-sdk-linux/
+  
+assembleDebug:
+  stage: build
+  
+  before_script:
+  - apt-get --quiet update --yes
+  - apt-get --quiet install --yes wget tar unzip lib32stdc++6 lib32z1
+  - wget --quiet --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
+  - unzip -n -d android-sdk-linux android-sdk.zip
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-${ANDROID_COMPILE_SDK}" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "platform-tools" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "build-tools;${ANDROID_BUILD_TOOLS}" >/dev/null
+  - export ANDROID_HOME=$PWD/android-sdk-linux
+  - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+  - chmod +x ./gradlew
+  # temporarily disable checking for EPIPE error and use yes to accept all licenses
+  - set +o pipefail
+  - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
+  - set -o pipefail
+  script:
+    - ./gradlew assembleDebug
+  artifacts:
+    paths:
+      - app/build/outputs/
+
+uploadApk:
+  image: ubuntu:16.04
+  stage: deploy
+  script:
+    - apt update
+    - apt install -y curl
+    - cd app/build/outputs/apk/debug
+    - mv app-debug.apk ChatSDK-Android.apk
+    - ls
+    - curl --location --request POST 'http://filecenter.blameo.work/chat-sdk' --form 'file=@ChatSDK-Android.apk'
+    - curl -X GET "https://api.telegram.org/bot757567042:AAEylf4EbHgmPjhqCU62oYkxMwUIvSirWBk/sendMessage?chat_id=-1001103749005&parse_mode=HTML&text=ChatSDK-Android%20Built.%0A%3Ca%20href%3D%22http%3A%2F%2Ffilecenter.blameo.work%2Fchat-sdk%2FChatSDK-Android.apk%3Fdownload%3Dtrue%22%3EDownload%3C%2Fa%3E" || true

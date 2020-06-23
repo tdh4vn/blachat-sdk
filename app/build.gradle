@@ -23,10 +23,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
+        sourceCompatibility = "1.8"
+        targetCompatibility = "1.8"
     }
 
+}
+
+ext{
+    shapeImageViewVersion = '0.9.3'
 }
 
 dependencies {
@@ -42,5 +46,23 @@ dependencies {
     implementation 'com.makeramen:roundedimageview:2.3.0'
     implementation project(":chatsdk")
     implementation 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
-    implementation 'io.github.centrifugal:centrifuge-java:0.0.3'
+    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'com.github.stfalcon:chatkit:0.3.3'
+    implementation "com.squareup.picasso:picasso:2.5.2"
+    implementation "com.github.siyamed:android-shape-imageview:$shapeImageViewVersion"
+    implementation 'com.github.esafirm.android-image-picker:imagepicker:2.2.0'
+    implementation 'com.facebook.fresco:fresco:2.2.0'
+    implementation 'com.github.stfalcon:frescoimageviewer:0.5.0'
+    implementation 'com.google.firebase:firebase-analytics:17.2.2'
+    implementation 'com.google.firebase:firebase-storage:19.1.0'
+    implementation 'me.gujun.android.taggroup:library:1.4@aar'
+
+
+    implementation libs.rxJava
+    implementation libs.rxAndroid
+    implementation libs.gson
+    implementation libs.gsonConverter
+    implementation libs.rxJavaConverter
 }
+
+apply plugin: 'com.google.gms.google-services'

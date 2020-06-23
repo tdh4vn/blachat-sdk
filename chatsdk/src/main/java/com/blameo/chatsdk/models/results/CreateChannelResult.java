@@ -1,6 +1,6 @@
 package com.blameo.chatsdk.models.results;
 
-import com.blameo.chatsdk.models.pojos.Channel;
+import com.blameo.chatsdk.models.entities.Channel;
 import com.google.gson.annotations.SerializedName;
 
 public class CreateChannelResult extends BaseResult {

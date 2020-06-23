@@ -1,6 +1,6 @@
 package com.blameo.chatsdk.models.results;
 
-import com.blameo.chatsdk.models.pojos.Message;
+import com.blameo.chatsdk.models.entities.Message;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;

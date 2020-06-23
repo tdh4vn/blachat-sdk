@@ -13,7 +13,7 @@ public class DateFormatUtils {
     private static DateFormatUtils instance;
 
     private SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    private SimpleDateFormat outputFormat = new SimpleDateFormat("dd-MM-yyyy");
+    private SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm");
     private DisplayImageOptions options;
 
     public static DateFormatUtils getInstance() {
@@ -31,6 +31,10 @@ public class DateFormatUtils {
             Log.e("DFU", "err: " + e.getMessage() + " " + e.getCause());
             e.printStackTrace();
         }
+        return outputFormat.format(date);
+    }
+
+    public String getNewDateFormat(Date date){
         return outputFormat.format(date);
     }
 }
