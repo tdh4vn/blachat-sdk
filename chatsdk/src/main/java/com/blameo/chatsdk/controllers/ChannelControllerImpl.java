@@ -107,17 +107,7 @@ public class ChannelControllerImpl implements ChannelController {
 
     @Override
     public List<BlaChannel> getChannels(String lastChannelId, int limit) throws Exception {
-        List<BlaChannel> channels = channelRepository.getChannels(lastChannelId, limit, userRepository);
-        for(BlaChannel channel: channels){
-            if (channel.getLastMessage()!= null){
-                User user = userRepository.getUserById(channel.getLastMessage().getAuthorId());
-                if(user != null) {
-                    channel.getLastMessage().setAuthor(new BlaUser(user));
-                }
-            }
-        }
-
-        return channels;
+        return injectAuthorToLastMessageOfChannel(channelRepository.getChannels(lastChannelId, limit, userRepository));
     }
 
     @Override
@@ -173,6 +163,24 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public BlaChannel updateUserLastSeenInChannel(String channelId) {
         return channelRepository.updateUserLastSeenInChannel(channelId);
+    }
+
+    @Override
+    public List<BlaChannel> searchChannel(String q) {
+        return injectAuthorToLastMessageOfChannel(channelRepository.searchChannel(q));
+    }
+
+    private List<BlaChannel> injectAuthorToLastMessageOfChannel(List<BlaChannel> channels) {
+        for(BlaChannel channel: channels){
+            if (channel.getLastMessage()!= null){
+                User user = userRepository.getUserById(channel.getLastMessage().getAuthorId());
+                if(user != null) {
+                    channel.getLastMessage().setAuthor(new BlaUser(user));
+                }
+            }
+        }
+
+        return channels;
     }
 
 }

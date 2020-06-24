@@ -37,12 +37,6 @@ public abstract class MessageDao implements BaseDao<Message> {
             " ORDER BY " + Constant.MESSAGE_CREATED_AT + " DESC ")
     public abstract List<Message> getAllMessageInChannel(String channelId);
 
-
-//    @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
-//            " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId "+
-//            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " DESC ")
-//    public abstract List<MessageWithUserReact> getAllMessageInChannel(String channelId);
-
     @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME +
             " WHERE " + Constant.MESSAGE_SENT_AT +  " IS NULL")
     public abstract List<Message> getUnSentMessages();
@@ -54,6 +48,4 @@ public abstract class MessageDao implements BaseDao<Message> {
     public abstract MessageWithUserReact getUserReactMessageByID(String id);
 
 
-//    @Query("SELECT * FROM "+ Constant.MESSAGE_TABLE_NAME + " WHERE " + Constant.MESSAGE_ID + " = :id LIMIT 1")
-//    public abstract MessageWithUserReact getUserReactMessageByID(String id);
 }

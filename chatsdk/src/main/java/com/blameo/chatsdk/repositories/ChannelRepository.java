@@ -51,4 +51,6 @@ public interface ChannelRepository {
     BlaChannel updateUserLastSeenInChannel(String channelId);
 
     List<String> getContactList();
+
+    List<BlaChannel> searchChannel(String q);
 }

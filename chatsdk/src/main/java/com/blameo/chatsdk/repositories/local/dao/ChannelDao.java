@@ -44,6 +44,10 @@ public abstract class ChannelDao implements BaseDao<Channel> {
     @Update(entity = Channel.class)
     public abstract void updateLastMessage(UpdateLastMessageOfChannel data);
 
+
+    @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " WHERE " + Constant.CHANNEL_NAME + " LIKE :q")
+    public abstract List<ChannelWithLastMessage> searchChannels(String q);
+
     public void saveChannel(List<Channel> channels) {
 
         //Inject last message id to save

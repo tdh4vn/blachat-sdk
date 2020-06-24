@@ -30,4 +30,5 @@ public interface ChannelController {
     void removeUserFromChannel(String userId, String channelId) throws Exception;
     BlaChannel resetUnreadMessagesInChannel(String channelId);
     BlaChannel updateUserLastSeenInChannel(String channelId);
+    List<BlaChannel> searchChannel(String q);
 }

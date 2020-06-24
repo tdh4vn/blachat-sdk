@@ -582,4 +582,19 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         }
     }
 
+    @Override
+    public void searchChannels(String q, Callback<List<BlaChannel>> callback) {
+        try {
+            if (TextUtils.isEmpty(q)) {
+                callback.onFail(new Exception("Search query must not be null"));
+                return;
+            }
+            executors.submit(() -> {
+                if (callback != null) callback.onSuccess(channelController.searchChannel(q));
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

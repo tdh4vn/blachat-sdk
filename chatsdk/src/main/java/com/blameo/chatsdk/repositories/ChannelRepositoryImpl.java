@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
+import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.bodies.ChannelsBody;
@@ -407,16 +408,10 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public BlaChannel resetUnreadMessagesInChannel(String channelId) {
-
-        Log.i(TAG, "reset: "+channelId);
-
-
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
         channel.channel.setUnreadMessages(0);
         channelDao.update(channel.channel);
         BlaChannel blaChannel = new BlaChannel(channel.channel, channel.lastMessage);
-        Log.i(TAG, "reset: "+blaChannel.getLastMessage().getContent() + " "+blaChannel.getId()
-        + " "+blaChannel.getUnreadMessages());
         return blaChannel;
     }
 
@@ -440,6 +435,23 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public List<String> getContactList() {
         return null;
+    }
+
+    @Override
+    public List<BlaChannel> searchChannel(String q) {
+        q = '%' + q + '%';
+        List<BlaChannel> result = new ArrayList<>();
+
+        List<ChannelWithLastMessage> channelWithLastMessages = channelDao.searchChannels(q);
+
+        for(ChannelWithLastMessage channelWithLastMessage: channelWithLastMessages) {
+            BlaChannel blaChannel = new BlaChannel(channelWithLastMessage.channel);
+            blaChannel.setLastMessage(new BlaMessage(channelWithLastMessage.lastMessage));
+
+            result.add(blaChannel);
+        }
+
+        return result;
     }
 
 
