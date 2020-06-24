@@ -2,6 +2,7 @@ package com.blameo.chatsdk.blachat;
 
 import android.content.Context;
 import android.os.StrictMode;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.blameo.chatsdk.controllers.ChannelController;
@@ -94,7 +95,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     public static BlaChatSDK getInstance() {
-        //TODO: thread safe
         if (instance == null) {
             instance = new BlaChatSDK();
         }
@@ -102,7 +102,10 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
-    public void initBlaChatSDK(Context context, String userId, String token) {
+    public void initBlaChatSDK(Context context, String userId, String token) throws Exception {
+        if (TextUtils.isEmpty(userId) || TextUtils.isEmpty(token)){
+            throw new Exception("token or chat id cannot be null");
+        }
         this.token = token;
         this.id = userId;
         this.myChannel = "chat#" + userId;

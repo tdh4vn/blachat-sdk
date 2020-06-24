@@ -16,7 +16,7 @@ import java.util.Map;
 
 public interface BlaChatSDKProxy {
 
-    void initBlaChatSDK(Context context, String userId, String token);
+    void initBlaChatSDK(Context context, String userId, String token) throws Exception;
     void addMessageListener(MessagesListener messagesListener);
     void removeMessageListener(MessagesListener messagesListener);
     void addChannelListener(ChannelEventListener channelEventListener);

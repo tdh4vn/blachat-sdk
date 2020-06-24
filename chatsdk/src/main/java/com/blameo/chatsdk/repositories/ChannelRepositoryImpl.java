@@ -136,7 +136,9 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                     lastChannelId
             ).execute();
 
-            assert response.body() != null;
+            if (response.body() == null) {
+                throw new Exception("Get channel: response null");
+            }
             List<Channel> channelRemote = response.body().getData();
 
             channelDao.saveChannel(response.body().getData());
