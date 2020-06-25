@@ -39,11 +39,9 @@ object  APIProvider {
         get() {
             if (retrofitWithSession == null) {
                 val httpClient = OkHttpClient.Builder()
-//                    .addInterceptor(CustomInterceptor.getInstance())
                     .addInterceptor { chain ->
                         val ongoing = chain.request().newBuilder()
                         ongoing.addHeader("Authorization", currentToken)
-//                        ongoing.addHeader("Content-Type", "application/x-www-form-urlencoded")
                         chain.proceed(ongoing.build())
                     }
                     .readTimeout(120, TimeUnit.SECONDS)
@@ -68,7 +66,6 @@ object  APIProvider {
         get() {
             if (retrofitMessage == null) {
                 val httpClient = OkHttpClient.Builder()
-//                    .addInterceptor(CustomInterceptor.getInstance())
                     .addInterceptor { chain ->
                         val ongoing = chain.request().newBuilder()
                         ongoing.addHeader("Authorization", currentToken)

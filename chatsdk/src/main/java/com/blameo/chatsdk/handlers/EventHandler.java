@@ -4,6 +4,8 @@ import com.blameo.chatsdk.blachat.ChannelEventListener;
 import com.blameo.chatsdk.blachat.MessagesListener;
 import com.blameo.chatsdk.models.bla.BlaChannel;
 
+import java.util.Vector;
+
 import io.github.centrifugal.centrifuge.PublishEvent;
 import io.github.centrifugal.centrifuge.Subscription;
 
@@ -24,5 +26,7 @@ public interface EventHandler {
     void getEvent();
 
     void onChannelUpdate(BlaChannel channel);
+
+    Vector<ChannelEventListener> getChannelEventListeners();
 
 }

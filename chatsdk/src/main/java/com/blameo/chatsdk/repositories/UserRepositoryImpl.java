@@ -134,6 +134,16 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public void updateFCMToken(String imei, String fcmToken) throws IOException {
+        blaChatAPI.updateFCMToken(imei, fcmToken).execute();
+    }
+
+    @Override
+    public void deleteFCMToken(String imei) throws IOException {
+        blaChatAPI.deleteFCMToken(imei).execute();
+    }
+
+    @Override
     public BlaUser getUserById(String id) {
         try {
             User user = usersMap.get(id);

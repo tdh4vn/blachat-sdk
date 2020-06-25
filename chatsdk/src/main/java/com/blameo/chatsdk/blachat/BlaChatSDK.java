@@ -2,6 +2,7 @@ package com.blameo.chatsdk.blachat;
 
 import android.content.Context;
 import android.os.StrictMode;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -9,6 +10,8 @@ import com.blameo.chatsdk.controllers.ChannelController;
 import com.blameo.chatsdk.controllers.ChannelControllerImpl;
 import com.blameo.chatsdk.controllers.MessageController;
 import com.blameo.chatsdk.controllers.MessageControllerImpl;
+import com.blameo.chatsdk.controllers.UserController;
+import com.blameo.chatsdk.controllers.UserControllerImpl;
 import com.blameo.chatsdk.handlers.EventHandler;
 import com.blameo.chatsdk.handlers.EventHandlerImpl;
 import com.blameo.chatsdk.handlers.PresenceHandler;
@@ -26,6 +29,7 @@ import com.blameo.chatsdk.repositories.MessageRepository;
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
 import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
+import com.blameo.chatsdk.repositories.local.BlaChatSDKDatabase;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.utils.GsonUtil;
 import com.google.gson.Gson;
@@ -85,6 +89,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
     private MessageRepository messageRepository;
 
+    private UserController userController;
+
     private UserRepository userRepository;
 
     private ChannelRepository channelRepository;
@@ -119,6 +125,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         this.channelRepository = ChannelRepositoryImpl.getInstance(context, userId);
         this.channelController = new ChannelControllerImpl();
         this.messageController = new MessageControllerImpl();
+        this.userController = new UserControllerImpl();
 
         eventHandler = new EventHandlerImpl(id, context);
 
@@ -492,8 +499,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                         type,
                         customData
                 );
-                String json = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create().toJson(message);
-                Log.e("json", json);
+
                 if (callback != null) callback.onSuccess(message);
                 channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
             } catch (Exception e) {
@@ -593,6 +599,27 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 if (callback != null) callback.onSuccess(channelController.searchChannel(q));
             });
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void logout() {
+        try {
+            BlaChatSDKDatabase.getInstance(applicationContext).clearAllTables();
+            String androidId = Settings.Secure.getString(applicationContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            this.userController.deleteFCMToken(androidId);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void updateFCMToken(String fcmToken) {
+        try {
+            String androidId = Settings.Secure.getString(applicationContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+            this.userController.updateFCMToken(androidId, fcmToken);
+        } catch (Exception e){
             e.printStackTrace();
         }
     }

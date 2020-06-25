@@ -24,4 +24,9 @@ public interface UserRepository {
     List<BlaUser> fetchAllUsers() throws Exception;
 
     String getMyId();
+
+    void updateFCMToken(String imei, String fcmToken) throws IOException;
+
+    void deleteFCMToken(String imei) throws IOException;
+
 }

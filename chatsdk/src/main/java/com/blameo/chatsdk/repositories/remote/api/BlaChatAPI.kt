@@ -86,4 +86,18 @@ interface BlaChatAPI {
         @Body body: RemoveUserFromChannelBody
     ): Call<BaseResult>
 
+    @POST("user/me/update-fcm")
+    @FormUrlEncoded
+    fun updateFCMToken(
+        @Field("imei") imei: String,
+        @Field("fcm_token") fcmToken: String
+    ): Call<BaseResult>
+
+
+    @POST("user/me/delete-fcm")
+    @FormUrlEncoded
+    fun deleteFCMToken(
+        @Field("imei") imei: String
+    ): Call<BaseResult>
+
 }

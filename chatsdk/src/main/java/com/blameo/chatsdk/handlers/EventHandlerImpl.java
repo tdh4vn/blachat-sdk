@@ -74,7 +74,11 @@ public class EventHandlerImpl implements EventHandler {
 
     private final String LAST_EVENT_ID = "LAST_EVENT_ID";
 
-//    public interface NewerMessageListener{
+    public Vector<ChannelEventListener> getChannelEventListeners() {
+        return channelEventListeners;
+    }
+
+    //    public interface NewerMessageListener{
 //        void onNewMessage(Message message);
 //        void onNewChannel(Channel channel);
 //    }
@@ -166,8 +170,6 @@ public class EventHandlerImpl implements EventHandler {
                     JSONObject jsonObject = new JSONObject(data);
 
                     Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
-
-                    if(message.getAuthorId().equals(myId))  return;
 
                     BlaMessage blaMessage = messageController.onNewMessage(message);
 

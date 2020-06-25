@@ -42,4 +42,6 @@ public interface BlaChatSDKProxy {
     void getUserPresence(Callback<List<BlaUser>> callback) throws Exception;
     void getAllUsers(Callback<List<BlaUser>> callback);
     void searchChannels(String q, Callback<List<BlaChannel>> callback);
+    void logout();
+    void updateFCMToken(String fcmToken);
 }
