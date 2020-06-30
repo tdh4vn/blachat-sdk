@@ -124,6 +124,35 @@ DialogsListAdapter.OnDialogLongClickListener<CustomChannel>{
         channelAdapter.setOnDialogLongClickListener(this)
         dialogsList.setAdapter(channelAdapter)
 
+        btn_logout.setOnClickListener {
+            chatSdk.logout()
+            this.finish()
+        }
+
+        btn_search.setOnClickListener {
+            chatSdk.searchChannels(edt_search_text.text.toString(), object: Callback<List<BlaChannel>> {
+                override fun onSuccess(result: List<BlaChannel>?) {
+                    val dialogs = arrayListOf<CustomChannel>()
+
+                    result?.forEach {
+                        Log.i(TAG, "" + it.lastMessage)
+                        if(it.lastMessage != null){
+                            Log.i(TAG, "author: "+it.lastMessage.author.name)
+                        }
+                        dialogs.add(CustomChannel(it))
+                    }
+
+                    channelAdapter.setItems(dialogs)
+
+                }
+
+                override fun onFail(e: Exception?) {
+
+                }
+
+            })
+        }
+
         chatSdk.getChannels("", 20, object: Callback<List<BlaChannel>> {
             override fun onSuccess(result: List<BlaChannel>?) {
                 val dialogs = arrayListOf<CustomChannel>()

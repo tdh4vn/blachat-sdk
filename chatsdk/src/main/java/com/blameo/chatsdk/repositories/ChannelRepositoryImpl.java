@@ -38,6 +38,7 @@ import com.blameo.chatsdk.repositories.local.dao.UserInChannelDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
+import com.blameo.chatsdk.utils.BlaChatTextUtils;
 import com.blameo.chatsdk.utils.GsonUtil;
 
 import java.io.IOException;
@@ -142,7 +143,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
             }
             List<Channel> channelRemote = response.body().getData();
 
-            channelDao.saveChannel(response.body().getData());
+            for (Channel channel: channelRemote) {
+                channel.setChannelFts(channel.getName() + BlaChatTextUtils.convertToTextSearch(channel.getName()));
+            }
+
+            channelDao.saveChannel(channelRemote);
 
             if (response.isSuccessful() && channelRemote != null && !channelRemote.isEmpty()) {
 

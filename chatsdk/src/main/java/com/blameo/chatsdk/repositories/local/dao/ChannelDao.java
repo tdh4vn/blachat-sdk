@@ -45,7 +45,7 @@ public abstract class ChannelDao implements BaseDao<Channel> {
     public abstract void updateLastMessage(UpdateLastMessageOfChannel data);
 
 
-    @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " WHERE " + Constant.CHANNEL_NAME + " LIKE :q")
+    @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " WHERE " + Constant.CHANNEL_FTS + " LIKE :q")
     public abstract List<ChannelWithLastMessage> searchChannels(String q);
 
     public void saveChannel(List<Channel> channels) {

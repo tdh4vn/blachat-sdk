@@ -10,6 +10,7 @@ import androidx.room.TypeConverters;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.repositories.local.Constant;
 import com.blameo.chatsdk.repositories.local.Converters;
+import com.blameo.chatsdk.utils.BlaChatTextUtils;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -64,10 +65,14 @@ public class Channel implements Serializable {
     @ColumnInfo(name = Constant.CHANNEL_UNREAD_MESSAGES)
     private int unreadMessages = 0;
 
+    @ColumnInfo(name = Constant.CHANNEL_FTS)
+    private String channelFts;
+
     public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt,
                    String lastMessageId, HashMap<String, Object> customData, int unreadMessages) {
         this.id = id;
         this.name = name;
+        this.channelFts = this.name.toLowerCase() + " " + BlaChatTextUtils.convertToTextSearch(this.name);
         this.avatar = avatar;
         this.type = type;
         this.updatedAt = updatedAt;
@@ -94,6 +99,7 @@ public class Channel implements Serializable {
     }
 
     public void setName(String name) {
+        this.channelFts = this.name.toLowerCase() + " " + BlaChatTextUtils.convertToTextSearch(this.name);
         this.name = name;
     }
 
@@ -159,5 +165,13 @@ public class Channel implements Serializable {
 
     public void setUnreadMessages(int unreadMessages) {
         this.unreadMessages = unreadMessages;
+    }
+
+    public String getChannelFts() {
+        return channelFts;
+    }
+
+    public void setChannelFts(String channelFts) {
+        this.channelFts = channelFts;
     }
 }

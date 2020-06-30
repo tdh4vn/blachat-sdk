@@ -3,7 +3,7 @@ package com.blameo.chatsdk.repositories.local;
 public class Constant {
 
 
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 7;
     public static final String EMAIL_PATTERN = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+(?:\\.[a-zA-Z0-9_!#$%&'*+/=?`{|}~^-]+)*@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$";
 
     public static final String DB_FILE_NAME = "BLA_CHAT_DB";
@@ -19,6 +19,7 @@ public class Constant {
     public static final String CHANNEL_LAST_MESSAGE_ID = "LAST_MESSAGE_ID";
     public static final String CHANNEL_CUSTOM_DATA = "CUSTOM_DATA";
     public static final String CHANNEL_UNREAD_MESSAGES = "UNREAD_MESSAGES";
+    public static final String CHANNEL_FTS = "CHANNEL_FTS";
 
     // MESSAGE
     public static final String MESSAGE_TABLE_NAME = "MESSAGES";

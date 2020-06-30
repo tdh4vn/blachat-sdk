@@ -5,17 +5,15 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.blameo.chatsdk.MainActivity
 import com.blameo.chatsdk.R
+import com.blameo.chatsdk.blachat.BlaChatSDK
 import kotlinx.android.synthetic.main.activity_home.*
 
 class HomeActivity : AppCompatActivity() {
 
-    private val token_user1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6NGIwZjEzYzktOWY0NC00MzYzLWJkMWYtODJlNGY3MzRjMTkzIiwiY2xpZW50IjoiNGIwZjEzYzktOWY0NC00MzYzLWJkMWYtODJlNGY3MzRjMTkzIiwiZXhwIjoxNTkyOTE4NjE0LCJzdWIiOiI0YjBmMTNjOS05ZjQ0LTQzNjMtYmQxZi04MmU0ZjczNGMxOTMiLCJ1c2VySWQiOiI0YjBmMTNjOS05ZjQ0LTQzNjMtYmQxZi04MmU0ZjczNGMxOTMifQ.-fnFHK_DM2DEYdU_4nAvvuERR06gXPY0B_rcHOBwNP0"
+    private val token_user1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6MGJjNWE3NTMtZWIxMS00ODg3LTgyZjQtMWYyZWU4YzJhMWQ4IiwiY2xpZW50IjoiMGJjNWE3NTMtZWIxMS00ODg3LTgyZjQtMWYyZWU4YzJhMWQ4IiwiZXhwIjoxNTk1Njg0MTEwLCJzdWIiOiIwYmM1YTc1My1lYjExLTQ4ODctODJmNC0xZjJlZThjMmExZDgiLCJ1c2VySWQiOiIwYmM1YTc1My1lYjExLTQ4ODctODJmNC0xZjJlZThjMmExZDgifQ.zFaL9jYftuloLFlIIpnJZ-JzwhhP9EOx5HEYQAkFZYE"
 
 //    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6NTNmNjU1MDctZTdmMC00NGMwLWFkOWUtNzA4MTc1YTNmYmI1IiwiY2xpZW50IjoiNTNmNjU1MDctZTdmMC00NGMwLWFkOWUtNzA4MTc1YTNmYmI1IiwiZXhwIjoxNTkyOTE3NzAyLCJzdWIiOiI1M2Y2NTUwNy1lN2YwLTQ0YzAtYWQ5ZS03MDgxNzVhM2ZiYjUiLCJ1c2VySWQiOiI1M2Y2NTUwNy1lN2YwLTQ0YzAtYWQ5ZS03MDgxNzVhM2ZiYjUifQ.ycVO3KX2phKQjORTdeEBtM9d7LdT3HUUJxyZEdcdMlU
-    private val tokenWs_user1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6ZTk3Y2FkMTktYjFhNC00MzY5L" +
-            "TljNDctMzhjODhkMjc2MGFhIiwiY2xpZW50IjoiZTk3Y2FkMTktYjFhNC00MzY5LTljNDctMzhjODhkMjc2MGFhIiwiZXhwIjoxNTg5NjUz" +
-            "MjY2LCJzdWIiOiJlOTdjYWQxOS1iMWE0LTQzNjktOWM0Ny0zOGM4OGQyNzYwYWEiLCJ1c2VySWQiOiJlOTdjYWQxOS1iMWE0LTQzNjktOW" +
-            "M0Ny0zOGM4OGQyNzYwYWEifQ.1g799Cka7FBMyflB1sEjP2WYnA99rdJEYWci8_z_a2U"
+    private val tokenWs_user1 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6MGJjNWE3NTMtZWIxMS00ODg3LTgyZjQtMWYyZWU4YzJhMWQ4IiwiY2xpZW50IjoiMGJjNWE3NTMtZWIxMS00ODg3LTgyZjQtMWYyZWU4YzJhMWQ4IiwiZXhwIjoxNTk1Njg0MTEwLCJzdWIiOiIwYmM1YTc1My1lYjExLTQ4ODctODJmNC0xZjJlZThjMmExZDgiLCJ1c2VySWQiOiIwYmM1YTc1My1lYjExLTQ4ODctODJmNC0xZjJlZThjMmExZDgifQ.zFaL9jYftuloLFlIIpnJZ-JzwhhP9EOx5HEYQAkFZYE"
 
     private val tokenWs_user2 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaGFubmVsIjoiJGNoYXQ6Y2E5NTU5ZWUtNjUwMC00OTc" +
             "wLTg2NWUtMTJhOTY3MWUzM2I0IiwiY2xpZW50IjoiY2E5NTU5ZWUtNjUwMC00OTcwLTg2NWUtMTJhOTY3MWUzM2I0IiwiZXhwIjoxNTg" +
@@ -35,10 +33,10 @@ class HomeActivity : AppCompatActivity() {
             "LTQ3OGItOTc4Ny04YWI5ZGJiMWYzODAifQ.kl38LgvhjwKk61WXuoqL2CuChZZ338BXA-4tlU35efA"
 
 //    private val my_id_user1 = "e97cad19-b1a4-4369-9c47-38c88d2760aa"
-    private val my_id_user1 = "4b0f13c9-9f44-4363-bd1f-82e4f734c193"
+    private val my_id_user1 = "0bc5a753-eb11-4887-82f4-1f2ee8c2a1d8"
     private val my_id_user2 = "a332046b-1e34-419d-b6d4-b555b5d30ab8"
 //    private val my_id_user2 = "ca9559ee-6500-4970-865e-12a9671e33b4"
-    private val my_id_user3 = "33696432-4440-478b-9787-8ab9dbb1f380"
+    private val my_id_user3 = "0bc5a753-eb11-4887-82f4-1f2ee8c2a1d8"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

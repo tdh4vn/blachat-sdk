@@ -21,7 +21,6 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
-import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.repositories.ChannelRepository;
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl;
@@ -31,14 +30,9 @@ import com.blameo.chatsdk.repositories.UserRepository;
 import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 import com.blameo.chatsdk.repositories.local.BlaChatSDKDatabase;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
-import com.blameo.chatsdk.utils.GsonUtil;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -69,9 +63,9 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private static BlaChatSDK instance = null;
 
     private static final int DEFAULT_THREAD_POOL_SIZE = 4;
-    private static String DEFAULT_HOST = "159.65.2.104";
+    private static String DEFAULT_HOST = "chat.blameo.club";
     private static String BASE_API_URL = "http://" + DEFAULT_HOST;
-    private static String CENTRI_URL = "ws://" + DEFAULT_HOST + ":8001/connection/websocket?format=protobuf";
+    private static String CENTRI_URL = "ws://" + DEFAULT_HOST + "/connection/websocket?format=protobuf";
 
     private String myChannel;
     private String token;
@@ -96,6 +90,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     private ChannelRepository channelRepository;
 
     private ExecutorService executors = Executors.newFixedThreadPool(DEFAULT_THREAD_POOL_SIZE);
+
+    private Client centrifugoClient;
 
     private BlaChatSDK() {
     }
@@ -133,7 +129,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
         this.presenceHandler.startHandler();
 
-        realtimeDateInit();
+        realtimeInit();
 
         syncUnsentMessages();
 
@@ -166,7 +162,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         } catch (Exception e) {}
     }
 
-    private void realtimeDateInit() {
+    private void realtimeInit() {
 
         EventListener listener = new EventListener() {
             @Override
@@ -200,52 +196,37 @@ public class BlaChatSDK implements BlaChatSDKProxy {
             }
         };
 
-        Client centrifugoClient = new Client(CENTRI_URL, new Options(), listener);
+        centrifugoClient = new Client(CENTRI_URL, new Options(), listener);
         centrifugoClient.setToken(token);
 
 
         SubscriptionEventListener subListener = new SubscriptionEventListener() {
             public void onPublish(Subscription sub, PublishEvent event) {
-                Log.i(TAG, "event " + event.toString());
                 eventHandler.onPublish(sub, event);
-            }
-
-            ;
+            };
 
             public void onJoin(Subscription sub, JoinEvent event) {
-                Log.i(TAG, "on join " + sub.getChannel());
-            }
-
-            ;
+            };
 
             public void onLeave(Subscription sub, LeaveEvent event) {
                 Log.i(TAG, "on leave");
-            }
-
-            ;
+            };
 
             public void onSubscribeSuccess(Subscription sub, SubscribeSuccessEvent event) {
                 Log.i(TAG, "subscribe success");
-            }
-
-            ;
+            };
 
             public void onSubscribeError(Subscription sub, SubscribeErrorEvent event) {
                 Log.i(TAG, "subscribe error " + event.getMessage());
-            }
-
-            ;
+            };
 
             public void onUnsubscribe(Subscription sub, UnsubscribeEvent event) {
 
-            }
-
-            ;
+            };
         };
 
         Subscription sub;
         try {
-            Log.i(TAG, "sub channel id: " + myChannel);
             sub = centrifugoClient.newSubscription(myChannel, subListener);
         } catch (DuplicateSubscriptionException e) {
             e.printStackTrace();
@@ -493,6 +474,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     public void createMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData, Callback<BlaMessage> callback) {
         executors.submit(() -> {
             try {
+                Log.e(content, System.currentTimeMillis() + "");
                 BlaMessage message = messageController.sendMessage(
                         content,
                         channelID,
@@ -501,6 +483,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 );
 
                 if (callback != null) callback.onSuccess(message);
+
                 channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
             } catch (Exception e) {
                 if (callback != null) callback.onFail(e);
@@ -606,9 +589,17 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     @Override
     public void logout() {
         try {
-            BlaChatSDKDatabase.getInstance(applicationContext).clearAllTables();
-            String androidId = Settings.Secure.getString(applicationContext.getContentResolver(), Settings.Secure.ANDROID_ID);
-            this.userController.deleteFCMToken(androidId);
+            executors.submit(()->{
+                BlaChatSDKDatabase.getInstance(applicationContext).clearAllTables();
+                eventHandler.clearAllListener();
+                centrifugoClient.disconnect();
+                String androidId = Settings.Secure.getString(applicationContext.getContentResolver(), Settings.Secure.ANDROID_ID);
+                try {
+                    this.userController.deleteFCMToken(androidId);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         } catch (Exception e){
             e.printStackTrace();
         }

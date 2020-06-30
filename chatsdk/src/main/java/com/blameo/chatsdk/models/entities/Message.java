@@ -3,6 +3,7 @@ package com.blameo.chatsdk.models.entities;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -64,6 +65,10 @@ public class Message implements Serializable {
     @ColumnInfo(name = Constant.MESSAGE_CUSTOM_DATA)
     private HashMap<String, Object> customData;
 
+    @Ignore
+    @SerializedName("local_id")
+    private String localId;
+
 
     public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, boolean isSystemMessage, HashMap<String, Object> customData) {
         this.id = id;
@@ -77,6 +82,7 @@ public class Message implements Serializable {
         this.isSystemMessage = isSystemMessage;
         this.customData = customData;
     }
+
 
     public Message() {
     }
@@ -160,5 +166,13 @@ public class Message implements Serializable {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public String getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(String localId) {
+        this.localId = localId;
     }
 }

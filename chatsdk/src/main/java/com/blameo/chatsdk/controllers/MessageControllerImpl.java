@@ -1,5 +1,7 @@
 package com.blameo.chatsdk.controllers;
 
+import android.text.TextUtils;
+
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
@@ -35,6 +37,11 @@ public class MessageControllerImpl implements MessageController {
 
     @Override
     public BlaMessage onNewMessage(Message message) throws Exception {
+        if (false == TextUtils.isEmpty(message.getLocalId())
+                && checkMessageInQueue(message.getLocalId()))  {
+            removeMessageInQueue(message.getLocalId());
+            return null;
+        }
         BlaMessage blaMessage = messageRepository.saveMessage(message);
         injectUserReactToMessage(blaMessage);
         injectAuthorToMessage(blaMessage);
@@ -129,11 +136,28 @@ public class MessageControllerImpl implements MessageController {
     }
 
     private void injectUserReactToMessage(BlaMessage message) {
-        ArrayList<BlaUser> listReceive = new ArrayList<>();
-        ArrayList<BlaUser> listSeen = new ArrayList<>();
-        //TODO: Check user react vào message rồi tiêm vào nếu có
-        message.setReceivedBy(listReceive);
-        message.setSeenBy(listSeen);
+        List<BlaUser> listSeen =  messageRepository.getUserSeenMessage(message.getId());
+        List<BlaUser> listReceive = messageRepository.getUserReceiveMessage(message.getId());
+        message.setReceivedBy(new ArrayList<>(listReceive));
+        message.setSeenBy(new ArrayList<>(listSeen));
 
+    }
+
+    private void removeMessageInQueue(String localId) {
+        for (Message message: messageRepository.getSendingMessageQueue()){
+            if (message.getLocalId().equals(localId)) {
+                messageRepository.getSendingMessageQueue().remove(message);
+                break;
+            }
+        }
+    }
+
+    private boolean checkMessageInQueue(String localId) {
+        for (Message message: messageRepository.getSendingMessageQueue()){
+            if (message.getLocalId().equals(localId)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

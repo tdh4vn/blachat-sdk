@@ -26,6 +26,7 @@ import com.blameo.chatsdk.repositories.local.dao.UserReactMessageDao;
 import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 import com.blameo.chatsdk.repositories.remote.api.MessageAPI;
 import com.blameo.chatsdk.repositories.remote.api.BlaChatAPI;
+import com.blameo.chatsdk.utils.GsonUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,10 +35,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.Vector;
 
 import retrofit2.Response;
 
 public class MessageRepositoryImpl implements MessageRepository {
+
+    private Vector<Message> messageQueue;
 
     private ChannelDao channelDao;
 
@@ -80,6 +85,7 @@ public class MessageRepositoryImpl implements MessageRepository {
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
         this.userReactMessageDao = BlaChatSDKDatabase.getInstance(context).userReactMessageDao();
         this.myId = myId;
+        this.messageQueue = new Vector<>();
 
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
     }
@@ -179,11 +185,19 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public BlaMessage sendMessage(BlaMessage blaMessage) throws Exception {
 
+        String localId = UUID.randomUUID().toString();
         Response<GetMessageByIDResult> response = messageAPI.sendMessage(new CreateMessageBody(
                 blaMessage.getType(),
                 blaMessage.getContent(),
-                blaMessage.getChannelId()
+                blaMessage.getChannelId(),
+                new Date().getTime(),
+                GsonUtil.mapToJSON(blaMessage.getCustomData()),
+                localId
         )).execute();
+
+        blaMessage.setLocalId(localId);
+
+        messageQueue.add(blaMessage);
 
         if (response.isSuccessful() && response.body() != null) {
             Message newMessage = response.body().getMessage();
@@ -334,5 +348,10 @@ public class MessageRepositoryImpl implements MessageRepository {
         }
 
         return list;
+    }
+
+    @Override
+    public Vector<Message> getSendingMessageQueue() {
+        return this.messageQueue;
     }
 }

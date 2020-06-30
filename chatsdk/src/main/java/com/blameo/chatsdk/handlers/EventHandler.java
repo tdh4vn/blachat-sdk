@@ -19,6 +19,8 @@ public interface EventHandler {
 
     void removeEventChannelListener(ChannelEventListener channelEventListener);
 
+    void clearAllListener();
+
     void onPublish(Subscription sub, PublishEvent event);
 
     void publishEvent(String data);

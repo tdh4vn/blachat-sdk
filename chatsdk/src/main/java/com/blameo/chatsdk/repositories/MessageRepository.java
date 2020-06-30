@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 public interface MessageRepository {
     List<BlaMessage> getMessages(String channelId, String lastMessageId, int limit) throws IOException;
@@ -27,5 +28,7 @@ public interface MessageRepository {
     List<BlaUser> getUserSeenMessage(String messageId);
 
     List<BlaUser> getUserReceiveMessage(String messageId);
+
+    Vector<Message> getSendingMessageQueue();
 
 }

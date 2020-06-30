@@ -78,15 +78,6 @@ public class EventHandlerImpl implements EventHandler {
         return channelEventListeners;
     }
 
-    //    public interface NewerMessageListener{
-//        void onNewMessage(Message message);
-//        void onNewChannel(Channel channel);
-//    }
-
-//    private NewerMessageListener newerMessageListener = message -> {
-//
-//    };
-
     public EventHandlerImpl(String myId, Context context) {
         this.myId = myId;
 
@@ -124,6 +115,13 @@ public class EventHandlerImpl implements EventHandler {
     }
 
     @Override
+    public void clearAllListener() {
+        channelEventListeners.clear();
+        messageListeners.clear();
+    }
+
+
+    @Override
     public void onPublish(Subscription sub, PublishEvent event) {
         executorService.submit(() -> {
             try {
@@ -132,7 +130,6 @@ public class EventHandlerImpl implements EventHandler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         });
     }
 
@@ -140,8 +137,6 @@ public class EventHandlerImpl implements EventHandler {
     public void publishEvent(String data) {
         try {
             Event p = gson.fromJson(data, Event.class);
-
-            Log.i("EVENT", "" + p.getType() + " " + p.getPayload() + " " + p.getEventId() + "\n" + data);
 
             if (!TextUtils.isEmpty(p.getEventId()))
                 sharedPreferences.edit().putString(LAST_EVENT_ID, p.getEventId()).apply();
@@ -156,7 +151,6 @@ public class EventHandlerImpl implements EventHandler {
 
                     BlaChannel channel = channelController.getChannelById(typing.channel_id);
                     BlaUser user = userRepository.getUserById(typing.user_id);
-
 
                     if (channel != null && user != null) {
                         for (ChannelEventListener channelEventListener : channelEventListeners) {
@@ -173,16 +167,18 @@ public class EventHandlerImpl implements EventHandler {
 
                     BlaMessage blaMessage = messageController.onNewMessage(message);
 
-                    channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
+                    if (blaMessage != null) {
+                        channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
 
-                    BlaChannel blaChannel = channelController.updateUserLastSeenInChannel(message.getChannelId());
+                        BlaChannel blaChannel = channelController.updateUserLastSeenInChannel(message.getChannelId());
 
-                    for (ChannelEventListener listener : channelEventListeners) {
-                        listener.onUpdateChannel(blaChannel);
-                    }
+                        for (ChannelEventListener listener : channelEventListeners) {
+                            listener.onUpdateChannel(blaChannel);
+                        }
 
-                    for (MessagesListener listener : messageListeners) {
-                        listener.onNewMessage(blaMessage);
+                        for (MessagesListener listener : messageListeners) {
+                            listener.onNewMessage(blaMessage);
+                        }
                     }
 
                     break;
