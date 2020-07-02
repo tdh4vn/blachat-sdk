@@ -99,8 +99,8 @@ public class Channel implements Serializable {
     }
 
     public void setName(String name) {
-        this.channelFts = this.name.toLowerCase() + " " + BlaChatTextUtils.convertToTextSearch(this.name);
         this.name = name;
+        this.channelFts = this.name.toLowerCase() + " " + BlaChatTextUtils.convertToTextSearch(this.name);
     }
 
     public String getAvatar() {
