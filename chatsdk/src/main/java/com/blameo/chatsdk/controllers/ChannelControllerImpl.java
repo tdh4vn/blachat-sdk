@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.controllers;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
@@ -23,6 +24,7 @@ import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,30 @@ public class ChannelControllerImpl implements ChannelController {
 
     @Override
     public BlaChannel onNewChannel(Channel channel) throws Exception {
+
+        if (channel.isDirect()) {
+            List<MembersInChannelRemoteDTO> channelRemoteDTOS
+                    = channelRepository.getRemoteUserInChannel(Collections.singletonList(channel.getId()));
+            if (channelRemoteDTOS.size() > 0) {
+
+                MembersInChannelRemoteDTO channelRemoteDTO = channelRemoteDTOS.get(0);
+//                channelRepository.saveUsersInChannel(channelRemoteDTO.getUserChannels());
+
+                String otherUserId = "";
+                for (String uID: channelRemoteDTO.getMemberIds()){
+                    if (!uID.equals(userRepository.getMyId())) {
+                        otherUserId = uID;
+                        break;
+                    }
+                }
+                if (!TextUtils.isEmpty(otherUserId)) {
+                    BlaUser blaUser = userRepository.getUserById(otherUserId);
+                    channel.setName(blaUser.getName());
+                    channel.setAvatar(blaUser.getAvatar());
+                }
+            }
+        }
+
         channelRepository.saveChannel(channel);
         getUsersInChannel(channel.getId());
         if (channel.getLastMessages() != null && channel.getLastMessages().size() > 0) {
