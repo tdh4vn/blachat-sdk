@@ -282,14 +282,19 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public BlaChannel updateChannel(BlaChannel newChannel) throws IOException {
 
-        Response<GetChannelResult> channelResult = blaChatAPI.updateChannel(newChannel.getId(),
-                newChannel.getName(), newChannel.getAvatar())
+        Response<GetChannelResult> channelResult = blaChatAPI.updateChannel(
+                newChannel.getId(),
+                newChannel.getName(),
+                newChannel.getAvatar(),
+                GsonUtil.mapToJSON(newChannel.getCustomData()))
                 .execute();
 
-        Channel channel = channelResult.body().getData();
-        channelDao.update(channel);
-
-        return new BlaChannel(channel);
+        if (channelResult.body() != null) {
+            Channel channel = channelResult.body().getData();
+            channelDao.update(channel);
+            return new BlaChannel(channel);
+        }
+        return null;
     }
 
     @Override

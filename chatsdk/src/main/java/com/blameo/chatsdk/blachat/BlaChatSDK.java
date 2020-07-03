@@ -366,7 +366,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                     if (callback != null) callback.onSuccess(channelController.updateChannel(newChannel));
                 } catch (IOException e) {
                     e.printStackTrace();
-                    if (callback != null) callback.onFail(e);
+                    callback.onFail(e);
                 }
             }).get();
         } catch (Exception e) {

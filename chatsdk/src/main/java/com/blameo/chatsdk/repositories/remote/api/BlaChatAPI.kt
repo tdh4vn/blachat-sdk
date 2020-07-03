@@ -73,7 +73,8 @@ interface BlaChatAPI {
     fun updateChannel(
         @Path("channelId") channelId: String,
         @Field("name") name: String,
-        @Field("avatar") avatar: String
+        @Field("avatar") avatar: String,
+        @Field("custom_data") customData: String
     ): Call<GetChannelResult>
 
     @DELETE("user/channels/delete/{channelId}")
