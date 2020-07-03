@@ -22,6 +22,14 @@ public abstract class MessageDao implements BaseDao<Message> {
             " LIMIT :limit")
     public abstract List<Message> getMessagesOfChannel(String channelId, long lastCreatedAt, int limit);
 
+    @Query("SELECT * FROM "
+            + "(select * from " + Constant.MESSAGE_TABLE_NAME + " order by " + Constant.MESSAGE_CREATED_AT + " DESC "+" limit :limit)"
+            + Constant.MESSAGE_TABLE_NAME +
+            " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId " +
+            " AND " + Constant.MESSAGE_TYPE + " = :messageType" +
+            " ORDER BY " + Constant.MESSAGE_CREATED_AT + " DESC ")
+    public abstract List<Message> getMessagesByType(String channelId, int messageType);
+
     @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
             " WHERE " + Constant.MESSAGE_ID + " = :mId LIMIT 1")
     public abstract Message getMessageById(String mId);

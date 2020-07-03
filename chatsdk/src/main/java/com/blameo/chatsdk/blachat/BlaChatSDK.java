@@ -587,6 +587,27 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     }
 
     @Override
+    public void getMessageByType(String channelId, BlaMessageType type, Callback<List<BlaMessage>> callback) {
+        try {
+            if (!TextUtils.isEmpty(channelId)){
+                callback.onFail(new Exception("channelId must not be null"));
+                return;
+            }
+            executors.submit(() -> {
+                if (callback != null) {
+                    try {
+                        callback.onSuccess(messageController.getMessagesByType(channelId, type));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void logout() {
         try {
             executors.submit(()->{

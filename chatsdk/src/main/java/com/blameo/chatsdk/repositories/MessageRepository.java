@@ -1,6 +1,7 @@
 package com.blameo.chatsdk.repositories;
 
 import com.blameo.chatsdk.models.bla.BlaMessage;
+import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Message;
 
@@ -12,6 +13,7 @@ import java.util.Vector;
 
 public interface MessageRepository {
     List<BlaMessage> getMessages(String channelId, String lastMessageId, int limit) throws IOException;
+    List<BlaMessage> getMessagesByType(String channelId, BlaMessageType blaMessageType) throws IOException;
     BlaMessage createMessage(String tmpId, String authorId, String channelId, String content, int type, Map<String, Object> customData);
     BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
     BlaMessage saveMessage(Message message);

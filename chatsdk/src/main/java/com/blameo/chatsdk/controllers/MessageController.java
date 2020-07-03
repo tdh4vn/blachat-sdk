@@ -19,6 +19,8 @@ public interface MessageController {
 
     List<BlaMessage> getMessages(String channelId, String lastId, Integer limit) throws IOException;
 
+    List<BlaMessage> getMessagesByType(String channelId, BlaMessageType blaMessageType) throws IOException;
+
     void markReactMessage(String messageId, String channelId, int type) throws Exception;
 
 }

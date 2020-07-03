@@ -96,6 +96,16 @@ public class MessageControllerImpl implements MessageController {
     }
 
     @Override
+    public List<BlaMessage> getMessagesByType(String channelId, BlaMessageType blaMessageType) throws IOException {
+        List<BlaMessage> messages;
+        messages = injectAuthorToMessages(messageRepository.getMessagesByType(channelId, blaMessageType));
+
+        injectAuthorToMessages(messages);
+
+        return messages;
+    }
+
+    @Override
     public void markReactMessage(String messageId, String channelId, int type) throws Exception {
         BlaMessage message = messageRepository.getMessageById(messageId);
         if (message == null) {
