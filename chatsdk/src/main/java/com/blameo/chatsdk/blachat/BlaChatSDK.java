@@ -474,7 +474,6 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     public void createMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData, Callback<BlaMessage> callback) {
         executors.submit(() -> {
             try {
-                Log.e(content, System.currentTimeMillis() + "");
                 BlaMessage message = messageController.sendMessage(
                         content,
                         channelID,

@@ -13,6 +13,7 @@ import com.blameo.chatsdk.models.entities.ChannelWithLastMessage;
 import com.blameo.chatsdk.models.entities.ChannelWithUser;
 import com.blameo.chatsdk.repositories.local.Constant;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
@@ -43,6 +44,9 @@ public abstract class ChannelDao implements BaseDao<Channel> {
 
     @Update(entity = Channel.class)
     public abstract void updateLastMessage(UpdateLastMessageOfChannel data);
+
+    @Query("UPDATE " + Constant.CHANNEL_TABLE_NAME + " SET " + Constant.CHANNEL_UPDATED_AT + " = :updateAt " + " WHERE " + Constant.CHANNEL_ID + " = :cId")
+    public abstract int updateLastUpdate(Long updateAt, String cId);
 
 
     @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME + " WHERE " + Constant.CHANNEL_FTS + " LIKE :q")

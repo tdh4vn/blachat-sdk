@@ -224,7 +224,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                     new ChannelDao.UpdateLastMessageOfChannel(
                             newMessage.getChannelId(),
                             newMessage.getId()));
-//            Log.i(TAG, "update message: " +blaMessage.getId());
+            channelDao.updateLastUpdate(new Date().getTime(), newMessage.getChannelId());
             return new BlaMessage(response.body().getMessage());
         }
 
