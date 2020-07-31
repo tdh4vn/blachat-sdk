@@ -119,6 +119,7 @@ public class MessageControllerImpl implements MessageController {
                     channelId,
                     messageId,
                     message.getAuthorId());
+
         } else {
             messageRepository.sendReceiveEvent(
                     channelId,

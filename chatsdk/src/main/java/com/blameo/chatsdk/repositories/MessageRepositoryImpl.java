@@ -278,7 +278,7 @@ public class MessageRepositoryImpl implements MessageRepository {
                 authorId
         )).execute();
 
-//        userInChannelDao.updateLastSeen(new UserInChannelDao.UpdateSeen(channelId, myId, new Date().getTime()));
+        userInChannelDao.updateLastSeen(new UserInChannelDao.UpdateSeen(channelId, myId, new Date().getTime()));
 
         return response.isSuccessful();
     }
@@ -290,6 +290,8 @@ public class MessageRepositoryImpl implements MessageRepository {
                 channelId,
                 authorId
         )).execute();
+        userInChannelDao.updateLastReceived(new UserInChannelDao.UpdateReceived(channelId, myId, new Date().getTime()));
+
         return response.isSuccessful();
     }
 

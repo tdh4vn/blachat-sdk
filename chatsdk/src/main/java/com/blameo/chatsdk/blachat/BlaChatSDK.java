@@ -21,6 +21,7 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
+import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.repositories.ChannelRepository;
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl;
@@ -484,6 +485,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 if (callback != null) callback.onSuccess(message);
 
                 channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
+                BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
+                if (blaChannel != null) {
+                    for (ChannelEventListener eventListener: eventHandler.getChannelEventListeners()) {
+                        eventListener.onUpdateChannel(blaChannel);
+                    }
+                }
             } catch (Exception e) {
                 if (callback != null) callback.onFail(e);
             }
