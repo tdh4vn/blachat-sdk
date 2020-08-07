@@ -138,7 +138,10 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                     lastChannelId
             ).execute();
 
-            if (response.body() == null) {
+            if (response.body() == null ) {
+                throw new Exception("Get channel: response null");
+            }
+            if (response.body().getData() == null){
                 throw new Exception("Get channel: response null");
             }
             List<Channel> channelRemote = response.body().getData();
@@ -323,7 +326,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
          Response<BaseResult> result =  blaChatAPI.deleteChannelById(channelID).execute();
          if(result.isSuccessful()){
              assert result.body() != null;
-             Log.i(TAG, "delete channel "+result.body().success());
              Channel channel = channelDao.getChannelById(channelID);
              if(channel != null)
                 channelDao.delete(channel);
@@ -353,6 +355,18 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     public boolean updateLastMessage(String channelId, String messageId) {
         channelDao.updateLastMessage(new ChannelDao.UpdateLastMessageOfChannel(channelId, messageId));
         return true;
+    }
+
+    @Override
+    public void incrementNumberMessageNotSeen(String channelId, int number) {
+        try {
+            Channel channel = getChannelById(channelId);
+            channel.setUnreadMessages(channel.getUnreadMessages() + number);
+            updateChannel(new BlaChannel(channel));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -431,14 +445,12 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         Log.i(TAG, "increase count: "+channelId);
 
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
-        int count = channel.channel.getUnreadMessages();
-        count++;
-
-        channel.channel.setUnreadMessages(count);
+//        int count = channel.channel.getUnreadMessages();
+//        count++;
+//
+//        channel.channel.setUnreadMessages(count);
         channelDao.update(channel.channel);
         BlaChannel blaChannel = new BlaChannel(channel.channel, channel.lastMessage);
-        Log.i(TAG, "increase count: "+blaChannel.getLastMessage().getContent() + " "+blaChannel.getId()
-                + " "+blaChannel.getUnreadMessages());
         return blaChannel;
     }
 

@@ -30,6 +30,8 @@ public interface ChannelRepository {
 
     boolean updateLastMessage(String channelId, String messageId);
 
+    void incrementNumberMessageNotSeen(String channelId, int number);
+
     BlaChannel onChannelUpdate(Channel channel);
 
     boolean addUserToChannel(String channelId, List<String> userIds) throws Exception;

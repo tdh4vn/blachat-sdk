@@ -45,6 +45,9 @@ public class MessageControllerImpl implements MessageController {
         BlaMessage blaMessage = messageRepository.saveMessage(message);
         injectUserReactToMessage(blaMessage);
         injectAuthorToMessage(blaMessage);
+        if (!message.getAuthorId().equals(userRepository.getMyId())) {
+            channelRepository.incrementNumberMessageNotSeen(message.getChannelId(), 1);
+        }
         messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
         return blaMessage;
     }
@@ -155,10 +158,12 @@ public class MessageControllerImpl implements MessageController {
     }
 
     private void removeMessageInQueue(String localId) {
-        for (Message message: messageRepository.getSendingMessageQueue()){
-            if (message.getLocalId().equals(localId)) {
-                messageRepository.getSendingMessageQueue().remove(message);
-                break;
+        synchronized (messageRepository.getSendingMessageQueue()) {
+            for (Message message: messageRepository.getSendingMessageQueue()){
+                if (message.getLocalId().equals(localId)) {
+                    messageRepository.getSendingMessageQueue().remove(message);
+                    break;
+                }
             }
         }
     }
