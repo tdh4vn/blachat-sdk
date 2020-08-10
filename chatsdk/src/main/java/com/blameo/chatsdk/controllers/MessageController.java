@@ -15,7 +15,9 @@ public interface MessageController {
 
     BlaMessage userReactMyMessage(String userId, String messageId, Date time, int type) throws Exception;
 
-    BlaMessage sendMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData) throws Exception;
+    BlaMessage createMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData) throws Exception;
+
+    BlaMessage sendMessage(BlaMessage blaMessage) throws Exception;
 
     List<BlaMessage> getMessages(String channelId, String lastId, Integer limit) throws IOException;
 

@@ -385,8 +385,11 @@ public class BlaChatSDK implements BlaChatSDKProxy {
             executors.submit(() -> {
                 try {
                     boolean res = channelController.deleteChannel(blaChannel.getId());
-                    if(res)
+                    if (res){
                         if (callback != null) callback.onSuccess(blaChannel);
+                    } else {
+                        callback.onFail(new Exception());
+                    }
                 } catch (IOException e) {
                     if (callback != null) callback.onFail(e);
                     e.printStackTrace();
@@ -477,7 +480,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
     public void createMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData, Callback<BlaMessage> callback) {
         executors.submit(() -> {
             try {
-                BlaMessage message = messageController.sendMessage(
+                BlaMessage message = messageController.createMessage(
                         content,
                         channelID,
                         type,
@@ -486,17 +489,15 @@ public class BlaChatSDK implements BlaChatSDKProxy {
 
                 if (callback != null) callback.onSuccess(message);
 
-                channelController.updateLastMessageOfChannel(message.getChannelId(), message.getId());
                 BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
                 if (blaChannel != null) {
-                    if (blaChannel.getLastMessage() == null) {
-                        message.setId(String.valueOf(new Date().getTime()));
-                        blaChannel.setLastMessage(message);
-                    }
+                    blaChannel.setLastMessage(message);
                     for (ChannelEventListener eventListener: eventHandler.getChannelEventListeners()) {
                         eventListener.onUpdateChannel(blaChannel);
                     }
                 }
+                BlaMessage message1 = messageController.sendMessage(message);
+                channelController.updateLastMessageOfChannel(message.getChannelId(), message1.getId());
             } catch (Exception e) {
                 if (callback != null) callback.onFail(e);
             }
@@ -536,7 +537,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 }
                 if (callback != null) callback.onSuccess(message);
             } catch (Exception e) {
-                if (callback != null)  callback.onFail(e);
+                if (callback != null) callback.onFail(e);
                 e.printStackTrace();
             }
         });

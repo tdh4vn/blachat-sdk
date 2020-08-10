@@ -73,7 +73,7 @@ public class MessageControllerImpl implements MessageController {
     }
 
     @Override
-    public BlaMessage sendMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData) throws Exception {
+    public BlaMessage createMessage(String content, String channelID, BlaMessageType type, Map<String, Object> customData) {
         BlaMessage message = messageRepository.createMessage(
                 String.valueOf(new Date().getTime()),
                 userRepository.getMyId(),
@@ -82,12 +82,18 @@ public class MessageControllerImpl implements MessageController {
                 type.getType(),
                 customData
         );
-
-        message = messageRepository.sendMessage(message);
         injectAuthorToMessage(message);
-
         return message;
     }
+
+    @Override
+    public BlaMessage sendMessage(BlaMessage blaMessage) throws Exception {
+        BlaMessage message = messageRepository.sendMessage(blaMessage);
+        injectAuthorToMessage(message);
+        return message;
+    }
+
+
 
     @Override
     public List<BlaMessage> getMessages(String channelId, String lastId, Integer limit) throws IOException {
