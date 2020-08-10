@@ -139,6 +139,11 @@ public class MessageControllerImpl implements MessageController {
 
     }
 
+    @Override
+    public BlaMessage getMessageById(String messageId) {
+        return messageRepository.getMessageById(messageId);
+    }
+
     private List<BlaMessage> injectAuthorToMessages(List<BlaMessage> messages) {
 
         for (BlaMessage message: messages){

@@ -165,12 +165,18 @@ public class EventHandlerImpl implements EventHandler {
 
                     Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
 
+                    if (messageController.getMessageById(message.getId()) != null) {
+                        break;
+                    }
+
                     BlaMessage blaMessage = messageController.onNewMessage(message);
 
                     if (blaMessage != null) {
                         channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
 
-                        BlaChannel blaChannel = channelController.updateUserLastSeenInChannel(message.getChannelId());
+                        BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
+
+                        blaChannel.setLastMessage(blaMessage);
 
                         for (ChannelEventListener listener : channelEventListeners) {
                             listener.onUpdateChannel(blaChannel);

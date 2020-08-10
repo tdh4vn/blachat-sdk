@@ -25,4 +25,6 @@ public interface MessageController {
 
     void markReactMessage(String messageId, String channelId, int type) throws Exception;
 
+    BlaMessage getMessageById(String messageId);
+
 }
