@@ -16,9 +16,12 @@ import com.blameo.chatsdk.repositories.UserRepositoryImpl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 
 
 public class MessageControllerImpl implements MessageController {
@@ -169,11 +172,14 @@ public class MessageControllerImpl implements MessageController {
     }
 
     private boolean checkMessageInQueue(String localId) {
-        for (Message message: messageRepository.getSendingMessageQueue()){
-            if (message.getLocalId().equals(localId)) {
-                return true;
+        List<Message> messages = Collections.synchronizedList(messageRepository.getSendingMessageQueue());
+        synchronized (messages) {
+            for (Message message : messages) {
+                if (message.getLocalId().equals(localId)) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
     }
 }
