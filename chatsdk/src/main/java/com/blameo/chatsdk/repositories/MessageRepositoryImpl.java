@@ -215,7 +215,9 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         blaMessage.setLocalId(localId);
 
-        messageQueue.add(blaMessage);
+        synchronized (messageQueue) {
+            messageQueue.add(blaMessage);
+        }
 
         if (response.isSuccessful() && response.body() != null) {
             Message newMessage = response.body().getMessage();
