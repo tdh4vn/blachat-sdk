@@ -159,7 +159,8 @@ public class MessageControllerImpl implements MessageController {
     }
 
     private void removeMessageInQueue(String localId) {
-        synchronized (messageRepository.getSendingMessageQueue()) {
+        List<Message> messages = Collections.synchronizedList(messageRepository.getSendingMessageQueue());
+        synchronized (messages) {
             for (Message message: messageRepository.getSendingMessageQueue()){
                 if (message.getLocalId().equals(localId)) {
                     messageRepository.getSendingMessageQueue().remove(message);

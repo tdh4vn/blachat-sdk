@@ -6,6 +6,7 @@ import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Message;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,6 @@ public interface MessageRepository {
 
     List<BlaUser> getUserReceiveMessage(String messageId);
 
-    Vector<Message> getSendingMessageQueue();
+    ArrayList<Message> getSendingMessageQueue();
 
 }

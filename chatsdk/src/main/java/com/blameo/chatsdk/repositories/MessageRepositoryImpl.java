@@ -43,7 +43,7 @@ import retrofit2.Response;
 
 public class MessageRepositoryImpl implements MessageRepository {
 
-    private Vector<Message> messageQueue;
+    private ArrayList<Message> messageQueue;
 
     private ChannelDao channelDao;
 
@@ -86,7 +86,7 @@ public class MessageRepositoryImpl implements MessageRepository {
         this.messageDao = BlaChatSDKDatabase.getInstance(context).messageDao();
         this.userReactMessageDao = BlaChatSDKDatabase.getInstance(context).userReactMessageDao();
         this.myId = myId;
-        this.messageQueue = new Vector<>();
+        this.messageQueue = new ArrayList<>();
 
         this.messageAPI = APIProvider.INSTANCE.getMessageAPI();
     }
@@ -215,8 +215,9 @@ public class MessageRepositoryImpl implements MessageRepository {
 
         blaMessage.setLocalId(localId);
 
-        synchronized (messageQueue) {
-            messageQueue.add(blaMessage);
+        List<Message> messages = Collections.synchronizedList(messageQueue);
+        synchronized (messages) {
+            messages.add(blaMessage);
         }
 
         if (response.isSuccessful() && response.body() != null) {
@@ -373,7 +374,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     }
 
     @Override
-    public Vector<Message> getSendingMessageQueue() {
+    public ArrayList<Message> getSendingMessageQueue() {
         return this.messageQueue;
     }
 }
