@@ -17,7 +17,6 @@ import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
-import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.events.CursorEvent;
 import com.blameo.chatsdk.models.events.Event;
@@ -60,6 +59,7 @@ public class EventHandlerImpl implements EventHandler {
     private ExecutorService executorService = Executors.newFixedThreadPool(4);
 
     private ChannelController channelController;
+
     private MessageController messageController;
 
     private MessageRepository messageRepository;
@@ -265,7 +265,6 @@ public class EventHandlerImpl implements EventHandler {
 
     @Override
     public void getEvent() {
-
         String lastEventId = sharedPreferences.getString(LAST_EVENT_ID, "");
 
         if (lastEventId.isEmpty()) return;

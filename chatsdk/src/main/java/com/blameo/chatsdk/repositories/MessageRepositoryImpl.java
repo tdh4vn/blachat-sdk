@@ -317,10 +317,15 @@ public class MessageRepositoryImpl implements MessageRepository {
 
     @Override
     public BlaMessage deleteMessage(BlaMessage message) throws Exception {
-        DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
-        Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
-        messageDao.delete(message);
-        return null;
+        try {
+            DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
+            Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
+            messageDao.delete(message);
+            return message;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override
