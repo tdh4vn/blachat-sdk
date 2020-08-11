@@ -147,8 +147,8 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public BlaMessage deleteMessage(BlaMessage blaMessage) throws Exception {
         BlaMessage blaMessage1 = messageRepository.deleteMessage(blaMessage);
-        injectAuthorToMessage(blaMessage1);
-        injectUserReactToMessage(blaMessage1);
+//        injectAuthorToMessage(blaMessage1);
+//        injectUserReactToMessage(blaMessage1);
         return blaMessage1;
     }
 
