@@ -27,4 +27,6 @@ public interface MessageController {
 
     BlaMessage getMessageById(String messageId);
 
+    BlaMessage deleteMessage(BlaMessage blaMessage) throws Exception;
+
 }

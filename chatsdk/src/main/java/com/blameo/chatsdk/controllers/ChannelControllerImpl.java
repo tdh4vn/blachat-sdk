@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.blameo.chatsdk.models.bla.BlaChannel;
 import com.blameo.chatsdk.models.bla.BlaChannelType;
+import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
@@ -153,7 +154,10 @@ public class ChannelControllerImpl implements ChannelController {
 
     @Override
     public BlaChannel getChannelById(String channelID) throws IOException {
-        return channelRepository.getChannelById(channelID);
+        BlaChannel blaChannel = channelRepository.getChannelById(channelID);
+        BlaMessage blaMessage = messageRepository.getMessageById(blaChannel.getLastMessageId());
+        blaChannel.setLastMessage(blaMessage);
+        return blaChannel;
     }
 
     @Override
