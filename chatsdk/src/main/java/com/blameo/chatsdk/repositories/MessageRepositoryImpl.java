@@ -319,7 +319,7 @@ public class MessageRepositoryImpl implements MessageRepository {
     public BlaMessage deleteMessage(BlaMessage message) throws Exception {
         try {
             DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
-            Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
+//            Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
             messageDao.delete(message);
             return message;
         } catch (Exception e) {
