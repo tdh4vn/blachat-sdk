@@ -524,16 +524,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 BlaMessage message = messageController.deleteMessage(deletedMessage);
                 if (message != null) {
                     BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
-                    if (blaChannel.getLastMessage() != null) {
-                        if (blaChannel.getLastMessage().getId().equals(message.getId())) {
-                            List<BlaMessage> messages = messageController.getMessages(message.getChannelId(), null, 10);
-                            if (messages != null && messages.size() > 1) {
-                                blaChannel.setLastMessage(messages.get(0));
-                                channelController.updateLastMessageOfChannel(blaChannel.getId(), messages.get(0).getId());
-                                for (ChannelEventListener listener : eventHandler.getChannelEventListeners()) {
-                                    listener.onUpdateChannel(blaChannel);
-                                }
-                            }
+                    List<BlaMessage> messages = messageController.getMessages(message.getChannelId(), null, 3);
+                    if (messages != null && messages.size() > 1) {
+                        blaChannel.setLastMessage(messages.get(0));
+                        channelController.updateLastMessageOfChannel(blaChannel.getId(), messages.get(0).getId());
+                        for (ChannelEventListener listener : eventHandler.getChannelEventListeners()) {
+                            listener.onUpdateChannel(blaChannel);
                         }
                     }
                 }
