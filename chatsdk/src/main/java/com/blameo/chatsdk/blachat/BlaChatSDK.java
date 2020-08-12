@@ -443,8 +443,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         try {
             executors.submit(() -> {
                 try {
-                    messageController.markReactMessage(messageId, channelId, UserReactMessage.SEEN);
                     BlaChannel channel = channelController.resetUnreadMessagesInChannel(channelId);
+                    messageController.markReactMessage(messageId, channelId, UserReactMessage.SEEN);
                     channelUpdated(channel);
                     if (callback != null) callback.onSuccess(true);
                 } catch (Exception e) {
