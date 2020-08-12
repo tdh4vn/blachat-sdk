@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 @Entity(tableName = Constant.CHANNEL_TABLE_NAME)
-public class Channel implements Serializable {
+public class Channel extends BaseEntity {
 
     @SerializedName("id")
     @PrimaryKey
@@ -38,16 +38,6 @@ public class Channel implements Serializable {
     @SerializedName("type")
     @ColumnInfo(name = Constant.CHANNEL_TYPE)
     private int type;
-
-    @TypeConverters(Converters.class)
-    @SerializedName(value = "updatedAt", alternate = "updated_at")
-    @ColumnInfo(name = Constant.CHANNEL_UPDATED_AT)
-    private Date updatedAt;
-
-    @TypeConverters(Converters.class)
-    @SerializedName(value = "createdAt", alternate = "created_at")
-    @ColumnInfo(name = Constant.CHANNEL_CREATED_AT)
-    private Date createdAt;
 
     @SerializedName(value = "lastMessageId", alternate = "last_message_id")
     @ColumnInfo(name = Constant.CHANNEL_LAST_MESSAGE_ID)
@@ -70,13 +60,12 @@ public class Channel implements Serializable {
 
     public Channel(String id, String name, String avatar, int type, Date updatedAt, Date createdAt,
                    String lastMessageId, HashMap<String, Object> customData, int unreadMessages) {
+        super(createdAt, updatedAt);
         this.id = id;
         this.name = name;
         this.channelFts = this.name.toLowerCase() + " " + BlaChatTextUtils.convertToTextSearch(this.name);
         this.avatar = avatar;
         this.type = type;
-        this.updatedAt = updatedAt;
-        this.createdAt = createdAt;
         this.lastMessageId = lastMessageId;
         this.customData = customData;
         this.unreadMessages = unreadMessages;
@@ -117,22 +106,6 @@ public class Channel implements Serializable {
 
     public void setType(int type) {
         this.type = type;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
     }
 
     public String getLastMessageId() {

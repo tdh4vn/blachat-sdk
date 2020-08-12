@@ -60,4 +60,6 @@ public interface ChannelRepository {
     void updateReceiveTime(String channelId, String userId, Date date);
 
     void updateSeenTime(String channelId, String userId, Date date);
+
+    void updateLastUpdated(String channelId, Date date);
 }

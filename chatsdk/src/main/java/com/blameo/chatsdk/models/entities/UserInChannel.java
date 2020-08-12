@@ -15,7 +15,7 @@ import java.util.Date;
         tableName = Constant.UIC_TABLE_NAME,
         primaryKeys = {Constant.UIC_CHANNEL_ID, Constant.UIC_USER_ID}
 )
-public class UserInChannel {
+public class UserInChannel extends BaseEntity{
 
     @ColumnInfo(name = Constant.UIC_CHANNEL_ID)
     @NonNull

@@ -9,7 +9,7 @@ import com.blameo.chatsdk.models.entities.UserInChannel;
 import com.blameo.chatsdk.repositories.local.Constant;
 
 @Dao
-public abstract class UserInChannelDao implements BaseDao<UserInChannel> {
+public abstract class UserInChannelDao extends BaseDao<UserInChannel> {
     @Update(entity = UserInChannel.class)
     public abstract void updateLastSeen(UpdateSeen data);
 

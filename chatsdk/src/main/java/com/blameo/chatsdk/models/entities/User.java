@@ -15,7 +15,7 @@ import java.util.HashMap;
 
 
 @Entity(tableName = Constant.USER_TABLE_NAME)
-public class User {
+public class User extends BaseEntity{
 
     @SerializedName("id")
     @PrimaryKey

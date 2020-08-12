@@ -18,7 +18,7 @@ import java.util.Date;
                 Constant.REACT_TYPE
         }
 )
-public class UserReactMessage {
+public class UserReactMessage extends BaseEntity {
     public static final int SEEN = 1;
     public static final int RECEIVE = 2;
 

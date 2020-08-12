@@ -294,6 +294,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
         if (channelResult.body() != null) {
             Channel channel = channelResult.body().getData();
+            channel.setUpdatedAt(new Date());
             channelDao.update(channel);
             return new BlaChannel(channel);
         }
@@ -353,8 +354,9 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public boolean updateLastMessage(String channelId, String messageId) {
-        channelDao.updateLastMessage(new ChannelDao.UpdateLastMessageOfChannel(channelId, messageId));
-        return true;
+        Channel channel = channelDao.getChannelById(channelId);
+        channelDao.updateLastUpdate(new Date().getTime(), channelId);
+        return false;
     }
 
     @Override
@@ -380,6 +382,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         Response response = blaChatAPI.inviteUserToChannel(channelId, new InviteUserToChannelBody(
                 userIds
         )).execute();
+        Channel channel = channelDao.getChannelById(channelId);
+        if (channel != null) {
+            channel.setUpdatedAt(new Date());
+            channelDao.update(channel);
+        }
         if (response.isSuccessful()) {
             for(String id: userIds) {
                 userInChannelDao.insert(new UserInChannel(channelId, id, new Date(), new Date()));
@@ -416,6 +423,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public void usersAddedToChannel(String channelId, List<String> userIds) {
+        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         for(String id: userIds) {
             userInChannelDao.insert(new UserInChannel(channelId, id, new Date(), new Date()));
         }
@@ -423,6 +431,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public void removeUserFromChannel(String userId, String channelId) throws Exception {
+        Channel channel = channelDao.getChannelById(channelId);
+        if (channel != null) {
+            channel.setUpdatedAt(new Date());
+            channelDao.update(channel);
+        }
         RemoveUserFromChannelBody body = new RemoveUserFromChannelBody(userId, channelId);
         Response<BaseResult> response = blaChatAPI.removeUserFromChannel(body).execute();
         if(response.isSuccessful()){
@@ -432,6 +445,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public BlaChannel resetUnreadMessagesInChannel(String channelId) {
+        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
         channel.channel.setUnreadMessages(0);
         channelDao.update(channel.channel);
@@ -442,7 +456,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public BlaChannel updateUserLastSeenInChannel(String channelId) {
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
-        channelDao.update(channel.channel);
+        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         return new BlaChannel(channel.channel, channel.lastMessage);
     }
 
@@ -476,5 +490,10 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public void updateSeenTime(String channelId, String userId, Date date) {
         userInChannelDao.updateLastSeen(new UserInChannelDao.UpdateSeen(channelId, userId, date.getTime()));
+    }
+
+    @Override
+    public void updateLastUpdated(String channelId, Date date) {
+        channelDao.updateLastUpdate(date.getTime(), channelId);
     }
 }

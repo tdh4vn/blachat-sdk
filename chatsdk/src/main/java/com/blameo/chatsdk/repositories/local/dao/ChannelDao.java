@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Dao
-public abstract class ChannelDao implements BaseDao<Channel> {
+public abstract class ChannelDao extends BaseDao<Channel> {
     @Query("SELECT * FROM " + Constant.CHANNEL_TABLE_NAME +
             " WHERE " + Constant.CHANNEL_UPDATED_AT + " < :lastUpdate" +
             " ORDER BY " + Constant.CHANNEL_UPDATED_AT + " DESC " +

@@ -188,10 +188,8 @@ public class EventHandlerImpl implements EventHandler {
                         BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
 
                         blaChannel.setLastMessage(blaMessage);
+                        onChannelUpdate(blaChannel);
 
-                        for (ChannelEventListener listener : channelEventListeners) {
-                            listener.onUpdateChannel(blaChannel);
-                        }
 
                         for (MessagesListener listener : messageListeners) {
                             listener.onNewMessage(blaMessage);
@@ -218,6 +216,10 @@ public class EventHandlerImpl implements EventHandler {
                             listener.onUserSeenMessage(channel, user, message);
                         }
                     }
+                    if (channel != null) {
+                        onChannelUpdate(channel);
+                    }
+
                     break;
                 }
 
@@ -235,11 +237,13 @@ public class EventHandlerImpl implements EventHandler {
                             listener.onUserReceiveMessage(channel, user, message);
                         }
                     }
+                    if (channel != null) {
+                        onChannelUpdate(channel);
+                    }
                     break;
                 }
 
                 case "new_channel": {
-
                     JSONObject jsonObject = new JSONObject(data);
                     Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
 
@@ -257,15 +261,25 @@ public class EventHandlerImpl implements EventHandler {
                     JSONObject jsonObject = new JSONObject(data);
                     InviteUsersEvent inviteUsersEvent = gson.fromJson(jsonObject.get("payload").toString(), InviteUsersEvent.class);
                     channelController.usersAddedToChannel(inviteUsersEvent.channelId, inviteUsersEvent.userIds);
+                    List<BlaUser> users = userRepository.getUsersByIds(inviteUsersEvent.userIds);
+                    BlaChannel channel = channelController.getChannelById(inviteUsersEvent.channelId);
+                    if (channel != null && users != null) {
+                        onChannelUpdate(channel);
+                    }
+
+                    for (ChannelEventListener channelEventListener: channelEventListeners) {
+                        for (BlaUser user: users) {
+                            channelEventListener.onMemberJoin(channel, user);
+                        }
+                    }
+
                     break;
                 }
                 case "update_channel": {
                     JSONObject jsonObject = new JSONObject(data);
                     Channel channel = gson.fromJson(jsonObject.get("payload").toString(), Channel.class);
                     BlaChannel blaChannel = channelController.onChannelUpdate(channel);
-                    for (ChannelEventListener listener : channelEventListeners) {
-                        listener.onUpdateChannel(blaChannel);
-                    }
+                    onChannelUpdate(blaChannel);
                     break;
                 }
 
@@ -285,9 +299,7 @@ public class EventHandlerImpl implements EventHandler {
                                 if (messages != null && messages.size() > 1) {
                                     channel.setLastMessage(messages.get(0));
                                     channelController.updateLastMessageOfChannel(channel.getId(), messages.get(0).getId());
-                                    for (ChannelEventListener listener : channelEventListeners) {
-                                        listener.onUpdateChannel(channel);
-                                    }
+                                    onChannelUpdate(channel);
                                 }
                             }
                         }
@@ -340,6 +352,7 @@ public class EventHandlerImpl implements EventHandler {
 
     @Override
     public void onChannelUpdate(BlaChannel channel) {
+        channel.setUpdatedAt(new Date());
         for (ChannelEventListener listener : channelEventListeners) {
             listener.onUpdateChannel(channel);
         }

@@ -43,6 +43,7 @@ public class MessageControllerImpl implements MessageController {
             removeMessageInQueue(message.getLocalId());
             return null;
         }
+        channelRepository.updateLastUpdated(message.getChannelId(), new Date());
         BlaMessage blaMessage = messageRepository.saveMessage(message);
         injectUserReactToMessage(blaMessage);
         injectAuthorToMessage(blaMessage);
@@ -57,7 +58,9 @@ public class MessageControllerImpl implements MessageController {
     public BlaMessage userReactMyMessage(String userId, String messageId, Date time, int type) throws Exception {
         BlaMessage message = messageRepository.getMessageById(messageId);
         BlaUser user = userRepository.getUserById(userId);
+
         if (message != null && user != null) {
+            channelRepository.updateLastUpdated(message.getChannelId(), new Date());
             if (type == UserReactMessage.RECEIVE) {
                 messageRepository.userReceiveMyMessage(user.getId(), message.getId(), time);
             } else {
@@ -82,6 +85,7 @@ public class MessageControllerImpl implements MessageController {
                 type.getType(),
                 customData
         );
+        channelRepository.updateLastUpdated(channelID, new Date());
         injectAuthorToMessage(message);
         return message;
     }
@@ -118,9 +122,11 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public void markReactMessage(String messageId, String channelId, int type) throws Exception {
         BlaMessage message = messageRepository.getMessageById(messageId);
+
         if (message == null) {
             return;
         }
+        channelRepository.updateLastUpdated(message.getChannelId(), new Date());
         if (message.getAuthorId().equals(userRepository.getMyId())) {
             return;
         }
@@ -153,7 +159,8 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public BlaMessage onDeleteMessage(BlaMessage blaMessage) throws Exception {
         if (messageRepository.getMessageById(blaMessage.getId()) != null) {
-            return onDeleteMessage(blaMessage);
+            channelRepository.updateLastUpdated(blaMessage.getChannelId(), new Date());
+            return messageRepository.onDeleteMessage(blaMessage);
         }
 
         throw new Exception("Message not found");

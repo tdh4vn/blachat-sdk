@@ -11,7 +11,7 @@ import com.blameo.chatsdk.repositories.local.Constant;
 import java.util.List;
 
 @Dao
-public abstract class MessageDao implements BaseDao<Message> {
+public abstract class MessageDao extends BaseDao<Message> {
 
     @Query("SELECT * FROM " + Constant.MESSAGE_TABLE_NAME +
             " WHERE " + Constant.MESSAGE_CHANNEL_ID + " = :channelId " +

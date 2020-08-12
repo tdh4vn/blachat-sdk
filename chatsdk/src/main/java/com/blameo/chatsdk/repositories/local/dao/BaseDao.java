@@ -7,28 +7,60 @@ import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 import androidx.room.Update;
 
+import com.blameo.chatsdk.models.entities.BaseEntity;
 import com.blameo.chatsdk.repositories.local.Constant;
 
+import java.util.Date;
 import java.util.List;
 
 @Dao
-public interface BaseDao<T> {
+public abstract class BaseDao<T extends BaseEntity> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insert(T obj);
+    public abstract void actualInsert(T obj);
+
+    public void insert(T obj) {
+        obj.setCreatedAt(new Date());
+        obj.setUpdatedAt(new Date());
+        actualInsert(obj);
+    }
+
+    public void insertMany(List<T> obj) {
+        if (obj != null) {
+            for (T t: obj) {
+                t.setUpdatedAt(new Date());
+                t.setUpdatedAt(new Date());
+            }
+        }
+        actualInsertMany(obj);
+    }
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void insertMany(List<T> objs);
+    public abstract void actualInsertMany(List<T> objs);
 
     @Update()
-    void update(T obj);
+    abstract void actualUpdate(T obj);
+
+    public void update(T obj) {
+        obj.setUpdatedAt(new Date());
+        actualUpdate(obj);
+    }
 
     @Update()
-    void updateMany(List<T> objs);
+    public abstract void actualUpdateMany(List<T> objs);
+
+    public void updateMany(List<T> objs) {
+        if (objs != null) {
+            for (T t : objs) {
+                t.setUpdatedAt(new Date());
+            }
+        }
+        actualUpdateMany(objs);
+    }
 
     @Delete()
-    void delete(T obj);
+    public abstract void delete(T obj);
 
     @Delete()
-    void deleteMany(List<T> objs);
+    public abstract void deleteMany(List<T> objs);
 
 }

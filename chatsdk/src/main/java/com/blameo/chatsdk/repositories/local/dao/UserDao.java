@@ -9,7 +9,7 @@ import com.blameo.chatsdk.repositories.local.Constant;
 import java.util.List;
 
 @Dao
-public abstract class UserDao implements BaseDao<User> {
+public abstract class UserDao extends BaseDao<User> {
 
     @Query("SELECT * FROM " + Constant.USER_TABLE_NAME)
     abstract public List<User> getAllUsers();

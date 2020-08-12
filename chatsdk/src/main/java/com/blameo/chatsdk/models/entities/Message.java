@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 
 @Entity(tableName = Constant.MESSAGE_TABLE_NAME)
-public class Message implements Serializable {
+public class Message extends BaseEntity {
 
     @SerializedName("id")
     @PrimaryKey
@@ -42,16 +42,6 @@ public class Message implements Serializable {
     private int type;
 
     @TypeConverters(Converters.class)
-    @SerializedName(value = "createdAt",alternate ="created_at")
-    @ColumnInfo(name = Constant.MESSAGE_CREATED_AT)
-    private Date createdAt;
-
-    @TypeConverters(Converters.class)
-    @SerializedName(value = "updatedAt", alternate = "updated_at")
-    @ColumnInfo(name = Constant.MESSAGE_UPDATED_AT)
-    private Date updatedAt;
-
-    @TypeConverters(Converters.class)
     @SerializedName(value = "sentAt",alternate ="sent_at")
     @ColumnInfo(name = Constant.MESSAGE_SENT_AT)
     private Date sentAt;
@@ -71,13 +61,12 @@ public class Message implements Serializable {
 
 
     public Message(String id, String authorId, String channelId, String content, int type, Date createdAt, Date updatedAt, Date sentAt, boolean isSystemMessage, HashMap<String, Object> customData) {
+        super(createdAt, updatedAt);
         this.id = id;
         this.authorId = authorId;
         this.channelId = channelId;
         this.content = content;
         this.type = type;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
         this.sentAt = sentAt;
         this.isSystemMessage = isSystemMessage;
         this.customData = customData;
@@ -117,22 +106,6 @@ public class Message implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
 
