@@ -18,7 +18,7 @@ public abstract class BaseEntity implements Serializable {
     private Date createdAt;
 
     @ColumnInfo(name = "UPDATED_AT", defaultValue = "CURRENT_TIMESTAMP")
-    @SerializedName(value = "updatedAt", alternate = "created_at")
+    @SerializedName(value = "updatedAt", alternate = "updated_at")
     @TypeConverters(Converters.class)
     private Date updatedAt;
 
