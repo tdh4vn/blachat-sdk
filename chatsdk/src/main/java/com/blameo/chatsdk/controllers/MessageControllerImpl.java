@@ -147,9 +147,16 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public BlaMessage deleteMessage(BlaMessage blaMessage) throws Exception {
         BlaMessage blaMessage1 = messageRepository.deleteMessage(blaMessage);
-//        injectAuthorToMessage(blaMessage1);
-//        injectUserReactToMessage(blaMessage1);
         return blaMessage1;
+    }
+
+    @Override
+    public BlaMessage onDeleteMessage(BlaMessage blaMessage) throws Exception {
+        if (messageRepository.getMessageById(blaMessage.getId()) != null) {
+            return onDeleteMessage(blaMessage);
+        }
+
+        throw new Exception("Message not found");
     }
 
     private List<BlaMessage> injectAuthorToMessages(List<BlaMessage> messages) {

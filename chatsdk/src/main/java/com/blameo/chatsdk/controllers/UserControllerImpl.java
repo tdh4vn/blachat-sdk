@@ -32,4 +32,9 @@ public class UserControllerImpl implements UserController {
     public void deleteFCMToken(String imei) throws IOException {
         userRepository.deleteFCMToken(imei);
     }
+
+    @Override
+    public String getMyId() {
+        return userRepository.getMyId();
+    }
 }

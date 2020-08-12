@@ -9,6 +9,7 @@ import com.blameo.chatsdk.models.entities.UserInChannel;
 import com.blameo.chatsdk.models.results.MembersInChannelRemoteDTO;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,4 +56,8 @@ public interface ChannelRepository {
     List<String> getContactList();
 
     List<BlaChannel> searchChannel(String q);
+
+    void updateReceiveTime(String channelId, String userId, Date date);
+
+    void updateSeenTime(String channelId, String userId, Date date);
 }

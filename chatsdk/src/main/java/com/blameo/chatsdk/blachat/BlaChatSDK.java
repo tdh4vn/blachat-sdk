@@ -497,6 +497,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                     }
                 }
                 BlaMessage message1 = messageController.sendMessage(message);
+                messageController.markReactMessage(message1.getId(), channelID, UserReactMessage.RECEIVE);
+                messageController.markReactMessage(message1.getId(), channelID, UserReactMessage.SEEN);
                 channelController.updateLastMessageOfChannel(message.getChannelId(), message1.getId());
             } catch (Exception e) {
                 if (callback != null) callback.onFail(e);

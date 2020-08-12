@@ -34,4 +34,6 @@ public interface MessageRepository {
 
     ArrayList<Message> getSendingMessageQueue();
 
+    BlaMessage onDeleteMessage(BlaMessage blaMessage);
+
 }

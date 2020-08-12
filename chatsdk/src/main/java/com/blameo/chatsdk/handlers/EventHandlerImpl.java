@@ -17,8 +17,11 @@ import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
+import com.blameo.chatsdk.models.entities.UserInChannel;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.models.events.CursorEvent;
+import com.blameo.chatsdk.models.events.DeleteChannelEvent;
+import com.blameo.chatsdk.models.events.DeleteMessageEvent;
 import com.blameo.chatsdk.models.events.Event;
 import com.blameo.chatsdk.models.events.GetEvent;
 import com.blameo.chatsdk.models.events.InviteUsersEvent;
@@ -41,6 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -169,6 +173,13 @@ public class EventHandlerImpl implements EventHandler {
                         break;
                     }
 
+                    if (message.getAuthorId().equals(userRepository.getMyId())) {
+                        channelController.updateLastSeen(message.getChannelId(), userRepository.getMyId(), new Date());
+                        channelController.updateLastReceived(message.getChannelId(), userRepository.getMyId(), new Date());
+                    } else {
+                        messageController.markReactMessage(message.getId(), message.getChannelId(), UserReactMessage.RECEIVE);
+                    }
+
                     BlaMessage blaMessage = messageController.onNewMessage(message);
 
                     if (blaMessage != null) {
@@ -256,6 +267,43 @@ public class EventHandlerImpl implements EventHandler {
                         listener.onUpdateChannel(blaChannel);
                     }
                     break;
+                }
+
+                case "delete_message": {
+                    JSONObject jsonObject = new JSONObject(data);
+                    String messageId = gson.fromJson(jsonObject.get("payload").toString(), DeleteMessageEvent.class).messageId;
+                    BlaMessage message = messageController.getMessageById(messageId);
+                    if (message != null) {
+                        messageController.onDeleteMessage(message);
+                        for (MessagesListener listener : messageListeners) {
+                            listener.onDeleteMessage(message);
+                        }
+                        BlaChannel channel = channelController.getChannelById(message.getChannelId());
+                        if (channel != null) {
+                            if (channel.getLastMessageId().equals(messageId)) {
+                                List<BlaMessage> messages = messageController.getMessages(message.getChannelId(), null, 3);
+                                if (messages != null && messages.size() > 1) {
+                                    channel.setLastMessage(messages.get(0));
+                                    channelController.updateLastMessageOfChannel(channel.getId(), messages.get(0).getId());
+                                    for (ChannelEventListener listener : channelEventListeners) {
+                                        listener.onUpdateChannel(channel);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                case "delete_channel": {
+                    JSONObject jsonObject = new JSONObject(data);
+                    String channelId = gson.fromJson(jsonObject.get("payload").toString(), DeleteChannelEvent.class).channelId;
+                    BlaChannel channel = channelController.getChannelById(channelId);
+                    if (channel != null) {
+                        channelController.deleteChannel(channelId);
+                        for (ChannelEventListener listener : channelEventListeners) {
+                            listener.onDeleteChannel(channel);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

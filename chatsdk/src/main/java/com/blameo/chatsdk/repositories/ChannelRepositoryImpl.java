@@ -138,12 +138,14 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                     lastChannelId
             ).execute();
 
-            if (response.body() == null ) {
+            if (response.body() == null) {
                 throw new Exception("Get channel: response null");
             }
+
             if (response.body().getData() == null){
                 throw new Exception("Get channel: response null");
             }
+
             List<Channel> channelRemote = response.body().getData();
 
             for (Channel channel: channelRemote) {
@@ -268,12 +270,10 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     private int getUnreadMessagesInChannel(Channel channel) {
 
         UserInChannel userInChannel = userInChannelDao.getUserInChannelById(channel.getId(), myId);
-        if(userInChannel == null)   return 0;
+        if(userInChannel == null) return 0;
         int unreadMessages = channel.getUnreadMessages();
         long userLastSeenAt = userInChannel.getLastSeen().getTime();
-        if(channel.getLastMessages() == null)   return unreadMessages;
-        Log.i(TAG, "channel id: "+userInChannel.getChannelId() + " "+userInChannel.getLastSeen()
-        + " "+channel.getLastMessages().size());
+        if (channel.getLastMessages() == null) return unreadMessages;
         for(Message message : channel.getLastMessages()){
             if(message.getCreatedAt().getTime() > userLastSeenAt)
                 unreadMessages++;
@@ -441,17 +441,9 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public BlaChannel updateUserLastSeenInChannel(String channelId) {
-
-        Log.i(TAG, "increase count: "+channelId);
-
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
-//        int count = channel.channel.getUnreadMessages();
-//        count++;
-//
-//        channel.channel.setUnreadMessages(count);
         channelDao.update(channel.channel);
-        BlaChannel blaChannel = new BlaChannel(channel.channel, channel.lastMessage);
-        return blaChannel;
+        return new BlaChannel(channel.channel, channel.lastMessage);
     }
 
     @Override
@@ -476,5 +468,13 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         return result;
     }
 
+    @Override
+    public void updateReceiveTime(String channelId, String userId, Date date) {
+        userInChannelDao.updateLastReceived(new UserInChannelDao.UpdateReceived(channelId, userId, date.getTime()));
+    }
 
+    @Override
+    public void updateSeenTime(String channelId, String userId, Date date) {
+        userInChannelDao.updateLastSeen(new UserInChannelDao.UpdateSeen(channelId, userId, date.getTime()));
+    }
 }

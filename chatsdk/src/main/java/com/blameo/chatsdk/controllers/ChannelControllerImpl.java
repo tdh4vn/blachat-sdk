@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -183,6 +184,16 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public void removeUserFromChannel(String userId, String channelId) throws Exception {
         channelRepository.removeUserFromChannel(userId, channelId);
+    }
+
+    @Override
+    public void updateLastSeen(String channelId, String userId, Date date) {
+        channelRepository.updateSeenTime(channelId, userId, date);
+    }
+
+    @Override
+    public void updateLastReceived(String channelId, String userId, Date date) {
+        channelRepository.updateReceiveTime(channelId, userId, date);
     }
 
     @Override

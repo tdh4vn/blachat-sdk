@@ -7,4 +7,6 @@ public interface UserController {
 
     void deleteFCMToken(String imei) throws IOException;
 
+    String getMyId();
+
 }

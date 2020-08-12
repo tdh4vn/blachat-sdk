@@ -29,4 +29,6 @@ public interface MessageController {
 
     BlaMessage deleteMessage(BlaMessage blaMessage) throws Exception;
 
+    BlaMessage onDeleteMessage(BlaMessage blaMessage) throws Exception;
+
 }

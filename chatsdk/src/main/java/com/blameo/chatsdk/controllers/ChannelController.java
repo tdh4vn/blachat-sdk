@@ -8,6 +8,7 @@ import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.repositories.UserRepository;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -31,4 +32,6 @@ public interface ChannelController {
     BlaChannel resetUnreadMessagesInChannel(String channelId);
     BlaChannel updateUserLastSeenInChannel(String channelId);
     List<BlaChannel> searchChannel(String q);
+    void updateLastSeen(String channelId, String userId, Date date);
+    void updateLastReceived(String channelId, String userId, Date date);
 }

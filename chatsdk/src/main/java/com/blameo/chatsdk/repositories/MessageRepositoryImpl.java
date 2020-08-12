@@ -320,7 +320,7 @@ public class MessageRepositoryImpl implements MessageRepository {
         try {
             DeleteMessageBody body = new DeleteMessageBody(message.getId(), message.getChannelId());
             Response<BaseResult> response = messageAPI.deleteMessage(body).execute();
-            messageDao.delete(message);
+            onDeleteMessage(message);
             return message;
         } catch (Exception e) {
             e.printStackTrace();
@@ -376,5 +376,11 @@ public class MessageRepositoryImpl implements MessageRepository {
     @Override
     public ArrayList<Message> getSendingMessageQueue() {
         return this.messageQueue;
+    }
+
+    @Override
+    public BlaMessage onDeleteMessage(BlaMessage blaMessage) {
+        messageDao.delete(blaMessage);
+        return blaMessage;
     }
 }
