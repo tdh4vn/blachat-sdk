@@ -331,7 +331,7 @@ public class EventHandlerImpl implements EventHandler {
     @Override
     public void getEvent() {
         String lastEventId = sharedPreferences.getString(LAST_EVENT_ID, "");
-
+        Log.e(LAST_EVENT_ID, lastEventId);
         if (lastEventId.isEmpty()) return;
 
         try {
@@ -341,6 +341,7 @@ public class EventHandlerImpl implements EventHandler {
 
             assert response.body() != null;
             if (response.isSuccessful() && response.body().getData() != null) {
+                Log.e(LAST_EVENT_ID, "size " + response.body().getData().size());
                 ArrayList<GetEvent> events = response.body().getData();
                 if (response.body().getData().size() == 0) return;
                 sharedPreferences.edit().putString(LAST_EVENT_ID, "").apply();
