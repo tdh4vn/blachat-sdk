@@ -11,6 +11,7 @@ import com.blameo.chatsdk.models.bodies.CreateMessageBody;
 import com.blameo.chatsdk.models.bodies.DeleteMessageBody;
 import com.blameo.chatsdk.models.bodies.MarkStatusMessageBody;
 import com.blameo.chatsdk.models.bodies.UpdateMessageBody;
+import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.MessageWithUserReact;
 import com.blameo.chatsdk.models.entities.User;
@@ -197,6 +198,11 @@ public class MessageRepositoryImpl implements MessageRepository {
         );
 
         messageDao.insert(message);
+        channelDao.updateLastMessage(
+                new ChannelDao.UpdateLastMessageOfChannel(
+                        message.getChannelId(),
+                        message.getId()));
+        channelDao.updateLastUpdate(new Date().getTime(), message.getChannelId());
         return new BlaMessage(message);
     }
 
@@ -223,11 +229,18 @@ public class MessageRepositoryImpl implements MessageRepository {
         if (response.isSuccessful() && response.body() != null) {
             Message newMessage = response.body().getMessage();
             messageDao.updateIdMessage(blaMessage, newMessage);
-            channelDao.updateLastMessage(
-                    new ChannelDao.UpdateLastMessageOfChannel(
-                            newMessage.getChannelId(),
-                            newMessage.getId()));
-            channelDao.updateLastUpdate(new Date().getTime(), newMessage.getChannelId());
+
+            Channel channel = channelDao.getChannelById(newMessage.getId());
+            if (channel == null) {
+                return new BlaMessage(response.body().getMessage());
+            }
+
+            if (channel.getLastMessageId().equals(newMessage.getId())) {
+                channelDao.updateLastMessage(
+                        new ChannelDao.UpdateLastMessageOfChannel(
+                                newMessage.getChannelId(),
+                                newMessage.getId()));
+            }
             return new BlaMessage(response.body().getMessage());
         }
 

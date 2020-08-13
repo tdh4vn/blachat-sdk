@@ -166,36 +166,41 @@ public class EventHandlerImpl implements EventHandler {
                 case "new_message": {
 
                     JSONObject jsonObject = new JSONObject(data);
+                    Log.e("NEW_MESSAGE", "1");
 
                     Message message = gson.fromJson(jsonObject.get("payload").toString(), Message.class);
 
                     if (messageController.getMessageById(message.getId()) != null) {
+                        Log.e("NEW_MESSAGE", "2");
                         break;
                     }
 
                     if (message.getAuthorId().equals(userRepository.getMyId())) {
+                        Log.e("NEW_MESSAGE", "3");
                         channelController.updateLastSeen(message.getChannelId(), userRepository.getMyId(), new Date());
                         channelController.updateLastReceived(message.getChannelId(), userRepository.getMyId(), new Date());
                     } else {
+                        Log.e("NEW_MESSAGE", "4");
                         messageController.markReactMessage(message.getId(), message.getChannelId(), UserReactMessage.RECEIVE);
                     }
-
+                    Log.e("NEW_MESSAGE", "5");
                     BlaMessage blaMessage = messageController.onNewMessage(message);
 
                     if (blaMessage != null) {
+                        Log.e("NEW_MESSAGE", "6");
                         channelController.updateLastMessageOfChannel(blaMessage.getChannelId(), blaMessage.getId());
-
+                        Log.e("NEW_MESSAGE", "7");
                         BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
-
+                        Log.e("NEW_MESSAGE", "8");
                         blaChannel.setLastMessage(blaMessage);
+                        Log.e("NEW_MESSAGE", "9");
                         onChannelUpdate(blaChannel);
-
 
                         for (MessagesListener listener : messageListeners) {
                             listener.onNewMessage(blaMessage);
                         }
                     }
-
+                    Log.e("NEW_MESSAGE", "10");
                     break;
                 }
 
@@ -352,7 +357,6 @@ public class EventHandlerImpl implements EventHandler {
 
     @Override
     public void onChannelUpdate(BlaChannel channel) {
-        channel.setUpdatedAt(new Date());
         for (ChannelEventListener listener : channelEventListeners) {
             listener.onUpdateChannel(channel);
         }

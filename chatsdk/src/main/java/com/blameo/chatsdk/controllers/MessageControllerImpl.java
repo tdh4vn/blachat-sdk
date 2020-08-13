@@ -38,7 +38,7 @@ public class MessageControllerImpl implements MessageController {
 
     @Override
     public BlaMessage onNewMessage(Message message) throws Exception {
-        if (false == TextUtils.isEmpty(message.getLocalId())
+        if (!TextUtils.isEmpty(message.getLocalId())
                 && checkMessageInQueue(message.getLocalId()))  {
             removeMessageInQueue(message.getLocalId());
             return null;
