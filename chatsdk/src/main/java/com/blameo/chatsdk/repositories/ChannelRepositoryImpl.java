@@ -166,8 +166,7 @@ public class ChannelRepositoryImpl implements ChannelRepository {
                     ChannelWithLastMessage channelWithLastMessage = new ChannelWithLastMessage();
                     channelWithLastMessage.channel = channel;
 
-                    if(channel.getLastMessages() != null)
-                    {
+                    if(channel.getLastMessages() != null) {
                         messagesFromChannels.addAll(channel.getLastMessages());
                         if(channel.getLastMessages().size() > 0)
                             channelWithLastMessage.lastMessage = channel.getLastMessages().get(0);
@@ -236,12 +235,19 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         for (ChannelWithLastMessage c: channels) {
             BlaChannel channel = new BlaChannel(c.channel, c.lastMessage);
 
+            if (c.lastMessage == null) {
+                List<Message> messages = messageDao.getMessagesOfChannel(channel.getId(), new Date().getTime(), 1);
+                if (messages != null && messages.size() > 0) {
+                    c.lastMessage = new BlaMessage(messages.get(0));
+                    channelRepository.updateLastMessage(channel.getId(), c.lastMessage.getId());
+                }
+            }
+
             if (c.lastMessage != null) {
                 MessageWithUserReact messageWithUserReact = messageDao.getUserReactMessageByID(c.lastMessage.getId());
                 ArrayList<BlaUser> usersReceivedMessage = new ArrayList<>();
                 ArrayList<BlaUser> usersSeenMessage = new ArrayList<>();
                 for (UserReactMessage userReactMessage : messageWithUserReact.userReactMessages){
-
                     BlaUser targetUser = getUserReactMessage((ArrayList<User>)messageWithUserReact.users, userReactMessage.getUserId());
 
                     if(userReactMessage.getType() == UserReactMessage.RECEIVE){
@@ -355,7 +361,11 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public boolean updateLastMessage(String channelId, String messageId) {
         Channel channel = channelDao.getChannelById(channelId);
-        return false;
+        if (channel == null) {
+            return false;
+        }
+        channelDao.updateLastMessage(new ChannelDao.UpdateLastMessageOfChannel(channelId, messageId));
+        return true;
     }
 
     @Override

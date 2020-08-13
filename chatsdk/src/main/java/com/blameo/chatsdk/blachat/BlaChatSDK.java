@@ -278,11 +278,12 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 List<BlaChannel> channels = null;
                 try {
                     channels = channelController.getChannels(lastId, limit);
+                    if (callback != null) callback.onSuccess(channels);
                 } catch (Exception e) {
                     if (callback != null) callback.onFail(e);
                     e.printStackTrace();
                 }
-                if (callback != null) callback.onSuccess(channels);
+
             }).get();
         } catch (Exception e) {
             callback.onFail(e);
