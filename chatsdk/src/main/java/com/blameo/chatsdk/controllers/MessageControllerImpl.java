@@ -60,7 +60,6 @@ public class MessageControllerImpl implements MessageController {
         BlaUser user = userRepository.getUserById(userId);
 
         if (message != null && user != null) {
-            channelRepository.updateLastUpdated(message.getChannelId(), new Date());
             if (type == UserReactMessage.RECEIVE) {
                 messageRepository.userReceiveMyMessage(user.getId(), message.getId(), time);
             } else {
@@ -126,7 +125,6 @@ public class MessageControllerImpl implements MessageController {
         if (message == null) {
             return;
         }
-        channelRepository.updateLastUpdated(message.getChannelId(), new Date());
         if (message.getAuthorId().equals(userRepository.getMyId())) {
             return;
         }
@@ -159,7 +157,6 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public BlaMessage onDeleteMessage(BlaMessage blaMessage) throws Exception {
         if (messageRepository.getMessageById(blaMessage.getId()) != null) {
-            channelRepository.updateLastUpdated(blaMessage.getChannelId(), new Date());
             return messageRepository.onDeleteMessage(blaMessage);
         }
 

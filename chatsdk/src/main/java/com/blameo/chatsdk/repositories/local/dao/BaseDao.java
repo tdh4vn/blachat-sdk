@@ -41,7 +41,6 @@ public abstract class BaseDao<T extends BaseEntity> {
     abstract void actualUpdate(T obj);
 
     public void update(T obj) {
-        obj.setUpdatedAt(new Date());
         actualUpdate(obj);
     }
 
@@ -49,11 +48,7 @@ public abstract class BaseDao<T extends BaseEntity> {
     public abstract void actualUpdateMany(List<T> objs);
 
     public void updateMany(List<T> objs) {
-        if (objs != null) {
-            for (T t : objs) {
-                t.setUpdatedAt(new Date());
-            }
-        }
+
         actualUpdateMany(objs);
     }
 
