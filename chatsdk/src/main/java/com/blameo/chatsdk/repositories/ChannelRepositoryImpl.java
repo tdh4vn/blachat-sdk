@@ -355,7 +355,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public boolean updateLastMessage(String channelId, String messageId) {
         Channel channel = channelDao.getChannelById(channelId);
-        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         return false;
     }
 
@@ -445,7 +444,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
 
     @Override
     public BlaChannel resetUnreadMessagesInChannel(String channelId) {
-        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
         channel.channel.setUnreadMessages(0);
         channelDao.update(channel.channel);
@@ -456,7 +454,6 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     @Override
     public BlaChannel updateUserLastSeenInChannel(String channelId) {
         ChannelWithLastMessage channel = channelDao.getChannelWithLastMessageById(channelId);
-        channelDao.updateLastUpdate(new Date().getTime(), channelId);
         return new BlaChannel(channel.channel, channel.lastMessage);
     }
 

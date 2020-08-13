@@ -325,11 +325,11 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 try {
                     List<BlaMessage> messages;
                     messages = messageController.getMessages(channelId, lastId, limit);
-                    BlaChannel channel = channelController.resetUnreadMessagesInChannel(channelId);
+                    channelController.resetUnreadMessagesInChannel(channelId);
+                    BlaChannel channel = channelController.getChannelById(channelId);
                     channelUpdated(channel);
-
                     if (callback != null) callback.onSuccess(messages);
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).get();
@@ -443,7 +443,8 @@ public class BlaChatSDK implements BlaChatSDKProxy {
         try {
             executors.submit(() -> {
                 try {
-                    BlaChannel channel = channelController.resetUnreadMessagesInChannel(channelId);
+                    channelController.resetUnreadMessagesInChannel(channelId);
+                    BlaChannel channel = channelController.getChannelById(channelId);
                     messageController.markReactMessage(messageId, channelId, UserReactMessage.SEEN);
                     channelUpdated(channel);
                     if (callback != null) callback.onSuccess(true);
@@ -492,7 +493,7 @@ public class BlaChatSDK implements BlaChatSDKProxy {
                 BlaChannel blaChannel = channelController.getChannelById(message.getChannelId());
                 if (blaChannel != null) {
                     blaChannel.setLastMessage(message);
-                    eventHandler.onChannelUpdate(blaChannel);
+                    channelUpdated(blaChannel);
                 }
                 BlaMessage message1 = messageController.sendMessage(message);
                 messageController.markReactMessage(message1.getId(), channelID, UserReactMessage.RECEIVE);
