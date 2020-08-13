@@ -319,13 +319,15 @@ public class ChannelRepositoryImpl implements ChannelRepository {
         )).execute();
 
         assert response.body() != null;
-        if(response.body().getData() != null && response.body().getData().size() > 0)
+        if(response.body().getData() != null && response.body().getData().size() > 0){
             channel = response.body().getData().get(0);
-
-        if(channel != null)
+        }
+        if(channel != null){
             channelDao.insert(channel);
-
-        return new BlaChannel(channel);
+            return new BlaChannel(channel);
+        } else {
+            return null;
+        }
     }
 
     @Override

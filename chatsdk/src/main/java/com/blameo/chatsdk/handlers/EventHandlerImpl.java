@@ -332,7 +332,9 @@ public class EventHandlerImpl implements EventHandler {
     public void getEvent() {
         String lastEventId = sharedPreferences.getString(LAST_EVENT_ID, "");
         Log.e(LAST_EVENT_ID, lastEventId);
-        if (lastEventId.isEmpty()) return;
+        if (lastEventId.isEmpty()) {
+            return;
+        }
 
         try {
             Response<GetEventResult> response = APIProvider.INSTANCE.getBlaChatAPI()
@@ -343,10 +345,11 @@ public class EventHandlerImpl implements EventHandler {
             if (response.isSuccessful() && response.body().getData() != null) {
                 Log.e(LAST_EVENT_ID, "size " + response.body().getData().size());
                 ArrayList<GetEvent> events = response.body().getData();
-                if (response.body().getData().size() == 0) return;
-                sharedPreferences.edit().putString(LAST_EVENT_ID, "").apply();
-
-                for (int i = events.size() - 1; i >= 0; i--) {
+                if (response.body().getData().size() == 0) {
+                    return;
+                }
+                sharedPreferences.edit().putString(LAST_EVENT_ID, response.body().getData().get(0).getId()).apply();
+                for (int i = 0; i < response.body().getData().size(); i++) {
                     publishEvent(events.get(i).getPayload());
                 }
             }
