@@ -505,4 +505,14 @@ public class ChannelRepositoryImpl implements ChannelRepository {
     public void updateLastUpdated(String channelId, Date date) {
         channelDao.updateLastUpdate(date.getTime(), channelId);
     }
+
+    @Override
+    public void createUserInChannel(String channelId, String userId, Date timeToAdd) {
+        userInChannelDao.insert(new UserInChannel(channelId, userId, timeToAdd, timeToAdd));
+    }
+
+    @Override
+    public void removeUserInChannel(String channelId, String userId, Date timeToRemove) {
+        userInChannelDao.delete(new UserInChannel(channelId, userId, timeToRemove, timeToRemove));
+    }
 }

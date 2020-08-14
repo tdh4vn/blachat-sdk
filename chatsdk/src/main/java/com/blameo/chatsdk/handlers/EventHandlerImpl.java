@@ -26,6 +26,7 @@ import com.blameo.chatsdk.models.events.Event;
 import com.blameo.chatsdk.models.events.GetEvent;
 import com.blameo.chatsdk.models.events.InviteUsersEvent;
 import com.blameo.chatsdk.models.events.Payload;
+import com.blameo.chatsdk.models.events.UserLeaveChannel;
 import com.blameo.chatsdk.models.results.GetEventResult;
 import com.blameo.chatsdk.repositories.MessageRepository;
 import com.blameo.chatsdk.repositories.MessageRepositoryImpl;
@@ -217,13 +218,17 @@ public class EventHandlerImpl implements EventHandler {
                     BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
                     if (channel != null && message != null) {
+                        for (MessagesListener listener : messageListeners) {
+                            listener.onUserSeen(message, user, new Date(cursorEvent.time));
+                        }
+
                         for (ChannelEventListener listener : channelEventListeners) {
                             listener.onUserSeenMessage(channel, user, message);
                         }
-                    }
-                    if (channel != null) {
+
                         onChannelUpdate(channel);
                     }
+
 
                     break;
                 }
@@ -238,11 +243,13 @@ public class EventHandlerImpl implements EventHandler {
                     BlaUser user = userRepository.getUserById(cursorEvent.actor_id);
 
                     if (channel != null && message != null) {
+                        for (MessagesListener listener : messageListeners) {
+                            listener.onUserReceive(message, user, new Date(cursorEvent.time));
+                        }
                         for (ChannelEventListener listener : channelEventListeners) {
                             listener.onUserReceiveMessage(channel, user, message);
                         }
-                    }
-                    if (channel != null) {
+
                         onChannelUpdate(channel);
                     }
                     break;
@@ -279,6 +286,26 @@ public class EventHandlerImpl implements EventHandler {
                     }
 
                     break;
+                }
+                case "remove_user_from_channel": {
+                    JSONObject jsonObject = new JSONObject(data);
+                    UserLeaveChannel userLeaveChannelEvent = gson.fromJson(jsonObject.get("payload").toString(), UserLeaveChannel.class);
+
+                    if (userRepository.getMyId().equals(userLeaveChannelEvent.userID)) {
+                        BlaChannel channel = channelController.getChannelById(userLeaveChannelEvent.channelId);
+                        channelController.deleteChannel(userLeaveChannelEvent.channelId);
+                        for (ChannelEventListener channelEventListener: channelEventListeners) {
+                            channelEventListener.onDeleteChannel(channel);
+                        }
+                    } else {
+                        channelController.onUserLeaveChannel(userLeaveChannelEvent.channelId, userLeaveChannelEvent.userID);
+                        BlaUser user = userRepository.getUserById(userLeaveChannelEvent.userID);
+                        BlaChannel channel = channelController.getChannelById(userLeaveChannelEvent.channelId);
+
+                        for (ChannelEventListener channelEventListener: channelEventListeners) {
+                            channelEventListener.onMemberLeave(channel, user);
+                        }
+                    }
                 }
                 case "update_channel": {
                     JSONObject jsonObject = new JSONObject(data);

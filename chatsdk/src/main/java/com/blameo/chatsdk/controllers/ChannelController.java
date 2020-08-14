@@ -34,4 +34,8 @@ public interface ChannelController {
     List<BlaChannel> searchChannel(String q);
     void updateLastSeen(String channelId, String userId, Date date);
     void updateLastReceived(String channelId, String userId, Date date);
+
+    void onUserJoinChannel(String channelId, String userId) throws Exception;
+
+    void onUserLeaveChannel(String channelId, String userId) throws Exception;
 }

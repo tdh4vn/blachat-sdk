@@ -11,6 +11,7 @@ import com.blameo.chatsdk.models.bla.EventType;
 import com.blameo.chatsdk.models.bla.BlaUser;
 import com.blameo.chatsdk.models.entities.Channel;
 import com.blameo.chatsdk.models.entities.ChannelWithUser;
+import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.RemoteUserChannel;
 import com.blameo.chatsdk.models.entities.User;
 import com.blameo.chatsdk.models.entities.UserInChannel;
@@ -194,6 +195,33 @@ public class ChannelControllerImpl implements ChannelController {
     @Override
     public void updateLastReceived(String channelId, String userId, Date date) {
         channelRepository.updateReceiveTime(channelId, userId, date);
+    }
+
+    @Override
+    public void onUserJoinChannel(String channelId, String userId) throws Exception {
+
+        BlaChannel channel = channelRepository.getChannelById(channelId);
+        BlaUser user = userRepository.getUserById(userId);
+
+        if (channel == null && user == null) {
+            throw new Exception("Channel or user not found");
+        }
+
+        channelRepository.createUserInChannel(channelId, userId, new Date());
+
+
+    }
+
+    @Override
+    public void onUserLeaveChannel(String channelId, String userId) throws Exception {
+        BlaChannel channel = channelRepository.getChannelById(channelId);
+        BlaUser user = userRepository.getUserById(userId);
+
+        if (channel == null && user == null) {
+            throw new Exception("Channel or user not found");
+        }
+
+        channelRepository.removeUserInChannel(channelId, userId, new Date());
     }
 
     @Override

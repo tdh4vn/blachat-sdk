@@ -62,4 +62,8 @@ public interface ChannelRepository {
     void updateSeenTime(String channelId, String userId, Date date);
 
     void updateLastUpdated(String channelId, Date date);
+
+    void createUserInChannel(String channelId, String userId, Date timeToAdd);
+
+    void removeUserInChannel(String channelId, String userId, Date timeToRemove);
 }
