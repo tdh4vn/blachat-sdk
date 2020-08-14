@@ -349,7 +349,7 @@ public class EventHandlerImpl implements EventHandler {
                     return;
                 }
                 sharedPreferences.edit().putString(LAST_EVENT_ID, response.body().getData().get(0).getId()).apply();
-                for (int i = 0; i < response.body().getData().size(); i++) {
+                for (int i = response.body().getData().size() - 1 ; i > 0; i--) {
                     publishEvent(events.get(i).getPayload());
                 }
             }
