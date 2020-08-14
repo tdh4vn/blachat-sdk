@@ -102,6 +102,8 @@ public class MessageRepositoryImpl implements MessageRepository {
             if (lastMessage != null){
                 lastUpdate = lastMessage.getSentAt().getTime()/1000;
             }
+        } else {
+            lastUpdate = new Date().getTime();
         }
 
         List<Message> messages = messageDao.getMessagesOfChannel(channelId, lastUpdate, limit);

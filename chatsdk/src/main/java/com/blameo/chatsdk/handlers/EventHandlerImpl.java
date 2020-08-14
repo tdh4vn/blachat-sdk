@@ -176,6 +176,9 @@ public class EventHandlerImpl implements EventHandler {
                         break;
                     }
 
+                    Log.e("NEW_MESSAGE", "5");
+                    BlaMessage blaMessage = messageController.onNewMessage(message);
+
                     if (message.getAuthorId().equals(userRepository.getMyId())) {
                         Log.e("NEW_MESSAGE", "3");
                         channelController.updateLastSeen(message.getChannelId(), userRepository.getMyId(), new Date());
@@ -184,8 +187,6 @@ public class EventHandlerImpl implements EventHandler {
                         Log.e("NEW_MESSAGE", "4");
                         messageController.markReactMessage(message.getId(), message.getChannelId(), UserReactMessage.RECEIVE);
                     }
-                    Log.e("NEW_MESSAGE", "5");
-                    BlaMessage blaMessage = messageController.onNewMessage(message);
 
                     if (blaMessage != null) {
                         Log.e("NEW_MESSAGE", "6");

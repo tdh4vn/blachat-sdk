@@ -21,8 +21,6 @@ import com.blameo.chatsdk.models.bla.BlaChannelType;
 import com.blameo.chatsdk.models.bla.BlaMessage;
 import com.blameo.chatsdk.models.bla.BlaMessageType;
 import com.blameo.chatsdk.models.bla.BlaUser;
-import com.blameo.chatsdk.models.entities.Channel;
-import com.blameo.chatsdk.models.entities.Message;
 import com.blameo.chatsdk.models.entities.UserReactMessage;
 import com.blameo.chatsdk.repositories.ChannelRepository;
 import com.blameo.chatsdk.repositories.ChannelRepositoryImpl;
@@ -35,7 +33,6 @@ import com.blameo.chatsdk.repositories.remote.api.APIProvider;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;

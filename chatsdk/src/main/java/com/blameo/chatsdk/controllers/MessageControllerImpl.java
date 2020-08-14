@@ -48,9 +48,9 @@ public class MessageControllerImpl implements MessageController {
         injectUserReactToMessage(blaMessage);
         injectAuthorToMessage(blaMessage);
         if (!message.getAuthorId().equals(userRepository.getMyId())) {
-            channelRepository.incrementNumberMessageNotSeen(message.getChannelId(), 1);
+            channelRepository.incrementNumberMessageNotSeen(blaMessage.getChannelId(), 1);
         }
-        messageRepository.sendReceiveEvent(message.getChannelId(), message.getId(), message.getAuthorId());
+        messageRepository.sendReceiveEvent(blaMessage.getChannelId(), blaMessage.getId(), blaMessage.getAuthorId());
         return blaMessage;
     }
 
@@ -101,7 +101,7 @@ public class MessageControllerImpl implements MessageController {
     @Override
     public List<BlaMessage> getMessages(String channelId, String lastId, Integer limit) throws IOException {
         List<BlaMessage> messages;
-        messages = injectAuthorToMessages(messageRepository.getMessages(channelId, lastId, limit));
+        messages = messageRepository.getMessages(channelId, lastId, limit);
 
         injectAuthorToMessages(messages);
 
